@@ -12,11 +12,16 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 find_package(QT NAMES Qt6 Qt5 REQUIRED COMPONENTS Widgets)
 find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Widgets)
 
+include_directories(D:/vcpkg/vcpkg/installed/x64-windows/include)
+
+#find_package(cryptopp CONFIG REQUIRED)
+#target_link_libraries(main PRIVATE cryptopp::cryptopp)
+#target_link_libraries(crypt_chat PRIVATE cryptopp-shared)
+
 set(PROJECT_SOURCES
         main.cpp
         mainwindow.cpp
         mainwindow.h
-
         mainwindow.ui
 )
 
@@ -43,7 +48,7 @@ else()
     endif()
 endif()
 
-target_link_libraries(crypt_chat PRIVATE Qt${QT_VERSION_MAJOR}::Widgets)
+target_link_libraries(crypt_chat PRIVATE Qt${QT_VERSION_MAJOR}::Widgets D:/vcpkg/vcpkg/installed/x64-windows/lib/cryptopp.lib)
 
 set_target_properties(crypt_chat PROPERTIES
     MACOSX_BUNDLE_GUI_IDENTIFIER my.example.com
