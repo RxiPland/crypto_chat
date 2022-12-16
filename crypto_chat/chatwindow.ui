@@ -10,6 +10,9 @@
     <height>401</height>
    </rect>
   </property>
+  <property name="focusPolicy">
+   <enum>Qt::StrongFocus</enum>
+  </property>
   <property name="windowTitle">
    <string>ChatWindow</string>
   </property>
@@ -92,6 +95,9 @@
               <width>0</width>
               <height>30</height>
              </size>
+            </property>
+            <property name="focusPolicy">
+             <enum>Qt::ClickFocus</enum>
             </property>
             <property name="toolTipDuration">
              <number>-1</number>

@@ -14,11 +14,17 @@ find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Widgets)
 
 set(PROJECT_SOURCES
         main.cpp
+
         chatwindow.cpp
         chatwindow.h
         chatwindow.ui
-
         ui_chatwindow.h
+
+        logindialog.h
+        logindialog.cpp
+        logindialog.ui
+        ui_logindialog.h
+
 )
 
 if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)

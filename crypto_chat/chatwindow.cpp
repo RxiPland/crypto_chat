@@ -6,7 +6,7 @@ ChatWindow::ChatWindow(QWidget *parent)
     , ui(new Ui::ChatWindow)
 {
     ui->setupUi(this);
-    this->setWindowTitle("crypto-chat  |  místnost:");
+    this->setWindowTitle("crypto-chat  |  přezdívka  |  místnost");
     this->setWindowFlags(windowFlags() &(~Qt::WindowMaximizeButtonHint));
     ui->lineEdit->setFocus();
 }

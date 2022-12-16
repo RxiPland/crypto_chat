@@ -62,6 +62,7 @@ public:
         if (ChatWindow->objectName().isEmpty())
             ChatWindow->setObjectName("ChatWindow");
         ChatWindow->resize(690, 401);
+        ChatWindow->setFocusPolicy(Qt::StrongFocus);
         action_room_1 = new QAction(ChatWindow);
         action_room_1->setObjectName("action_room_1");
         action_room_2 = new QAction(ChatWindow);
@@ -106,6 +107,7 @@ public:
         sizePolicy.setHeightForWidth(lineEdit->sizePolicy().hasHeightForWidth());
         lineEdit->setSizePolicy(sizePolicy);
         lineEdit->setMinimumSize(QSize(0, 30));
+        lineEdit->setFocusPolicy(Qt::ClickFocus);
         lineEdit->setToolTipDuration(-1);
         lineEdit->setMaxLength(200);
         lineEdit->setClearButtonEnabled(true);
