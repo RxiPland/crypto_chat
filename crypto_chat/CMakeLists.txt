@@ -67,3 +67,6 @@ install(TARGETS crypto_chat
 if(QT_VERSION_MAJOR EQUAL 6)
     qt_finalize_executable(crypto_chat)
 endif()
+
+find_package(Qt6 REQUIRED COMPONENTS Network)
+target_link_libraries(crypto_chat PRIVATE Qt6::Network)

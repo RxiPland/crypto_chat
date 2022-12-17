@@ -39,7 +39,6 @@ public:
     QSpacerItem *verticalSpacer_4;
     QHBoxLayout *horizontalLayout_2;
     QCheckBox *checkBox;
-    QSpacerItem *horizontalSpacer_2;
     QToolButton *toolButton_2;
     QSpacerItem *horizontalSpacer_6;
     QSpacerItem *verticalSpacer;
@@ -65,7 +64,7 @@ public:
         LoginDialog->resize(461, 207);
         horizontalLayout_6 = new QHBoxLayout(LoginDialog);
         horizontalLayout_6->setObjectName("horizontalLayout_6");
-        horizontalSpacer_4 = new QSpacerItem(15, 20, QSizePolicy::Fixed, QSizePolicy::Minimum);
+        horizontalSpacer_4 = new QSpacerItem(10, 20, QSizePolicy::Fixed, QSizePolicy::Minimum);
 
         horizontalLayout_6->addItem(horizontalSpacer_4);
 
@@ -97,7 +96,7 @@ public:
 
         toolButton = new QToolButton(LoginDialog);
         toolButton->setObjectName("toolButton");
-        toolButton->setMinimumSize(QSize(30, 30));
+        toolButton->setMinimumSize(QSize(30, 24));
 
         horizontalLayout->addWidget(toolButton);
 
@@ -119,17 +118,13 @@ public:
 
         horizontalLayout_2->addWidget(checkBox);
 
-        horizontalSpacer_2 = new QSpacerItem(10, 20, QSizePolicy::Fixed, QSizePolicy::Minimum);
-
-        horizontalLayout_2->addItem(horizontalSpacer_2);
-
         toolButton_2 = new QToolButton(LoginDialog);
         toolButton_2->setObjectName("toolButton_2");
-        toolButton_2->setMinimumSize(QSize(30, 30));
+        toolButton_2->setMinimumSize(QSize(30, 24));
 
         horizontalLayout_2->addWidget(toolButton_2);
 
-        horizontalSpacer_6 = new QSpacerItem(28, 20, QSizePolicy::Fixed, QSizePolicy::Minimum);
+        horizontalSpacer_6 = new QSpacerItem(47, 20, QSizePolicy::Fixed, QSizePolicy::Minimum);
 
         horizontalLayout_2->addItem(horizontalSpacer_6);
 
@@ -150,7 +145,7 @@ public:
 
         lineEdit_2 = new QLineEdit(LoginDialog);
         lineEdit_2->setObjectName("lineEdit_2");
-        lineEdit_2->setMinimumSize(QSize(0, 24));
+        lineEdit_2->setMinimumSize(QSize(0, 0));
         lineEdit_2->setMaxLength(500);
         lineEdit_2->setClearButtonEnabled(true);
 
@@ -178,7 +173,7 @@ public:
         sizePolicy1.setVerticalStretch(0);
         sizePolicy1.setHeightForWidth(lineEdit_3->sizePolicy().hasHeightForWidth());
         lineEdit_3->setSizePolicy(sizePolicy1);
-        lineEdit_3->setMinimumSize(QSize(0, 24));
+        lineEdit_3->setMinimumSize(QSize(0, 0));
         lineEdit_3->setMaxLength(500);
         lineEdit_3->setEchoMode(QLineEdit::Password);
         lineEdit_3->setClearButtonEnabled(true);
