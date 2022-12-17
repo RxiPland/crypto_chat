@@ -17,7 +17,8 @@ public:
 
     QString app_version;
     QByteArray user_agent;
-    QString user_color = "black";
+    QString user_color = "black";  // default color
+    QString user_name;
 
 private slots:
     void on_pushButton_4_clicked();

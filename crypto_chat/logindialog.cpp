@@ -3,13 +3,15 @@
 
 #include <QMessageBox>
 
+
 LoginDialog::LoginDialog(QWidget *parent) :
     QDialog(parent),
     ui(new Ui::LoginDialog)
 {
     ui->setupUi(this);
     this->setWindowIcon(QIcon("://images/hacker.ico"));
-    this->setWindowTitle("Přihlášení ke crypto-chat serveru");
+    this->setWindowTitle("Připojení ke crypto-chat serveru");
+
 
     ui->lineEdit->setFocus();
     ui->pushButton->setFocusPolicy(Qt::FocusPolicy::NoFocus);
@@ -42,6 +44,9 @@ void LoginDialog::disable_widgets(bool disable){
 
     if(ui->lineEdit->text() != "" && !disable){
         ui->pushButton->setEnabled(true);
+
+    } else{
+        ui->pushButton->setEnabled(false);
     }
 
     ui->toolButton->setDisabled(disable);
@@ -87,7 +92,7 @@ void LoginDialog::on_pushButton_clicked()
         QMessageBox::critical(this, "Chyba", "Zadejte kompletní URL adresu!\n\nPř. https://www.google.com");
 
     } else{
-        // send credentials to website
+        // validate website
 
         QNetworkRequest request;
         QUrl qurl_address = QUrl(url_address);
@@ -137,8 +142,21 @@ void LoginDialog::on_pushButton_clicked()
             // No error
 
             successful_login = true;
-            qInfo() << reply_get->readAll();
+
+            QMessageBox msgBox;
+            msgBox.setWindowIcon(QIcon("://images/hacker.ico"));
+            msgBox.setWindowTitle("Vyberte akci");
+            msgBox.setText("Úspěšně se podařilo navázat spojení s crypto-chat serverem. Vyberte zda chcete vytvořit novou místnost, nebo se připojit už k existující.");
+            QAbstractButton* pButtonYes = msgBox.addButton(" Vytvořit místnost ", QMessageBox::YesRole);
+            msgBox.addButton(" Připojit se do místnosti ", QMessageBox::YesRole);
+            msgBox.exec();
+
+            if (msgBox.clickedButton()==pButtonYes) {
+                create_room = true;
+            }
+
             this->close();
+            return;
         }
     }
 

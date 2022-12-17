@@ -15,6 +15,16 @@ public:
     explicit NameChangeDialog(QWidget *parent = nullptr);
     ~NameChangeDialog();
 
+    QString original_name;
+    QString new_name = "";
+
+    void set_name(QString name);
+
+private slots:
+    void on_lineEdit_textChanged(const QString &arg1);
+
+    void on_pushButton_clicked();
+
 private:
     Ui::NameChangeDialog *ui;
 };

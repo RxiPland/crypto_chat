@@ -8,13 +8,6 @@ ChatWindow::ChatWindow(QWidget *parent)
     : QMainWindow(parent)
     , ui(new Ui::ChatWindow)
 {
-    ui->setupUi(this);
-    this->setWindowIcon(QIcon(":/images/hacker.ico"));
-    this->setWindowTitle("crypto-chat  |  přezdívka  |  místnost");
-    this->setWindowFlags(windowFlags() &(~Qt::WindowMaximizeButtonHint));
-    this->show();
-
-    ui->label->setStyleSheet(tr("QLabel { background-color : %1 }").arg(user_color));
 
     // login to server
     LoginDialog lw;
@@ -28,8 +21,15 @@ ChatWindow::ChatWindow(QWidget *parent)
         return;
     }
 
+    ui->setupUi(this);
+    this->setWindowIcon(QIcon(":/images/hacker.ico"));
+    this->setWindowTitle("crypto-chat  |  přezdívka  |  místnost");
+    this->setWindowFlags(windowFlags() &(~Qt::WindowMaximizeButtonHint));
 
+    ui->label->setStyleSheet(tr("QLabel { background-color : %1 }").arg(user_color));
     ui->lineEdit->setFocus();
+
+    this->show();
 }
 
 ChatWindow::~ChatWindow()
@@ -40,16 +40,27 @@ ChatWindow::~ChatWindow()
 
 void ChatWindow::on_pushButton_4_clicked()
 {
+    // change color
+
     ColorDialog cd;
-    cd.user_color = user_color;
+    cd.set_color(user_color);
     cd.setModal(true);
     cd.exec();
+
+    if (cd.change_color){
+        user_color = cd.user_color;
+    }
+
+    ui->label->setStyleSheet(tr("QLabel { background-color : %1 }").arg(user_color));
 }
 
 
 void ChatWindow::on_pushButton_3_clicked()
 {
+    // change username
+
     NameChangeDialog nchd;
+    nchd.set_name(user_name);
     nchd.setModal(true);
     nchd.exec();
 }

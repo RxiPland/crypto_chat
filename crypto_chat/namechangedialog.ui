@@ -53,7 +53,7 @@
        <item>
         <widget class="QLabel" name="label">
          <property name="text">
-          <string>Nové jméno:</string>
+          <string>Nová přezdívka:</string>
          </property>
         </widget>
        </item>

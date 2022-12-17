@@ -110,7 +110,7 @@ public:
     void retranslateUi(QDialog *NameChangeDialog)
     {
         NameChangeDialog->setWindowTitle(QCoreApplication::translate("NameChangeDialog", "Dialog", nullptr));
-        label->setText(QCoreApplication::translate("NameChangeDialog", "Nov\303\251 jm\303\251no:", nullptr));
+        label->setText(QCoreApplication::translate("NameChangeDialog", "Nov\303\241 p\305\231ezd\303\255vka:", nullptr));
         pushButton_2->setText(QCoreApplication::translate("NameChangeDialog", "Zru\305\241it", nullptr));
         pushButton->setText(QCoreApplication::translate("NameChangeDialog", "Ok", nullptr));
     } // retranslateUi

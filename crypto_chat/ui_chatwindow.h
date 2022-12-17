@@ -34,6 +34,8 @@ public:
     QAction *action_room_2;
     QAction *action_zpravy_1;
     QAction *action_zpravy_2;
+    QAction *action_room_3;
+    QAction *action_zpravy_3;
     QWidget *centralwidget;
     QVBoxLayout *verticalLayout_3;
     QSpacerItem *verticalSpacer_4;
@@ -75,6 +77,10 @@ public:
         action_zpravy_1->setObjectName("action_zpravy_1");
         action_zpravy_2 = new QAction(ChatWindow);
         action_zpravy_2->setObjectName("action_zpravy_2");
+        action_room_3 = new QAction(ChatWindow);
+        action_room_3->setObjectName("action_room_3");
+        action_zpravy_3 = new QAction(ChatWindow);
+        action_zpravy_3->setObjectName("action_zpravy_3");
         centralwidget = new QWidget(ChatWindow);
         centralwidget->setObjectName("centralwidget");
         verticalLayout_3 = new QVBoxLayout(centralwidget);
@@ -219,9 +225,11 @@ public:
         menuMistnost->addAction(action_room_1);
         menuMistnost->addSeparator();
         menuMistnost->addAction(action_room_2);
+        menuMistnost->addAction(action_room_3);
         menuZpravy->addAction(action_zpravy_1);
-        menuZpravy->addSeparator();
         menuZpravy->addAction(action_zpravy_2);
+        menuZpravy->addSeparator();
+        menuZpravy->addAction(action_zpravy_3);
 
         retranslateUi(ChatWindow);
 
@@ -232,9 +240,11 @@ public:
     {
         ChatWindow->setWindowTitle(QCoreApplication::translate("ChatWindow", "ChatWindow", nullptr));
         action_room_1->setText(QCoreApplication::translate("ChatWindow", "Smazat m\303\255stnost", nullptr));
-        action_room_2->setText(QCoreApplication::translate("ChatWindow", "Odpojit se", nullptr));
+        action_room_2->setText(QCoreApplication::translate("ChatWindow", "Kop\303\255rovat ID m\303\255stnosti", nullptr));
         action_zpravy_1->setText(QCoreApplication::translate("ChatWindow", "Po\304\215et: 0", nullptr));
         action_zpravy_2->setText(QCoreApplication::translate("ChatWindow", "Aktualizace za 5s", nullptr));
+        action_room_3->setText(QCoreApplication::translate("ChatWindow", "Odpojit se", nullptr));
+        action_zpravy_3->setText(QCoreApplication::translate("ChatWindow", "Aktualizovat", nullptr));
         textEdit->setHtml(QCoreApplication::translate("ChatWindow", "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" \"http://www.w3.org/TR/REC-html40/strict.dtd\">\n"
 "<html><head><meta name=\"qrichtext\" content=\"1\" /><meta charset=\"utf-8\" /><style type=\"text/css\">\n"
 "p, li { white-space: pre-wrap; }\n"

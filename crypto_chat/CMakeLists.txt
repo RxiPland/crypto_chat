@@ -38,6 +38,11 @@ set(PROJECT_SOURCES
         logindialog.ui
         ui_logindialog.h
 
+        createroomdialog.h
+        createroomdialog.cpp
+        createroomdialog.ui
+        ui_createroomdialog.h
+
 )
 
 if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
