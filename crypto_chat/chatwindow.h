@@ -18,7 +18,8 @@ public:
     QString app_version;
     QByteArray user_agent;
     QString user_color = "black";  // default color
-    QString user_name;
+    QString user_name = "ahoj";
+    QString server_url;
 
 private slots:
     void on_pushButton_4_clicked();

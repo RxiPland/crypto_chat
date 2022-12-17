@@ -19,11 +19,14 @@ ChatWindow::ChatWindow(QWidget *parent)
     if(!lw.successful_login){
         QMetaObject::invokeMethod(qApp, "quit", Qt::QueuedConnection);
         return;
+
+    } else{
+        ChatWindow::server_url = lw.server_url;
     }
 
     ui->setupUi(this);
     this->setWindowIcon(QIcon(":/images/hacker.ico"));
-    this->setWindowTitle("crypto-chat  |  přezdívka  |  místnost");
+    this->setWindowTitle(tr("crypto-chat  |  %1  |  %2").arg(server_url).arg(user_name));
     this->setWindowFlags(windowFlags() &(~Qt::WindowMaximizeButtonHint));
 
     ui->label->setStyleSheet(tr("QLabel { background-color : %1 }").arg(user_color));
@@ -63,5 +66,11 @@ void ChatWindow::on_pushButton_3_clicked()
     nchd.set_name(user_name);
     nchd.setModal(true);
     nchd.exec();
+
+    if(nchd.new_name != ""){
+        ChatWindow::user_name = nchd.new_name;
+        this->setWindowTitle(tr("crypto-chat  |  %1  |  %2").arg(server_url).arg(user_name));
+    }
+
 }
 

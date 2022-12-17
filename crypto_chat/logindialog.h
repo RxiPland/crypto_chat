@@ -18,6 +18,7 @@ public:
     ~LoginDialog();
 
     QString app_version;
+    QString server_url;
     QByteArray user_agent;
     bool successful_login = false;
     bool create_room = false;

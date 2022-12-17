@@ -9,7 +9,9 @@ ColorDialog::ColorDialog(QWidget *parent) :
     ui->setupUi(this);
     this->setWindowIcon(QIcon(":/images/hacker.ico"));
     this->setWindowTitle("Změna barvy");
-    ui->pushButton->setFocus();
+
+    ui->pushButton->setFocusPolicy(Qt::FocusPolicy::NoFocus);
+    ui->pushButton_2->setFocusPolicy(Qt::FocusPolicy::NoFocus);
 }
 
 ColorDialog::~ColorDialog()
@@ -100,10 +102,8 @@ void ColorDialog::on_pushButton_2_clicked()
 
 void ColorDialog::on_pushButton_clicked()
 {
-    // close window (new color)
+    // close window (apply new color)
     change_color = true;
-
-    //ColorDialog::set_color(user_color);
 
     this->close();
     return;

@@ -99,7 +99,7 @@ void LoginDialog::on_pushButton_clicked()
 
 
         if(ui->checkBox->isChecked()){
-            // authentication is needed
+            // authentication
 
             qurl_address.setUserName(ui->lineEdit_2->text());
             qurl_address.setPassword(ui->lineEdit_3->text());
@@ -142,6 +142,21 @@ void LoginDialog::on_pushButton_clicked()
             // No error
 
             successful_login = true;
+            server_url = ui->lineEdit->text();
+
+            server_url.replace("https://", "");
+            server_url.replace("http://", "");
+
+            if (server_url.endsWith('/')){
+                QString temp_serverUrl;
+
+                for(int i=0; i<server_url.length()-1; i++){
+                    temp_serverUrl.append(server_url[i]);
+                }
+
+                server_url = temp_serverUrl;
+            }
+
 
             QMessageBox msgBox;
             msgBox.setWindowIcon(QIcon("://images/hacker.ico"));
@@ -161,7 +176,6 @@ void LoginDialog::on_pushButton_clicked()
     }
 
     LoginDialog::disable_widgets(false);
-    return;
 }
 
 void LoginDialog::on_lineEdit_textEdited()
@@ -198,7 +212,7 @@ void LoginDialog::on_toolButton_3_released()
 
 void LoginDialog::on_toolButton_clicked()
 {
-    QMessageBox::information(this, "Nápověda URL", "Zadejte kompletní URL adresu, na které běží crypt-chat server (včetně protokolu!)\n\nPř. https://google.com");
+    QMessageBox::information(this, "Nápověda URL", "Zadejte kompletní URL adresu, na které běží <a href=\"https://github.com/RxiPland/crypto_chat\">crypt-chat server</a> (včetně protokolu!)<br><br>Př. https://google.com");
 }
 
 
@@ -211,19 +225,19 @@ void LoginDialog::on_toolButton_2_clicked()
 void LoginDialog::on_lineEdit_returnPressed()
 {
     // "return" pressed when typing URL address
-    on_pushButton_clicked();
+    LoginDialog::on_pushButton_clicked();
 }
 
 void LoginDialog::on_lineEdit_2_returnPressed()
 {
     // "return" pressed when typing username
-    on_pushButton_clicked();
+    LoginDialog::on_pushButton_clicked();
 }
 
 
 void LoginDialog::on_lineEdit_3_returnPressed()
 {
     // "return" pressed when typing password
-    on_pushButton_clicked();
+    LoginDialog::on_pushButton_clicked();
 }
 
