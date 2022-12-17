@@ -36,6 +36,7 @@ public:
     QAction *action_zpravy_2;
     QAction *action_room_3;
     QAction *action_zpravy_3;
+    QAction *action_zpravy_4;
     QWidget *centralwidget;
     QVBoxLayout *verticalLayout_3;
     QSpacerItem *verticalSpacer_4;
@@ -71,16 +72,36 @@ public:
         ChatWindow->setFocusPolicy(Qt::StrongFocus);
         action_room_1 = new QAction(ChatWindow);
         action_room_1->setObjectName("action_room_1");
+        QIcon icon;
+        icon.addFile(QString::fromUtf8(":/images/delete.ico"), QSize(), QIcon::Normal, QIcon::Off);
+        action_room_1->setIcon(icon);
         action_room_2 = new QAction(ChatWindow);
         action_room_2->setObjectName("action_room_2");
+        QIcon icon1;
+        icon1.addFile(QString::fromUtf8(":/images/copy.ico"), QSize(), QIcon::Normal, QIcon::Off);
+        action_room_2->setIcon(icon1);
         action_zpravy_1 = new QAction(ChatWindow);
         action_zpravy_1->setObjectName("action_zpravy_1");
+        QIcon icon2;
+        icon2.addFile(QString::fromUtf8(":/images/email.ico"), QSize(), QIcon::Normal, QIcon::Off);
+        action_zpravy_1->setIcon(icon2);
         action_zpravy_2 = new QAction(ChatWindow);
         action_zpravy_2->setObjectName("action_zpravy_2");
         action_room_3 = new QAction(ChatWindow);
         action_room_3->setObjectName("action_room_3");
+        QIcon icon3;
+        icon3.addFile(QString::fromUtf8(":/images/power_off.ico"), QSize(), QIcon::Normal, QIcon::Off);
+        action_room_3->setIcon(icon3);
         action_zpravy_3 = new QAction(ChatWindow);
         action_zpravy_3->setObjectName("action_zpravy_3");
+        QIcon icon4;
+        icon4.addFile(QString::fromUtf8(":/images/clean.ico"), QSize(), QIcon::Normal, QIcon::Off);
+        action_zpravy_3->setIcon(icon4);
+        action_zpravy_4 = new QAction(ChatWindow);
+        action_zpravy_4->setObjectName("action_zpravy_4");
+        QIcon icon5;
+        icon5.addFile(QString::fromUtf8(":/images/refresh.ico"), QSize(), QIcon::Normal, QIcon::Off);
+        action_zpravy_4->setIcon(icon5);
         centralwidget = new QWidget(ChatWindow);
         centralwidget->setObjectName("centralwidget");
         verticalLayout_3 = new QVBoxLayout(centralwidget);
@@ -230,6 +251,7 @@ public:
         menuZpravy->addAction(action_zpravy_2);
         menuZpravy->addSeparator();
         menuZpravy->addAction(action_zpravy_3);
+        menuZpravy->addAction(action_zpravy_4);
 
         retranslateUi(ChatWindow);
 
@@ -241,10 +263,17 @@ public:
         ChatWindow->setWindowTitle(QCoreApplication::translate("ChatWindow", "ChatWindow", nullptr));
         action_room_1->setText(QCoreApplication::translate("ChatWindow", "Smazat m\303\255stnost", nullptr));
         action_room_2->setText(QCoreApplication::translate("ChatWindow", "Kop\303\255rovat ID m\303\255stnosti", nullptr));
-        action_zpravy_1->setText(QCoreApplication::translate("ChatWindow", "Po\304\215et: 0", nullptr));
+        action_zpravy_1->setText(QCoreApplication::translate("ChatWindow", "Po\304\215et p\305\231ijat\303\275ch: 0", nullptr));
         action_zpravy_2->setText(QCoreApplication::translate("ChatWindow", "Aktualizace za 5s", nullptr));
         action_room_3->setText(QCoreApplication::translate("ChatWindow", "Odpojit se", nullptr));
-        action_zpravy_3->setText(QCoreApplication::translate("ChatWindow", "Aktualizovat", nullptr));
+        action_zpravy_3->setText(QCoreApplication::translate("ChatWindow", "Vy\304\215istit chat", nullptr));
+#if QT_CONFIG(tooltip)
+        action_zpravy_3->setToolTip(QCoreApplication::translate("ChatWindow", "Vy\304\215istit chat", nullptr));
+#endif // QT_CONFIG(tooltip)
+        action_zpravy_4->setText(QCoreApplication::translate("ChatWindow", "Aktualizovat", nullptr));
+#if QT_CONFIG(tooltip)
+        action_zpravy_4->setToolTip(QCoreApplication::translate("ChatWindow", "Aktualizovat", nullptr));
+#endif // QT_CONFIG(tooltip)
         textEdit->setHtml(QCoreApplication::translate("ChatWindow", "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" \"http://www.w3.org/TR/REC-html40/strict.dtd\">\n"
 "<html><head><meta name=\"qrichtext\" content=\"1\" /><meta charset=\"utf-8\" /><style type=\"text/css\">\n"
 "p, li { white-space: pre-wrap; }\n"

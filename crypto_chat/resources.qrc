@@ -1,5 +1,11 @@
 <RCC>
     <qresource prefix="/">
         <file>images/hacker.ico</file>
+        <file>images/power_off.ico</file>
+        <file>images/delete.ico</file>
+        <file>images/copy.ico</file>
+        <file>images/refresh.ico</file>
+        <file>images/email.ico</file>
+        <file>images/clean.ico</file>
     </qresource>
 </RCC>

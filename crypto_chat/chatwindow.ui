@@ -325,24 +325,37 @@ li.checked::marker { content: &quot;\2612&quot;; }
     <addaction name="action_zpravy_2"/>
     <addaction name="separator"/>
     <addaction name="action_zpravy_3"/>
+    <addaction name="action_zpravy_4"/>
    </widget>
    <addaction name="menuMistnost"/>
    <addaction name="menuZpravy"/>
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
   <action name="action_room_1">
+   <property name="icon">
+    <iconset resource="resources.qrc">
+     <normaloff>:/images/delete.ico</normaloff>:/images/delete.ico</iconset>
+   </property>
    <property name="text">
     <string>Smazat místnost</string>
    </property>
   </action>
   <action name="action_room_2">
+   <property name="icon">
+    <iconset resource="resources.qrc">
+     <normaloff>:/images/copy.ico</normaloff>:/images/copy.ico</iconset>
+   </property>
    <property name="text">
     <string>Kopírovat ID místnosti</string>
    </property>
   </action>
   <action name="action_zpravy_1">
+   <property name="icon">
+    <iconset resource="resources.qrc">
+     <normaloff>:/images/email.ico</normaloff>:/images/email.ico</iconset>
+   </property>
    <property name="text">
-    <string>Počet: 0</string>
+    <string>Počet přijatých: 0</string>
    </property>
   </action>
   <action name="action_zpravy_2">
@@ -351,16 +364,41 @@ li.checked::marker { content: &quot;\2612&quot;; }
    </property>
   </action>
   <action name="action_room_3">
+   <property name="icon">
+    <iconset resource="resources.qrc">
+     <normaloff>:/images/power_off.ico</normaloff>:/images/power_off.ico</iconset>
+   </property>
    <property name="text">
     <string>Odpojit se</string>
    </property>
   </action>
   <action name="action_zpravy_3">
+   <property name="icon">
+    <iconset resource="resources.qrc">
+     <normaloff>:/images/clean.ico</normaloff>:/images/clean.ico</iconset>
+   </property>
    <property name="text">
+    <string>Vyčistit chat</string>
+   </property>
+   <property name="toolTip">
+    <string>Vyčistit chat</string>
+   </property>
+  </action>
+  <action name="action_zpravy_4">
+   <property name="icon">
+    <iconset resource="resources.qrc">
+     <normaloff>:/images/refresh.ico</normaloff>:/images/refresh.ico</iconset>
+   </property>
+   <property name="text">
+    <string>Aktualizovat</string>
+   </property>
+   <property name="toolTip">
     <string>Aktualizovat</string>
    </property>
   </action>
  </widget>
- <resources/>
+ <resources>
+  <include location="resources.qrc"/>
+ </resources>
  <connections/>
 </ui>

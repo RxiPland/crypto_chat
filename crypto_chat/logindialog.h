@@ -23,6 +23,10 @@ public:
     bool successful_login = false;
     bool create_room = false;
 
+    bool authentication_required = false;
+    QString authentication_username;
+    QString authentication_password;
+
 private slots:
     void on_checkBox_stateChanged();
     void on_pushButton_clicked();

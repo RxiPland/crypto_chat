@@ -38,6 +38,9 @@ set(PROJECT_SOURCES
         logindialog.ui
         ui_logindialog.h
 
+        threadfunctions.h
+        threadfunctions.cpp
+
         createroomdialog.h
         createroomdialog.cpp
         createroomdialog.ui

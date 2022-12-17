@@ -119,8 +119,15 @@ void LoginDialog::on_pushButton_clicked()
         if(ui->checkBox->isChecked()){
             // authentication
 
-            qurl_address.setUserName(ui->lineEdit_2->text());
-            qurl_address.setPassword(ui->lineEdit_3->text());
+            authentication_required = true;
+            authentication_username = ui->lineEdit_2->text();
+            authentication_password = ui->lineEdit_3->text();
+
+            qurl_address.setUserName(authentication_username);
+            qurl_address.setPassword(authentication_password);
+
+        } else{
+            authentication_required = false;
         }
 
         request.setUrl(qurl_address);
