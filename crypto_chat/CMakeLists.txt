@@ -28,6 +28,11 @@ set(PROJECT_SOURCES
         colordialog.ui
         ui_colordialog.h
 
+        namechangedialog.h
+        namechangedialog.cpp
+        namechangedialog.ui
+        ui_namechangedialog.h
+
         logindialog.h
         logindialog.cpp
         logindialog.ui

@@ -17,9 +17,11 @@ public:
 
     QString app_version;
     QByteArray user_agent;
+    QString user_color = "black";
 
 private slots:
     void on_pushButton_4_clicked();
+    void on_pushButton_3_clicked();
 
 private:
     Ui::ChatWindow *ui;

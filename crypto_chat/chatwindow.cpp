@@ -2,6 +2,7 @@
 #include "ui_chatwindow.h"
 #include "logindialog.h"
 #include "colordialog.h"
+#include "namechangedialog.h"
 
 ChatWindow::ChatWindow(QWidget *parent)
     : QMainWindow(parent)
@@ -12,6 +13,8 @@ ChatWindow::ChatWindow(QWidget *parent)
     this->setWindowTitle("crypto-chat  |  přezdívka  |  místnost");
     this->setWindowFlags(windowFlags() &(~Qt::WindowMaximizeButtonHint));
     this->show();
+
+    ui->label->setStyleSheet(tr("QLabel { background-color : %1 }").arg(user_color));
 
     // login to server
     LoginDialog lw;
@@ -38,7 +41,16 @@ ChatWindow::~ChatWindow()
 void ChatWindow::on_pushButton_4_clicked()
 {
     ColorDialog cd;
+    cd.user_color = user_color;
     cd.setModal(true);
     cd.exec();
+}
+
+
+void ChatWindow::on_pushButton_3_clicked()
+{
+    NameChangeDialog nchd;
+    nchd.setModal(true);
+    nchd.exec();
 }
 

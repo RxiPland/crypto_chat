@@ -25,6 +25,7 @@ LoginDialog::~LoginDialog()
 }
 
 void LoginDialog::hide_widgets(bool hide){
+    // hide authentication lines
 
     ui->label->setHidden(hide);
     ui->label_2->setHidden(hide);
@@ -37,6 +38,7 @@ void LoginDialog::hide_widgets(bool hide){
 }
 
 void LoginDialog::disable_widgets(bool disable){
+    // disable widgets when sending network requests
 
     if(ui->lineEdit->text() != "" && !disable){
         ui->pushButton->setEnabled(true);
@@ -58,8 +60,9 @@ void LoginDialog::disable_widgets(bool disable){
 
 void LoginDialog::on_checkBox_stateChanged()
 {
-    if(ui->checkBox->isChecked()){
+    // authentication checkbox
 
+    if(ui->checkBox->isChecked()){
         LoginDialog::hide_widgets(false);
 
     }else{

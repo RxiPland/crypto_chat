@@ -13,6 +13,7 @@
 #include <QtGui/QAction>
 #include <QtWidgets/QApplication>
 #include <QtWidgets/QHBoxLayout>
+#include <QtWidgets/QLabel>
 #include <QtWidgets/QLineEdit>
 #include <QtWidgets/QMainWindow>
 #include <QtWidgets/QMenu>
@@ -48,7 +49,9 @@ public:
     QVBoxLayout *verticalLayout_2;
     QPushButton *pushButton_2;
     QPushButton *pushButton_3;
+    QHBoxLayout *horizontalLayout_4;
     QPushButton *pushButton_4;
+    QLabel *label;
     QSpacerItem *verticalSpacer_3;
     QPushButton *pushButton_5;
     QSpacerItem *verticalSpacer;
@@ -151,11 +154,28 @@ public:
 
         verticalLayout_2->addWidget(pushButton_3);
 
+        horizontalLayout_4 = new QHBoxLayout();
+        horizontalLayout_4->setObjectName("horizontalLayout_4");
+        horizontalLayout_4->setContentsMargins(-1, -1, 0, -1);
         pushButton_4 = new QPushButton(centralwidget);
         pushButton_4->setObjectName("pushButton_4");
         pushButton_4->setMinimumSize(QSize(110, 30));
 
-        verticalLayout_2->addWidget(pushButton_4);
+        horizontalLayout_4->addWidget(pushButton_4);
+
+        label = new QLabel(centralwidget);
+        label->setObjectName("label");
+        QSizePolicy sizePolicy2(QSizePolicy::Minimum, QSizePolicy::Fixed);
+        sizePolicy2.setHorizontalStretch(0);
+        sizePolicy2.setVerticalStretch(0);
+        sizePolicy2.setHeightForWidth(label->sizePolicy().hasHeightForWidth());
+        label->setSizePolicy(sizePolicy2);
+        label->setMinimumSize(QSize(24, 24));
+
+        horizontalLayout_4->addWidget(label);
+
+
+        verticalLayout_2->addLayout(horizontalLayout_4);
 
         verticalSpacer_3 = new QSpacerItem(20, 20, QSizePolicy::Minimum, QSizePolicy::Fixed);
 
@@ -232,6 +252,7 @@ public:
         pushButton_2->setText(QCoreApplication::translate("ChatWindow", "Informace", nullptr));
         pushButton_3->setText(QCoreApplication::translate("ChatWindow", "Nov\303\241 p\305\231ezd\303\255vka", nullptr));
         pushButton_4->setText(QCoreApplication::translate("ChatWindow", "Zm\304\233nit barvu", nullptr));
+        label->setText(QString());
         pushButton_5->setText(QCoreApplication::translate("ChatWindow", "Soubory", nullptr));
         menuMistnost->setTitle(QCoreApplication::translate("ChatWindow", "M\303\255stnost", nullptr));
         menuZpravy->setTitle(QCoreApplication::translate("ChatWindow", "Zpr\303\241vy", nullptr));
