@@ -2,6 +2,7 @@
 #define CHATWINDOW_H
 
 #include <QMainWindow>
+#include "threadfunctions.h"
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class ChatWindow; }
@@ -32,10 +33,11 @@ public:
 private slots:
     void on_pushButton_4_clicked();
     void on_pushButton_3_clicked();
-
     void on_pushButton_2_clicked();
 
 private:
+    void closeEvent(QCloseEvent *bar);
     Ui::ChatWindow *ui;
+
 };
 #endif // CHATWINDOW_H

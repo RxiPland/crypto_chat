@@ -8,7 +8,7 @@ QString app_version = "v1.0.0";
 int main(int argc, char *argv[])
 {
     QApplication a(argc, argv);
-    a.setQuitOnLastWindowClosed(true);
+    a.setQuitOnLastWindowClosed(false);
 
     ChatWindow chw;
     chw.app_version = app_version;

@@ -3,8 +3,17 @@
 #include "logindialog.h"
 #include "colordialog.h"
 #include "namechangedialog.h"
+#include "threadfunctions.h"
 
 #include <QMessageBox>
+#include <QCloseEvent>
+
+// Threads
+//int activeThreads=0;
+//QList<ThreadFunctions> runningThreads;
+
+ThreadFunctions sleepLoop;
+
 
 ChatWindow::ChatWindow(QWidget *parent)
     : QMainWindow(parent)
@@ -18,7 +27,7 @@ ChatWindow::ChatWindow(QWidget *parent)
     lw.user_agent = user_agent;
     lw.exec();
 
-    if(!lw.successful_login){
+    if(lw.successful_login){
         QMetaObject::invokeMethod(qApp, "quit", Qt::QueuedConnection);
         return;
 
@@ -40,6 +49,12 @@ ChatWindow::ChatWindow(QWidget *parent)
     ui->label->setStyleSheet(tr("QLabel { background-color : %1 }").arg(user_color));
     ui->lineEdit->setFocus();
 
+    sleepLoop.operation = 3;
+    sleepLoop.sleep_time = 5;
+    sleepLoop.actionObject = ui->action_zpravy_2;
+    sleepLoop.continueLoop = true;
+    sleepLoop.start();
+
     this->show();
 }
 
@@ -48,6 +63,21 @@ ChatWindow::~ChatWindow()
     delete ui;
 }
 
+void ChatWindow::closeEvent(QCloseEvent *bar)
+{
+    // Before application close
+
+    sleepLoop.stopLoop();
+    bar->accept();
+
+    this->close();
+
+    while(sleepLoop.isRunning()){
+        qApp->processEvents();
+    }
+
+    QApplication::quit();
+}
 
 QString convert_color(QString color){
 
