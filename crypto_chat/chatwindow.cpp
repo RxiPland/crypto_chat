@@ -13,8 +13,6 @@ ChatWindow::ChatWindow(QWidget *parent)
     this->setWindowFlags(windowFlags() &(~Qt::WindowMaximizeButtonHint));
     this->show();
 
-    /*
-
     // login to server
     LoginDialog lw;
     lw.setModal(true);
@@ -26,7 +24,7 @@ ChatWindow::ChatWindow(QWidget *parent)
         QMetaObject::invokeMethod(qApp, "quit", Qt::QueuedConnection);
         return;
     }
-    */
+
 
     ui->lineEdit->setFocus();
 }

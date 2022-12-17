@@ -38,7 +38,9 @@ void LoginDialog::hide_widgets(bool hide){
 
 void LoginDialog::disable_widgets(bool disable){
 
-    ui->pushButton->setDisabled(disable);
+    if(ui->lineEdit->text() != "" && !disable){
+        ui->pushButton->setEnabled(true);
+    }
 
     ui->toolButton->setDisabled(disable);
     ui->toolButton_2->setDisabled(disable);

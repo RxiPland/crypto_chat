@@ -35,8 +35,8 @@ public:
     QSpacerItem *verticalSpacer;
     QHBoxLayout *horizontalLayout_2;
     QSpacerItem *horizontalSpacer_2;
-    QPushButton *pushButton;
     QPushButton *pushButton_2;
+    QPushButton *pushButton;
     QSpacerItem *horizontalSpacer_4;
 
     void setupUi(QDialog *ColorDialog)
@@ -59,6 +59,8 @@ public:
         horizontalLayout = new QHBoxLayout();
         horizontalLayout->setObjectName("horizontalLayout");
         comboBox = new QComboBox(ColorDialog);
+        comboBox->addItem(QString());
+        comboBox->addItem(QString());
         comboBox->addItem(QString());
         comboBox->addItem(QString());
         comboBox->addItem(QString());
@@ -103,15 +105,15 @@ public:
 
         horizontalLayout_2->addItem(horizontalSpacer_2);
 
-        pushButton = new QPushButton(ColorDialog);
-        pushButton->setObjectName("pushButton");
-
-        horizontalLayout_2->addWidget(pushButton);
-
         pushButton_2 = new QPushButton(ColorDialog);
         pushButton_2->setObjectName("pushButton_2");
 
         horizontalLayout_2->addWidget(pushButton_2);
+
+        pushButton = new QPushButton(ColorDialog);
+        pushButton->setObjectName("pushButton");
+
+        horizontalLayout_2->addWidget(pushButton);
 
 
         verticalLayout->addLayout(horizontalLayout_2);
@@ -132,16 +134,18 @@ public:
     void retranslateUi(QDialog *ColorDialog)
     {
         ColorDialog->setWindowTitle(QCoreApplication::translate("ColorDialog", "Dialog", nullptr));
-        comboBox->setItemText(0, QCoreApplication::translate("ColorDialog", "\304\214erven\303\241", nullptr));
-        comboBox->setItemText(1, QCoreApplication::translate("ColorDialog", "Zelen\303\251", nullptr));
-        comboBox->setItemText(2, QCoreApplication::translate("ColorDialog", "Tmav\304\233 zelen\303\241", nullptr));
+        comboBox->setItemText(0, QCoreApplication::translate("ColorDialog", "\304\214ern\303\241", nullptr));
+        comboBox->setItemText(1, QCoreApplication::translate("ColorDialog", "\304\214erven\303\241", nullptr));
+        comboBox->setItemText(2, QCoreApplication::translate("ColorDialog", "Zelen\303\241", nullptr));
         comboBox->setItemText(3, QCoreApplication::translate("ColorDialog", "Modr\303\241", nullptr));
         comboBox->setItemText(4, QCoreApplication::translate("ColorDialog", "Fialov\303\241", nullptr));
-        comboBox->setItemText(5, QCoreApplication::translate("ColorDialog", "\305\275lut\303\241", nullptr));
+        comboBox->setItemText(5, QCoreApplication::translate("ColorDialog", "Oran\305\276ov\303\241", nullptr));
+        comboBox->setItemText(6, QCoreApplication::translate("ColorDialog", "\305\275lut\303\241", nullptr));
+        comboBox->setItemText(7, QCoreApplication::translate("ColorDialog", "Hn\304\233d\303\241", nullptr));
 
         label->setText(QString());
-        pushButton->setText(QCoreApplication::translate("ColorDialog", "Zru\305\241it", nullptr));
-        pushButton_2->setText(QCoreApplication::translate("ColorDialog", "Ok", nullptr));
+        pushButton_2->setText(QCoreApplication::translate("ColorDialog", "Zru\305\241it", nullptr));
+        pushButton->setText(QCoreApplication::translate("ColorDialog", "Ok", nullptr));
     } // retranslateUi
 
 };

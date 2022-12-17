@@ -66,17 +66,17 @@
          </property>
          <item>
           <property name="text">
+           <string>Černá</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
            <string>Červená</string>
           </property>
          </item>
          <item>
           <property name="text">
-           <string>Zelené</string>
-          </property>
-         </item>
-         <item>
-          <property name="text">
-           <string>Tmavě zelená</string>
+           <string>Zelená</string>
           </property>
          </item>
          <item>
@@ -91,7 +91,17 @@
          </item>
          <item>
           <property name="text">
+           <string>Oranžová</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
            <string>Žlutá</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>Hnědá</string>
           </property>
          </item>
         </widget>

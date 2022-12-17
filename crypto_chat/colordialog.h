@@ -15,7 +15,12 @@ public:
     explicit ColorDialog(QWidget *parent = nullptr);
     ~ColorDialog();
 
-    QString color = "Červená";
+    QString user_color = "Černá";
+
+private slots:
+    void on_comboBox_currentTextChanged(const QString &arg1);
+
+    void on_pushButton_2_clicked();
 
 private:
     Ui::ColorDialog *ui;
