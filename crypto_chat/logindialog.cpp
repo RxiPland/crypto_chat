@@ -2,6 +2,7 @@
 #include "ui_logindialog.h"
 
 #include <QMessageBox>
+#include <windows.h>
 
 
 LoginDialog::LoginDialog(QWidget *parent) :
@@ -12,13 +13,30 @@ LoginDialog::LoginDialog(QWidget *parent) :
     this->setWindowIcon(QIcon("://images/hacker.ico"));
     this->setWindowTitle("Připojení ke crypto-chat serveru");
 
-
     ui->lineEdit->setFocus();
     ui->pushButton->setFocusPolicy(Qt::FocusPolicy::NoFocus);
     ui->checkBox->setChecked(false);
     ui->pushButton->setEnabled(false);
     ui->toolButton_3->setHidden(true);
     hide_widgets(true);
+    this->show();
+
+    if (QSslSocket::supportsSsl() == false){
+
+        QMessageBox msgBox;
+        msgBox.setWindowTitle("crypto-chat (Problém s OpenSSL)");
+        msgBox.setText("Verze OpenSSL není platná!<br>Bez ní program nemůže přistupovat na zabezpečené weby s protokolem HTTPs<br><br>Nainstalování verze \"" + QSslSocket::sslLibraryBuildVersionString() + "\", nebo velmi podobné, problém opraví<br>Odkaz na stažení: <a href=\"https://www.filehorse.com/download-openssl-64\">https://www.filehorse.com/download-openssl-64</a><br><br>Před stažením je důležité označit správnou verzi!<br>Vaše aktuální nainstalovaná verze: \"" + QSslSocket::sslLibraryVersionString() + "\"");
+        QAbstractButton* pButtonYes = msgBox.addButton("Otevřít odkaz", QMessageBox::YesRole);
+        msgBox.addButton("Odejít", QMessageBox::NoRole);
+        msgBox.exec();
+
+        if (msgBox.clickedButton()==pButtonYes) {
+            ShellExecute(0, 0, L"https://www.filehorse.com/download-openssl-64", 0, 0, SW_HIDE);
+        }
+
+        QApplication::exit();
+        return;
+    }
 }
 
 LoginDialog::~LoginDialog()
@@ -146,15 +164,20 @@ void LoginDialog::on_pushButton_clicked()
 
             server_url.replace("https://", "");
             server_url.replace("http://", "");
+            server_url.replace("//", "/");
 
             if (server_url.endsWith('/')){
-                QString temp_serverUrl;
+                QStringList splitedServerUrl = server_url.split("/");
+                QStringList newServerUrl;
 
-                for(int i=0; i<server_url.length()-1; i++){
-                    temp_serverUrl.append(server_url[i]);
+                for(int i=0; i<splitedServerUrl.length(); i++){
+
+                    if(!splitedServerUrl[i].isEmpty()){
+
+                        newServerUrl.append(splitedServerUrl[i]);
+                    }
                 }
-
-                server_url = temp_serverUrl;
+                server_url = newServerUrl.join("/");
             }
 
 
