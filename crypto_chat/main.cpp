@@ -1,5 +1,4 @@
 #include "chatwindow.h"
-#include "logindialog.h"
 
 #include <QApplication>
 
@@ -9,14 +8,12 @@ QString app_version = "v1.0.0";
 int main(int argc, char *argv[])
 {
     QApplication a(argc, argv);
+    a.setQuitOnLastWindowClosed(true);
 
-    /*ChatWindow w;
-    w.show();
-    */
-    LoginDialog ww;
-    ww.app_version = app_version;
-    ww.user_agent = user_agent;
-    ww.show();
+    ChatWindow chw;
+    chw.app_version = app_version;
+    chw.user_agent = user_agent;
+    chw.show();
 
     return a.exec();
 }

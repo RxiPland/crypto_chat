@@ -8,6 +8,7 @@ LoginDialog::LoginDialog(QWidget *parent) :
     ui(new Ui::LoginDialog)
 {
     ui->setupUi(this);
+    this->setWindowIcon(QIcon("://images/hacker.ico"));
     this->setWindowTitle("Přihlášení ke crypto-chat serveru");
 
     ui->lineEdit->setFocus();
@@ -71,88 +72,73 @@ void LoginDialog::on_pushButton_clicked()
 
     LoginDialog::disable_widgets(true);
 
+
     QString url_address = ui->lineEdit->text();
 
     if(url_address == ""){
         QMessageBox::critical(this, "Chyba", "Pole pro URL adresu nemůže být prázdné!");
 
-        LoginDialog::disable_widgets(false);
-        return;
-
     } else if (!url_address.contains("http") || !url_address.contains("://") || !url_address.contains(".")){
         QMessageBox::critical(this, "Chyba", "Zadejte kompletní URL adresu!\n\nPř. https://www.google.com");
 
-        LoginDialog::disable_widgets(false);
-        return;
-    }
+    } else{
+        // send credentials to website
 
-    // send credentials to website
-
-    QNetworkRequest request;
-    QUrl qurl_address = QUrl(url_address);
-
-
-    if(ui->checkBox->isChecked()){
-        // authentication is needed
-
-        qurl_address.setUserName(ui->lineEdit_2->text());
-        qurl_address.setPassword(ui->lineEdit_3->text());
-    }
-
-    request.setUrl(qurl_address);
-    request.setRawHeader("User-Agent", user_agent);
-
-    QNetworkReply *reply_get = manager.get(request);
-
-    while (!reply_get->isFinished())
-    {
-        qApp->processEvents();
-    }
-
-    if(reply_get->error() == QNetworkReply::ConnectionRefusedError){
-        QMessageBox::critical(this, "Chyba", "Nelze se připojit k internetu!");
-
-        LoginDialog::disable_widgets(false);
-        return;
-
-    } else if (reply_get->error() == QNetworkReply::HostNotFoundError){
-        QMessageBox::critical(this, "Chyba", "Doména neexsistuje!");
-
-        LoginDialog::disable_widgets(false);
-        return;
-
-    } else if (reply_get->error() == QNetworkReply::AuthenticationRequiredError){
-        // Authentication is required or credentials may be wrong
+        QNetworkRequest request;
+        QUrl qurl_address = QUrl(url_address);
 
 
         if(ui->checkBox->isChecked()){
-            QMessageBox::critical(this, "Odpověd serveru (chyba)", "Přihlašovací údaje nejsou správné!");
+            // authentication is needed
 
-        } else{
-            QMessageBox::critical(this, "Odpověd serveru (chyba)", "Server vyžaduje ověření pomocí jména a hesla!");
+            qurl_address.setUserName(ui->lineEdit_2->text());
+            qurl_address.setPassword(ui->lineEdit_3->text());
         }
 
-        LoginDialog::disable_widgets(false);
-        ui->checkBox->setChecked(true);
-        return;
+        request.setUrl(qurl_address);
+        request.setRawHeader("User-Agent", user_agent);
 
-    }
+        QNetworkReply *reply_get = manager.get(request);
 
-    qInfo() << reply_get->readAll();
-    /*
-
-    // url is not working -> replace https with http
-    if (reply_headers->error() != QNetworkReply::NoError){
-
-        request.setUrl(QUrl(location.replace("https", "http")));
-        reply_headers = manager.head(request);
-
-        while (!reply_headers->isFinished())
+        while (!reply_get->isFinished())
         {
             qApp->processEvents();
         }
+
+        if(reply_get->error() == QNetworkReply::ConnectionRefusedError){
+            QMessageBox::critical(this, "Chyba", "Nelze se připojit k internetu!");
+
+
+        } else if (reply_get->error() == QNetworkReply::HostNotFoundError){
+            QMessageBox::critical(this, "Chyba", "Doména neexsistuje!");
+
+        } else if (reply_get->error() == QNetworkReply::AuthenticationRequiredError){
+            // Authentication is required or credentials may be wrong
+
+
+            if(ui->checkBox->isChecked()){
+                QMessageBox::critical(this, "Odpověd serveru (chyba)", "Přihlašovací údaje nejsou správné!");
+
+            } else{
+                QMessageBox::critical(this, "Odpověd serveru (chyba)", "Server vyžaduje ověření pomocí jména a hesla!");
+            }
+
+            ui->checkBox->setChecked(true);
+
+        } else if(reply_get->error() != QNetworkReply::NoError){
+            QMessageBox::critical(this, "Odpověd serveru (chyba)", tr("Nastala nezmámá chyba! Označení chyby: %1").arg(reply_get->error()));
+
+        } else{
+            // No error
+
+            successful_login = true;
+            qInfo() << reply_get->readAll();
+            this->close();
+        }
     }
-    */
+
+    LoginDialog::disable_widgets(false);
+    return;
 }
 
 void LoginDialog::on_lineEdit_textEdited()
@@ -189,7 +175,7 @@ void LoginDialog::on_toolButton_3_released()
 
 void LoginDialog::on_toolButton_clicked()
 {
-    QMessageBox::information(this, "Nápověda URL", "Zadejte kompletní URL adresu, na které běží crypt-chat server (včetně protokolu!)");
+    QMessageBox::information(this, "Nápověda URL", "Zadejte kompletní URL adresu, na které běží crypt-chat server (včetně protokolu!)\n\nPř. https://google.com");
 }
 
 

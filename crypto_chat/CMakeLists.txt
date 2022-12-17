@@ -14,11 +14,17 @@ find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Widgets)
 
 set(PROJECT_SOURCES
         main.cpp
+        resources.qrc
 
         chatwindow.cpp
         chatwindow.h
         chatwindow.ui
         ui_chatwindow.h
+
+        colordialog.h
+        colordialog.cpp
+        colordialog.ui
+        ui_colordialog.h
 
         logindialog.h
         logindialog.cpp

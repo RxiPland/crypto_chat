@@ -15,6 +15,12 @@ public:
     ChatWindow(QWidget *parent = nullptr);
     ~ChatWindow();
 
+    QString app_version;
+    QByteArray user_agent;
+
+private slots:
+    void on_pushButton_4_clicked();
+
 private:
     Ui::ChatWindow *ui;
 };

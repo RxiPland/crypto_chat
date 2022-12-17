@@ -19,6 +19,7 @@ public:
 
     QString app_version;
     QByteArray user_agent;
+    bool successful_login = false;
 
 private slots:
     void on_checkBox_stateChanged();

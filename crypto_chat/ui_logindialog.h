@@ -64,7 +64,7 @@ public:
         LoginDialog->resize(461, 207);
         horizontalLayout_6 = new QHBoxLayout(LoginDialog);
         horizontalLayout_6->setObjectName("horizontalLayout_6");
-        horizontalSpacer_4 = new QSpacerItem(10, 20, QSizePolicy::Fixed, QSizePolicy::Minimum);
+        horizontalSpacer_4 = new QSpacerItem(5, 20, QSizePolicy::Fixed, QSizePolicy::Minimum);
 
         horizontalLayout_6->addItem(horizontalSpacer_4);
 
@@ -227,7 +227,7 @@ public:
 
         horizontalLayout_6->addLayout(verticalLayout);
 
-        horizontalSpacer_5 = new QSpacerItem(10, 20, QSizePolicy::Fixed, QSizePolicy::Minimum);
+        horizontalSpacer_5 = new QSpacerItem(5, 20, QSizePolicy::Fixed, QSizePolicy::Minimum);
 
         horizontalLayout_6->addItem(horizontalSpacer_5);
 

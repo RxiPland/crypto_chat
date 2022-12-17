@@ -17,10 +17,10 @@
 #include <QtWidgets/QMainWindow>
 #include <QtWidgets/QMenu>
 #include <QtWidgets/QMenuBar>
-#include <QtWidgets/QPlainTextEdit>
 #include <QtWidgets/QPushButton>
 #include <QtWidgets/QSpacerItem>
 #include <QtWidgets/QStatusBar>
+#include <QtWidgets/QTextEdit>
 #include <QtWidgets/QVBoxLayout>
 #include <QtWidgets/QWidget>
 
@@ -39,7 +39,7 @@ public:
     QHBoxLayout *horizontalLayout;
     QSpacerItem *horizontalSpacer;
     QVBoxLayout *verticalLayout;
-    QPlainTextEdit *plainTextEdit;
+    QTextEdit *textEdit;
     QSpacerItem *verticalSpacer_2;
     QHBoxLayout *horizontalLayout_2;
     QLineEdit *lineEdit;
@@ -48,8 +48,9 @@ public:
     QVBoxLayout *verticalLayout_2;
     QPushButton *pushButton_2;
     QPushButton *pushButton_3;
-    QSpacerItem *verticalSpacer_3;
     QPushButton *pushButton_4;
+    QSpacerItem *verticalSpacer_3;
+    QPushButton *pushButton_5;
     QSpacerItem *verticalSpacer;
     QSpacerItem *horizontalSpacer_2;
     QMenuBar *menubar;
@@ -87,11 +88,11 @@ public:
 
         verticalLayout = new QVBoxLayout();
         verticalLayout->setObjectName("verticalLayout");
-        plainTextEdit = new QPlainTextEdit(centralwidget);
-        plainTextEdit->setObjectName("plainTextEdit");
-        plainTextEdit->setReadOnly(true);
+        textEdit = new QTextEdit(centralwidget);
+        textEdit->setObjectName("textEdit");
+        textEdit->setFocusPolicy(Qt::NoFocus);
 
-        verticalLayout->addWidget(plainTextEdit);
+        verticalLayout->addWidget(textEdit);
 
         verticalSpacer_2 = new QSpacerItem(0, 10, QSizePolicy::Minimum, QSizePolicy::Fixed);
 
@@ -150,15 +151,21 @@ public:
 
         verticalLayout_2->addWidget(pushButton_3);
 
-        verticalSpacer_3 = new QSpacerItem(20, 20, QSizePolicy::Minimum, QSizePolicy::Fixed);
-
-        verticalLayout_2->addItem(verticalSpacer_3);
-
         pushButton_4 = new QPushButton(centralwidget);
         pushButton_4->setObjectName("pushButton_4");
         pushButton_4->setMinimumSize(QSize(110, 30));
 
         verticalLayout_2->addWidget(pushButton_4);
+
+        verticalSpacer_3 = new QSpacerItem(20, 20, QSizePolicy::Minimum, QSizePolicy::Fixed);
+
+        verticalLayout_2->addItem(verticalSpacer_3);
+
+        pushButton_5 = new QPushButton(centralwidget);
+        pushButton_5->setObjectName("pushButton_5");
+        pushButton_5->setMinimumSize(QSize(110, 30));
+
+        verticalLayout_2->addWidget(pushButton_5);
 
         verticalSpacer = new QSpacerItem(20, 40, QSizePolicy::Minimum, QSizePolicy::Expanding);
 
@@ -208,7 +215,15 @@ public:
         action_room_2->setText(QCoreApplication::translate("ChatWindow", "Odpojit se", nullptr));
         action_zpravy_1->setText(QCoreApplication::translate("ChatWindow", "Po\304\215et: 0", nullptr));
         action_zpravy_2->setText(QCoreApplication::translate("ChatWindow", "Aktualizace za 5s", nullptr));
-        plainTextEdit->setPlaceholderText(QCoreApplication::translate("ChatWindow", "Zde budou zpr\303\241vy z konverzace", nullptr));
+        textEdit->setHtml(QCoreApplication::translate("ChatWindow", "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" \"http://www.w3.org/TR/REC-html40/strict.dtd\">\n"
+"<html><head><meta name=\"qrichtext\" content=\"1\" /><meta charset=\"utf-8\" /><style type=\"text/css\">\n"
+"p, li { white-space: pre-wrap; }\n"
+"hr { height: 1px; border-width: 0; }\n"
+"li.unchecked::marker { content: \"\\2610\"; }\n"
+"li.checked::marker { content: \"\\2612\"; }\n"
+"</style></head><body style=\" font-family:'Segoe UI'; font-size:9pt; font-weight:400; font-style:normal;\">\n"
+"<p style=\"-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><br /></p></body></html>", nullptr));
+        textEdit->setPlaceholderText(QCoreApplication::translate("ChatWindow", "Zde budou zpr\303\241vy z konverzace", nullptr));
         lineEdit->setPlaceholderText(QCoreApplication::translate("ChatWindow", "Napsat zpr\303\241vu", nullptr));
 #if QT_CONFIG(tooltip)
         pushButton->setToolTip(QString());
@@ -216,7 +231,8 @@ public:
         pushButton->setText(QCoreApplication::translate("ChatWindow", "Odeslat", nullptr));
         pushButton_2->setText(QCoreApplication::translate("ChatWindow", "Informace", nullptr));
         pushButton_3->setText(QCoreApplication::translate("ChatWindow", "Nov\303\241 p\305\231ezd\303\255vka", nullptr));
-        pushButton_4->setText(QCoreApplication::translate("ChatWindow", "Soubory", nullptr));
+        pushButton_4->setText(QCoreApplication::translate("ChatWindow", "Zm\304\233nit barvu", nullptr));
+        pushButton_5->setText(QCoreApplication::translate("ChatWindow", "Soubory", nullptr));
         menuMistnost->setTitle(QCoreApplication::translate("ChatWindow", "M\303\255stnost", nullptr));
         menuZpravy->setTitle(QCoreApplication::translate("ChatWindow", "Zpr\303\241vy", nullptr));
     } // retranslateUi
