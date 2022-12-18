@@ -12,6 +12,9 @@ app_dir = os.path.dirname(__file__) + "/"
 
 version = "crypto-chat v1.0.0"
 
+# max:
+# délka jména: 25
+# délka hesla: 100
 
 @app.route('/')
 def hello_world():
@@ -23,7 +26,7 @@ def test():
 
     if not "crypt-chat" in flask.request.user_agent.string:
         return "Forbidden", 403
-        
+
     # test compatibility with app
     return version
 
@@ -44,6 +47,8 @@ def create_room():
     with open(app_dir + room_id + "/symetric_key", "wb") as f:
         f.write(key)
 
+
+    # prepare data for return
     data = {
         "roomId": room_id
     }
