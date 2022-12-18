@@ -6,6 +6,7 @@ from cryptography.fernet import Fernet
 import os
 import uuid
 
+
 app = flask.Flask(__name__)
 app_dir = os.path.dirname(__file__) + "/"
 
@@ -19,24 +20,35 @@ def hello_world():
 
 @app.route('/test', methods=["GET"])
 def test():
+
+    if not "crypt-chat" in flask.request.user_agent.string:
+        return "Forbidden", 403
+        
     # test compatibility with app
     return version
 
 
 @app.route('/create-room', methods=["POST"])
 def create_room():
+
+    if not "crypt-chat" in flask.request.user_agent.string:
+        return "Forbidden", 403
+
     # create room's file with random HEX name
-    # generate AES key for room
+    room_id = uuid.uuid4().hex
+    os.system("mkdir " + "\"" + app_dir + room_id + "\"")
 
-    room_name = uuid.uuid4().hex
-    os.system("mkdir " + "\"" + app_dir + room_name + "\"")
-
+    # generate AES key for room and save it to file
     key = Fernet.generate_key()
 
-    with open(app_dir + room_name + "/symetric_key", "wb") as f:
+    with open(app_dir + room_id + "/symetric_key", "wb") as f:
         f.write(key)
-    
-    return room_name, 200
+
+    data = {
+        "roomId": room_id
+    }
+
+    return flask.jsonify(data)
 
 
 if __name__ == "__main__":
