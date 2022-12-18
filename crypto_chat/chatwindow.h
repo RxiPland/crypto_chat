@@ -2,7 +2,6 @@
 #define CHATWINDOW_H
 
 #include <QMainWindow>
-#include "threadfunctions.h"
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class ChatWindow; }
@@ -13,7 +12,7 @@ class ChatWindow : public QMainWindow
     Q_OBJECT
 
 public:
-    ChatWindow(QWidget *parent = nullptr);
+    ChatWindow(QWidget *parent = nullptr, QString version="v1.0.0", QByteArray userAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0 Safari/537.36");
     ~ChatWindow();
 
     QString app_version;

@@ -10,9 +10,7 @@ int main(int argc, char *argv[])
     QApplication a(argc, argv);
     a.setQuitOnLastWindowClosed(false);
 
-    ChatWindow chw;
-    chw.app_version = app_version;
-    chw.user_agent = user_agent;
+    ChatWindow chw(nullptr, app_version, user_agent);
     chw.show();
 
     return a.exec();

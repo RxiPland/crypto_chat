@@ -5,10 +5,13 @@
 #include <windows.h>
 
 
-LoginDialog::LoginDialog(QWidget *parent) :
+LoginDialog::LoginDialog(QWidget *parent, QString version, QByteArray userAgent) :
     QDialog(parent),
     ui(new Ui::LoginDialog)
 {
+    LoginDialog::app_version = version;
+    LoginDialog::user_agent = userAgent;
+
     ui->setupUi(this);
     this->setWindowIcon(QIcon("://images/hacker.ico"));
     this->setWindowTitle("Připojení ke crypto-chat serveru");
@@ -43,6 +46,7 @@ LoginDialog::~LoginDialog()
 {
     delete ui;
 }
+
 
 void LoginDialog::hide_widgets(bool hide){
     // hide authentication lines
@@ -112,9 +116,25 @@ void LoginDialog::on_pushButton_clicked()
     } else{
         // validate website
 
-        QNetworkRequest request;
-        QUrl qurl_address = QUrl(url_address);
+        QStringList temp_list;
+        int i;
 
+        // convert string to list
+        for(i=0; i<url_address.length(); i++){
+            temp_list.append(url_address[i]);
+        }
+
+        // remove all '/' chars from back
+        while(url_address.endsWith("/")){
+            temp_list.pop_back();
+            url_address = temp_list.join("");
+        }
+
+        // set cleaned URL back to lineEdit
+        ui->lineEdit->setText(url_address);
+
+        QNetworkRequest request;
+        QUrl qurl_address = QUrl(url_address + "/test");
 
         if(ui->checkBox->isChecked()){
             // authentication
@@ -166,42 +186,40 @@ void LoginDialog::on_pushButton_clicked()
         } else{
             // No error
 
-            successful_login = true;
-            server_url = ui->lineEdit->text();
+            QString response = QString(reply_get->readAll());
 
-            server_url.replace("https://", "");
-            server_url.replace("http://", "");
-            server_url.replace("//", "/");
 
-            if (server_url.endsWith('/')){
-                QStringList splitedServerUrl = server_url.split("/");
-                QStringList newServerUrl;
+            if(!response.contains("crypto-chat")){
+                QMessageBox::critical(this, "Odpověd serveru (chyba)", tr("Nastala nezmámá chyba!\n\nOčekáváná odpověď: crypto-chat %1\nOdpověď stránky: %2").arg(app_version).arg(response));
 
-                for(int i=0; i<splitedServerUrl.length(); i++){
+            } else if (!response.contains(app_version)){
+                QMessageBox::critical(this, "Odpověd serveru (chyba)", tr("Verze serveru se neshoduje s verzí klienta! Aktualizujte na novou verzi.\n\nOčekáváná odpověď: crypto-chat %1\nOdpověď stránky: %2").arg(app_version).arg(response));
 
-                    if(!splitedServerUrl[i].isEmpty()){
+            } else{
 
-                        newServerUrl.append(splitedServerUrl[i]);
-                    }
+                successful_login = true;
+                server_url = ui->lineEdit->text();
+
+                server_url.replace("https://", "");
+                server_url.replace("http://", "");
+                server_url.replace("//", "/");
+
+
+                QMessageBox msgBox;
+                msgBox.setWindowIcon(QIcon("://images/hacker.ico"));
+                msgBox.setWindowTitle("Vyberte akci");
+                msgBox.setText("Úspěšně se podařilo navázat spojení s crypto-chat serverem. Vyberte zda chcete vytvořit novou místnost, nebo se připojit už k existující.");
+                QAbstractButton* pButtonYes = msgBox.addButton(" Vytvořit místnost ", QMessageBox::YesRole);
+                msgBox.addButton(" Připojit se do místnosti ", QMessageBox::YesRole);
+                msgBox.exec();
+
+                if (msgBox.clickedButton()==pButtonYes) {
+                    create_room = true;
                 }
-                server_url = newServerUrl.join("/");
+
+                this->close();
+                return;
             }
-
-
-            QMessageBox msgBox;
-            msgBox.setWindowIcon(QIcon("://images/hacker.ico"));
-            msgBox.setWindowTitle("Vyberte akci");
-            msgBox.setText("Úspěšně se podařilo navázat spojení s crypto-chat serverem. Vyberte zda chcete vytvořit novou místnost, nebo se připojit už k existující.");
-            QAbstractButton* pButtonYes = msgBox.addButton(" Vytvořit místnost ", QMessageBox::YesRole);
-            msgBox.addButton(" Připojit se do místnosti ", QMessageBox::YesRole);
-            msgBox.exec();
-
-            if (msgBox.clickedButton()==pButtonYes) {
-                create_room = true;
-            }
-
-            this->close();
-            return;
         }
     }
 
