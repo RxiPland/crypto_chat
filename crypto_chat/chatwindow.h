@@ -12,7 +12,7 @@ class ChatWindow : public QMainWindow
     Q_OBJECT
 
 public:
-    ChatWindow(QWidget *parent = nullptr, QString version="v1.0.0", QByteArray userAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0 Safari/537.36");
+    ChatWindow(QWidget *parent = nullptr, QString version="v1.0.0", QByteArray userAgent = "crypt-chat");
     ~ChatWindow();
 
     QString app_version;

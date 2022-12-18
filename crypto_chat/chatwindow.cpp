@@ -4,6 +4,7 @@
 #include "colordialog.h"
 #include "namechangedialog.h"
 #include "threadfunctions.h"
+#include "createroomdialog.h"
 
 #include <QMessageBox>
 #include <QCloseEvent>
@@ -38,6 +39,12 @@ ChatWindow::ChatWindow(QWidget *parent, QString version, QByteArray userAgent)
         }
     }
 
+    if(lw.create_room){
+        CreateRoomDialog crd(nullptr, ChatWindow::app_version, ChatWindow::user_agent);
+        crd.set_info(ChatWindow::server_url);
+        crd.exec();
+    }
+
     ui->setupUi(this);
     this->setWindowIcon(QIcon(":/images/hacker.ico"));
     this->setWindowTitle(tr("crypto-chat  |  %1  |  %2").arg(server_url).arg(user_name));
@@ -45,6 +52,8 @@ ChatWindow::ChatWindow(QWidget *parent, QString version, QByteArray userAgent)
 
     ui->label->setStyleSheet(tr("QLabel { background-color : %1 }").arg(user_color));
     ui->lineEdit->setFocus();
+
+    QApplication::setQuitOnLastWindowClosed(true);
 
     refreshChatLoop.operation = 3;
     refreshChatLoop.sleep_time = 5;

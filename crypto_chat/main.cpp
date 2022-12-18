@@ -2,13 +2,13 @@
 
 #include <QApplication>
 
-QByteArray user_agent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0 Safari/537.36";
 QString app_version = "v1.0.0";
+QByteArray user_agent = "crypt-chat " + QByteArray::fromStdString(app_version.toStdString());
 
 int main(int argc, char *argv[])
 {
     QApplication a(argc, argv);
-    a.setQuitOnLastWindowClosed(false);
+    a.setQuitOnLastWindowClosed(true);
 
     ChatWindow chw(nullptr, app_version, user_agent);
     chw.show();

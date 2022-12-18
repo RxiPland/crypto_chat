@@ -160,16 +160,16 @@ void LoginDialog::on_pushButton_clicked()
             qApp->processEvents();
         }
 
-        if(reply_get->error() == QNetworkReply::ConnectionRefusedError){
-            QMessageBox::critical(this, "Chyba", "Nelze se připojit k internetu!");
+        QString response = QString(reply_get->readAll());
 
+        if(reply_get->error() == QNetworkReply::ConnectionRefusedError){
+            QMessageBox::critical(this, "Chyba", "Nelze se připojit k internetu nebo server není dostupný!");
 
         } else if (reply_get->error() == QNetworkReply::HostNotFoundError){
             QMessageBox::critical(this, "Chyba", "Doména neexsistuje!");
 
         } else if (reply_get->error() == QNetworkReply::AuthenticationRequiredError){
             // Authentication is required or credentials may be wrong
-
 
             if(ui->checkBox->isChecked()){
                 QMessageBox::critical(this, "Odpověd serveru (chyba)", "Přihlašovací údaje nejsou správné!");
@@ -180,22 +180,25 @@ void LoginDialog::on_pushButton_clicked()
 
             ui->checkBox->setChecked(true);
 
+
         } else if(reply_get->error() != QNetworkReply::NoError){
-            QMessageBox::critical(this, "Odpověd serveru (chyba)", tr("Nastala nezmámá chyba! Označení chyby: %1").arg(reply_get->error()));
+            // Any error
+
+            QMessageBox::critical(this, "Odpověd serveru (chyba)", tr("Nastala neznámá chyba!\nOznačení QNetworkReply chyby: %1\n\nOdpověd serveru: %2").arg(reply_get->error()).arg(response));
 
         } else{
             // No error
-
-            QString response = QString(reply_get->readAll());
-
 
             if(!response.contains("crypto-chat")){
                 QMessageBox::critical(this, "Odpověd serveru (chyba)", tr("Nastala nezmámá chyba!\n\nOčekáváná odpověď: crypto-chat %1\nOdpověď stránky: %2").arg(app_version).arg(response));
 
             } else if (!response.contains(app_version)){
+                // Version is wrong
+
                 QMessageBox::critical(this, "Odpověd serveru (chyba)", tr("Verze serveru se neshoduje s verzí klienta! Aktualizujte na novou verzi.\n\nOčekáváná odpověď: crypto-chat %1\nOdpověď stránky: %2").arg(app_version).arg(response));
 
             } else{
+                // Validation succesful
 
                 successful_login = true;
                 server_url = ui->lineEdit->text();
@@ -230,6 +233,7 @@ void LoginDialog::on_lineEdit_textEdited()
 {
     if(ui->lineEdit->text() != ""){
         ui->pushButton->setEnabled(true);
+
     } else{
         ui->pushButton->setEnabled(false);
     }
