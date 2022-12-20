@@ -121,6 +121,8 @@ public:
         textEdit = new QTextEdit(centralwidget);
         textEdit->setObjectName("textEdit");
         textEdit->setFocusPolicy(Qt::NoFocus);
+        textEdit->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
+        textEdit->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
 
         verticalLayout->addWidget(textEdit);
 

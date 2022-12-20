@@ -11,14 +11,24 @@ public:
     ThreadFunctions();
     void run();
     void stopLoop();
+    void reload();
 
+
+    float i;
+    bool continueLoop = false;
     int operation = 3;  // 1=sleep; 2=shell; 3=sleep(infinite)
-    int sleep_time = 1;  // sleep time in seconds
-    SHELLEXECUTEINFO ShExecInfo = {0};  // shell parameters
 
+    float sleep_time = 1.0;  // sleep time in seconds
+    SHELLEXECUTEINFO ShExecInfo = {0};  // shell parameters
     QAction *actionObject;
 
-    bool continueLoop = false;
+
+    // for comunicating with server
+    bool authentication_required = false;
+    QString authentication_username;
+    QString authentication_password;
+    QString server_url;
+    QString room_id;
 };
 
 #endif // THREADFUNCTIONS_H

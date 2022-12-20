@@ -5,12 +5,10 @@
 #include <windows.h>
 
 
-LoginDialog::LoginDialog(QWidget *parent, QString version, QByteArray userAgent) :
+LoginDialog::LoginDialog(QWidget *parent) :
     QDialog(parent),
     ui(new Ui::LoginDialog)
 {
-    LoginDialog::app_version = version;
-    LoginDialog::user_agent = userAgent;
 
     ui->setupUi(this);
     this->setWindowIcon(QIcon("://images/hacker.ico"));

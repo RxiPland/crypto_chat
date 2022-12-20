@@ -14,7 +14,7 @@ class LoginDialog : public QDialog
     Q_OBJECT
 
 public:
-    explicit LoginDialog(QWidget *parent = nullptr, QString version="v1.0.0", QByteArray userAgent = "crypt-chat");
+    explicit LoginDialog(QWidget *parent = nullptr);
     ~LoginDialog();
 
     QString app_version;

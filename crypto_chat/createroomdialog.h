@@ -12,13 +12,15 @@ class CreateRoomDialog : public QDialog
     Q_OBJECT
 
 public:
-    explicit CreateRoomDialog(QWidget *parent = nullptr, QString version="v1.0.0", QByteArray userAgent = "crypt-chat");
+    explicit CreateRoomDialog(QWidget *parent = nullptr, QString server_url = "");
     ~CreateRoomDialog();
 
-    bool created = false;
     QString server_url;
+    QString app_version;
+    QByteArray user_agent;
 
-    void set_info(QString server_url);
+    bool created = false;
+
 
 private slots:
     void on_checkBox_clicked();

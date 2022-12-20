@@ -5,8 +5,14 @@ ThreadFunctions::ThreadFunctions()
 
 }
 
-void ThreadFunctions::stopLoop(){
+void ThreadFunctions::stopLoop()
+{
     ThreadFunctions::continueLoop = false;
+}
+
+void ThreadFunctions::reload()
+{
+    ThreadFunctions::i = ThreadFunctions::sleep_time;
 }
 
 void ThreadFunctions::run()
@@ -25,17 +31,23 @@ void ThreadFunctions::run()
         CloseHandle(ShExecInfo.hProcess);
 
     } else if (operation == 3){
-        // update count on message refresh
-
-        int i;
+        // update the count for the next message update
+        // every 100ms
+        // get info about new messages
 
         do{
-            for(i=sleep_time; i>=0 && continueLoop; i--){
+            // sleep
+            for(i=sleep_time; i>=0.0; i -= 0.1){
 
-                QThread::sleep(1);
-                actionObject->setText(tr("Aktualizace za %1s").arg(i));
-                qInfo() << i;
+                if(!continueLoop){
+                    break;
+                }
+
+                QThread::msleep(100);
+                actionObject->setText(tr("Aktualizace za %1s").arg((int)i));
             }
+
+            // TODO: get messages info
 
         }while(continueLoop);
     }

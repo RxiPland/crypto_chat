@@ -12,7 +12,7 @@ class ChatWindow : public QMainWindow
     Q_OBJECT
 
 public:
-    ChatWindow(QWidget *parent = nullptr, QString version="v1.0.0", QByteArray userAgent = "crypt-chat");
+    ChatWindow(QWidget *parent = nullptr, QString server_url = "", QString user_name = "");
     ~ChatWindow();
 
     QString app_version;
@@ -33,6 +33,10 @@ private slots:
     void on_pushButton_4_clicked();
     void on_pushButton_3_clicked();
     void on_pushButton_2_clicked();
+
+    void on_action_zpravy_4_triggered();
+
+    void on_action_zpravy_3_triggered();
 
 private:
     void closeEvent(QCloseEvent *bar);

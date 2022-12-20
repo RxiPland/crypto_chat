@@ -1,49 +1,23 @@
 #include "chatwindow.h"
 #include "ui_chatwindow.h"
-#include "logindialog.h"
 #include "colordialog.h"
 #include "namechangedialog.h"
 #include "threadfunctions.h"
-#include "createroomdialog.h"
 
 #include <QMessageBox>
 #include <QCloseEvent>
+#include <QTime>
 
 ThreadFunctions refreshChatLoop;
 
 
-ChatWindow::ChatWindow(QWidget *parent, QString version, QByteArray userAgent)
+ChatWindow::ChatWindow(QWidget *parent, QString server_url, QString user_name)
     : QMainWindow(parent)
     , ui(new Ui::ChatWindow)
 {
 
-    ChatWindow::app_version = version;
-    ChatWindow::user_agent = userAgent;
-
-    // login to server
-    LoginDialog lw(nullptr, ChatWindow::app_version, ChatWindow::user_agent);
-    lw.setModal(true);
-    lw.exec();
-
-    if(!lw.successful_login){
-        QMetaObject::invokeMethod(qApp, "quit", Qt::QueuedConnection);
-        return;
-
-    } else{
-        ChatWindow::server_url = lw.server_url;
-        ChatWindow::authentication_required = lw.authentication_required;
-
-        if(ChatWindow::authentication_required){
-            ChatWindow::authentication_username = lw.authentication_username;
-            ChatWindow::authentication_password = lw.authentication_password;
-        }
-    }
-
-    if(lw.create_room){
-        CreateRoomDialog crd(nullptr, ChatWindow::app_version, ChatWindow::user_agent);
-        crd.set_info(ChatWindow::server_url);
-        crd.exec();
-    }
+    ChatWindow::server_url = server_url;
+    ChatWindow::user_name = user_name;
 
     ui->setupUi(this);
     this->setWindowIcon(QIcon(":/images/hacker.ico"));
@@ -56,7 +30,7 @@ ChatWindow::ChatWindow(QWidget *parent, QString version, QByteArray userAgent)
     QApplication::setQuitOnLastWindowClosed(true);
 
     refreshChatLoop.operation = 3;
-    refreshChatLoop.sleep_time = 5;
+    refreshChatLoop.sleep_time = 5.9;
     refreshChatLoop.actionObject = ui->action_zpravy_2;
     refreshChatLoop.continueLoop = true;
     refreshChatLoop.start();
@@ -177,5 +151,20 @@ void ChatWindow::on_pushButton_3_clicked()
 void ChatWindow::on_pushButton_2_clicked()
 {
     QMessageBox::about(this, "Informace o místnosti", tr("Verze aplikace:  %1<br><br>URL:  %2<br>ID:  %3<br><br>Vaše přezdívka:  %4<br>Vaše barva:  %5").arg(app_version).arg(server_url).arg(room_id).arg(user_name).arg(convert_color(user_color)));
+}
+
+
+void ChatWindow::on_action_zpravy_4_triggered()
+{
+    refreshChatLoop.reload();
+}
+
+
+void ChatWindow::on_action_zpravy_3_triggered()
+{
+    ui->textEdit->clear();
+
+    QString current_time = QTime::currentTime().toString();
+    ui->textEdit->append(tr("<p style=\"color:grey;\">(%1)  &lt;Aplikace&gt;: Chat byl vyčištěn ...<br></p>").arg(current_time));
 }
 

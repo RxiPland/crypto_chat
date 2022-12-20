@@ -43,26 +43,28 @@ void NameChangeDialog::on_pushButton_clicked()
 {
     // close window (save new name)
 
+    this->hide();
+
     NameChangeDialog::new_name = ui->lineEdit->text().trimmed();
 
     QMessageBox::information(this, "Oznámení", "Jméno bylo úspěšně změněno.");
 
 
     this->close();
-    return;
 }
 
 
 void NameChangeDialog::on_pushButton_2_clicked()
 {
-    // close window (old name)
+    // close window (keep old name)
     this->close();
-    return;
 }
 
 
 void NameChangeDialog::on_lineEdit_returnPressed()
 {
+    // 'return' pressed when typing name
+
     QString lineEdit_text = ui->lineEdit->text();
 
     if(lineEdit_text == NameChangeDialog::original_name){
