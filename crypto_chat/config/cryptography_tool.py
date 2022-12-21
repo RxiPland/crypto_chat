@@ -5,6 +5,8 @@ import base64
 import sys
 import os
 import os.path
+import tempfile
+import uuid
 
 def main():
 
@@ -13,20 +15,24 @@ def main():
 
     argv = sys.argv[1:]
     length = len(argv)
-    
-    if length == 0:
-        print("Chybí operace! [generate_rsa, generate_aes ,decrypt_rsa, encrypt_aes, decrypt_aes]")
-        return
 
-    # create dir if not exists
+    for i in range(length):
+        argv[i] = argv[i].strip()
+    
+
+    if length == 0:
+        print("Chybí operace! [generate_rsa, generate_aes, decrypt_rsa, encrypt_aes, decrypt_aes]")
+        return
+    
+    operation = argv[0].lower()
+
     if not os.path.exists("/temp"):
         os.system("mkdir temp")
     
-    operation = argv[0].lower()
-    
     if operation == "generate_rsa":
         # generate RSA key pairs (public & private)
-        # save them to files
+        # generate random room_id
+        # save them to files in .../Temp/{room_id}/
 
 
         # check if there is second argument
@@ -42,15 +48,28 @@ def main():
                 return
 
             else:
+                
+                # generate random id
+                room_id = uuid.uuid4().hex
+
+                room_id_file = tempfile.gettempdir() + f"\\{room_id}"
+
+                if not os.path.exists(room_id_file):
+                    os.system(f"mkdir \"{room_id_file}\"")
+
+                # save id to file
+                with open("temp/hex_id", "w") as f:
+                    f.write(room_id)
+
                 # generate keys
                 public_k, private_k = rsa.newkeys(int(argv[1]))
 
                 # save to file
-                with open("temp/public_key.pem", "wb") as f:
+                with open(tempfile.gettempdir() + f"\\{room_id}\\public_key.pem", "wb") as f:
                     f.write(public_k.save_pkcs1())
 
                 # save to file
-                with open("temp/private_key.pem", "wb") as f:
+                with open(tempfile.gettempdir() + f"\\{room_id}\\private_key.pem", "wb") as f:
                     f.write(private_k.save_pkcs1())
 
         else:

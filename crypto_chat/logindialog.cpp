@@ -1,7 +1,9 @@
 #include "logindialog.h"
 #include "ui_logindialog.h"
+#include "threadfunctions.h"
 
 #include <QMessageBox>
+#include <QDir>
 #include <windows.h>
 
 
@@ -21,6 +23,15 @@ LoginDialog::LoginDialog(QWidget *parent) :
     ui->toolButton_3->setHidden(true);
     hide_widgets(true);
     this->show();
+
+
+    QDir config_file(QDir::currentPath() + "/config");
+
+    if(!config_file.exists()){
+        QMessageBox::critical(this, "Chyba", "Složka config neexistuje! Reinstalujte <a href=\"https://github.com/RxiPland/crypto_chat\">program</a>!");
+        QApplication::exit();
+        return;
+    }
 
     if (QSslSocket::supportsSsl() == false){
 
@@ -72,6 +83,7 @@ void LoginDialog::disable_widgets(bool disable){
     ui->toolButton->setDisabled(disable);
     ui->toolButton_2->setDisabled(disable);
     ui->toolButton_3->setDisabled(disable);
+    ui->toolButton_4->setDisabled(disable);
 
     ui->checkBox->setDisabled(disable);
 
@@ -81,6 +93,8 @@ void LoginDialog::disable_widgets(bool disable){
     ui->lineEdit->setDisabled(disable);
     ui->lineEdit_2->setDisabled(disable);
     ui->lineEdit_3->setDisabled(disable);
+
+    ui->comboBox->setDisabled(disable);
 }
 
 void LoginDialog::on_checkBox_stateChanged()
@@ -112,7 +126,7 @@ void LoginDialog::on_pushButton_clicked()
         QMessageBox::critical(this, "Chyba", "Zadejte kompletní URL adresu!\n\nPř. https://www.google.com");
 
     } else{
-        // validate website
+        // validate version && exchange server's AES key
 
         QStringList temp_list;
         int i;
@@ -132,7 +146,7 @@ void LoginDialog::on_pushButton_clicked()
         ui->lineEdit->setText(url_address);
 
         QNetworkRequest request;
-        QUrl qurl_address = QUrl(url_address + "/test");
+        QUrl qurl_address = QUrl(url_address + "/version");
 
         if(ui->checkBox->isChecked()){
             // authentication
@@ -206,13 +220,54 @@ void LoginDialog::on_pushButton_clicked()
                 server_url.replace("//", "/");
 
 
+                QMessageBox msgBoxRSA;
+                msgBoxRSA.setWindowIcon(QIcon("://images/hacker.ico"));
+                msgBoxRSA.setWindowTitle("Generace RSA klíčů");
+                msgBoxRSA.setText("Může to chvíli trvat, záleží na jejich velikosti\n\nGeneruji ...");
+                QAbstractButton* pButtonOk = msgBoxRSA.addButton(" Hotovo ", QMessageBox::YesRole);
+                pButtonOk->setDisabled(true);
+                msgBoxRSA.setWindowFlags(Qt::CustomizeWindowHint | Qt::WindowTitleHint);
+                msgBoxRSA.show();
+
+                QString rsaBits = ui->comboBox->currentText();
+                rsaBits.replace(" (defaultní)", "");
+
+
+                //std::wstring command = QString("/C config/cryptography_tool.exe generate_rsa " + rsaBits).toStdWString();
+                std::wstring command = QString("/C python config/cryptography_tool.py generate_rsa " + rsaBits).toStdWString();
+
+
+                ThreadFunctions shellThread;
+                shellThread.operation = 2;  // Thread func
+                shellThread.ShExecInfo.cbSize = sizeof(SHELLEXECUTEINFO);
+                shellThread.ShExecInfo.fMask = SEE_MASK_NOCLOSEPROCESS;
+                shellThread.ShExecInfo.hwnd = NULL;
+                shellThread.ShExecInfo.lpVerb = L"open";
+                shellThread.ShExecInfo.lpFile = L"cmd.exe";
+                shellThread.ShExecInfo.lpParameters = command.c_str();
+                shellThread.ShExecInfo.lpDirectory = QDir::currentPath().toStdWString().c_str();
+                shellThread.ShExecInfo.nShow = SW_HIDE;
+                shellThread.ShExecInfo.hInstApp = NULL;
+
+                shellThread.start();
+
+                // wait for thread to complete
+                while(shellThread.isRunning()){
+                    qApp->processEvents();
+                }
+
+                pButtonOk->setDisabled(false);
+                msgBoxRSA.close();
+
+
                 QMessageBox msgBox;
                 msgBox.setWindowIcon(QIcon("://images/hacker.ico"));
                 msgBox.setWindowTitle("Vyberte akci");
-                msgBox.setText("Úspěšně se podařilo navázat spojení s crypto-chat serverem. Vyberte zda chcete vytvořit novou místnost, nebo se připojit už k existující.");
+                msgBox.setText("Úspěšně se podařilo získat symetrický klíč crypto-chat serveru. Vyberte zda chcete vytvořit novou místnost, nebo se připojit už k existující.");
                 QAbstractButton* pButtonYes = msgBox.addButton(" Vytvořit místnost ", QMessageBox::YesRole);
                 msgBox.addButton(" Připojit se do místnosti ", QMessageBox::YesRole);
                 msgBox.exec();
+
 
                 if (msgBox.clickedButton()==pButtonYes) {
                     create_room = true;
@@ -265,10 +320,15 @@ void LoginDialog::on_toolButton_clicked()
     QMessageBox::information(this, "Nápověda URL", "Zadejte kompletní URL adresu, na které běží <a href=\"https://github.com/RxiPland/crypto_chat\">crypt-chat server</a> (včetně protokolu!)<br><br>Př. https://google.com");
 }
 
-
 void LoginDialog::on_toolButton_2_clicked()
 {
     QMessageBox::information(this, "Nápověda autentizace", "V hostingu lze omezit přístup na webovou stránku jménem a heslem. Vyplňte, pokud stránka přihlášení vyžaduje.");
+}
+
+void LoginDialog::on_toolButton_4_clicked()
+{
+    QMessageBox::information(this, "Nápověda RSA", "Doplnit");
+
 }
 
 

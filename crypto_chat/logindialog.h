@@ -40,6 +40,8 @@ private slots:
     void on_lineEdit_2_returnPressed();
     void on_lineEdit_3_returnPressed();
 
+    void on_toolButton_4_clicked();
+
 private:
     Ui::LoginDialog *ui;
     QNetworkAccessManager manager;

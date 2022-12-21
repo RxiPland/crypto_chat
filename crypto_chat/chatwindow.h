@@ -30,12 +30,10 @@ public:
     QString room_id;
 
 private slots:
-    void on_pushButton_4_clicked();
-    void on_pushButton_3_clicked();
     void on_pushButton_2_clicked();
-
+    void on_pushButton_3_clicked();
+    void on_pushButton_4_clicked();
     void on_action_zpravy_4_triggered();
-
     void on_action_zpravy_3_triggered();
 
 private:

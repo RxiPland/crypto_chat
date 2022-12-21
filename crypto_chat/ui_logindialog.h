@@ -12,6 +12,7 @@
 #include <QtCore/QVariant>
 #include <QtWidgets/QApplication>
 #include <QtWidgets/QCheckBox>
+#include <QtWidgets/QComboBox>
 #include <QtWidgets/QDialog>
 #include <QtWidgets/QHBoxLayout>
 #include <QtWidgets/QLabel>
@@ -34,6 +35,13 @@ public:
     QLineEdit *lineEdit;
     QSpacerItem *horizontalSpacer;
     QToolButton *toolButton;
+    QSpacerItem *verticalSpacer_7;
+    QHBoxLayout *horizontalLayout_7;
+    QLabel *label_3;
+    QComboBox *comboBox;
+    QSpacerItem *horizontalSpacer_2;
+    QToolButton *toolButton_4;
+    QSpacerItem *horizontalSpacer_7;
     QHBoxLayout *horizontalLayout_5;
     QVBoxLayout *verticalLayout_2;
     QSpacerItem *verticalSpacer_4;
@@ -61,7 +69,7 @@ public:
     {
         if (LoginDialog->objectName().isEmpty())
             LoginDialog->setObjectName("LoginDialog");
-        LoginDialog->resize(461, 207);
+        LoginDialog->resize(461, 243);
         horizontalLayout_6 = new QHBoxLayout(LoginDialog);
         horizontalLayout_6->setObjectName("horizontalLayout_6");
         horizontalSpacer_4 = new QSpacerItem(5, 20, QSizePolicy::Fixed, QSizePolicy::Minimum);
@@ -102,6 +110,43 @@ public:
 
 
         verticalLayout->addLayout(horizontalLayout);
+
+        verticalSpacer_7 = new QSpacerItem(20, 10, QSizePolicy::Minimum, QSizePolicy::Fixed);
+
+        verticalLayout->addItem(verticalSpacer_7);
+
+        horizontalLayout_7 = new QHBoxLayout();
+        horizontalLayout_7->setObjectName("horizontalLayout_7");
+        horizontalLayout_7->setContentsMargins(-1, 0, -1, -1);
+        label_3 = new QLabel(LoginDialog);
+        label_3->setObjectName("label_3");
+
+        horizontalLayout_7->addWidget(label_3);
+
+        comboBox = new QComboBox(LoginDialog);
+        comboBox->addItem(QString());
+        comboBox->addItem(QString());
+        comboBox->setObjectName("comboBox");
+        comboBox->setMinimumSize(QSize(115, 0));
+
+        horizontalLayout_7->addWidget(comboBox);
+
+        horizontalSpacer_2 = new QSpacerItem(10, 20, QSizePolicy::Fixed, QSizePolicy::Minimum);
+
+        horizontalLayout_7->addItem(horizontalSpacer_2);
+
+        toolButton_4 = new QToolButton(LoginDialog);
+        toolButton_4->setObjectName("toolButton_4");
+        toolButton_4->setMinimumSize(QSize(30, 24));
+
+        horizontalLayout_7->addWidget(toolButton_4);
+
+        horizontalSpacer_7 = new QSpacerItem(40, 20, QSizePolicy::Expanding, QSizePolicy::Minimum);
+
+        horizontalLayout_7->addItem(horizontalSpacer_7);
+
+
+        verticalLayout->addLayout(horizontalLayout_7);
 
         horizontalLayout_5 = new QHBoxLayout();
         horizontalLayout_5->setObjectName("horizontalLayout_5");
@@ -210,6 +255,8 @@ public:
 
         pushButton = new QPushButton(LoginDialog);
         pushButton->setObjectName("pushButton");
+        sizePolicy2.setHeightForWidth(pushButton->sizePolicy().hasHeightForWidth());
+        pushButton->setSizePolicy(sizePolicy2);
         pushButton->setMinimumSize(QSize(105, 30));
 
         verticalLayout_3->addWidget(pushButton);
@@ -242,6 +289,11 @@ public:
         LoginDialog->setWindowTitle(QCoreApplication::translate("LoginDialog", "Dialog", nullptr));
         lineEdit->setPlaceholderText(QCoreApplication::translate("LoginDialog", "Zadejte URL serveru", nullptr));
         toolButton->setText(QCoreApplication::translate("LoginDialog", "?", nullptr));
+        label_3->setText(QCoreApplication::translate("LoginDialog", "Velikost RSA kl\303\255\304\215e:", nullptr));
+        comboBox->setItemText(0, QCoreApplication::translate("LoginDialog", "2048 (defaultn\303\255)", nullptr));
+        comboBox->setItemText(1, QCoreApplication::translate("LoginDialog", "4096", nullptr));
+
+        toolButton_4->setText(QCoreApplication::translate("LoginDialog", "?", nullptr));
         checkBox->setText(QCoreApplication::translate("LoginDialog", "Server vy\305\276aduje autentizaci", nullptr));
         toolButton_2->setText(QCoreApplication::translate("LoginDialog", "?", nullptr));
         label->setText(QCoreApplication::translate("LoginDialog", "Jm\303\251no:", nullptr));
