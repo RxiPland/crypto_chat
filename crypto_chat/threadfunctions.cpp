@@ -37,11 +37,7 @@ void ThreadFunctions::run()
 
         do{
             // sleep
-            for(i=sleep_time; i>=0.0; i -= 0.1){
-
-                if(!continueLoop){
-                    break;
-                }
+            for(i=sleep_time; i>=0.0 && continueLoop; i -= 0.1){
 
                 QThread::msleep(100);
                 actionObject->setText(tr("Aktualizace za %1s").arg((int)i));

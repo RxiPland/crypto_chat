@@ -236,7 +236,7 @@ void LoginDialog::on_pushButton_clicked()
                 //std::wstring command = QString("/C config/cryptography_tool.exe generate_rsa " + rsaBits).toStdWString();
                 std::wstring command = QString("/C python config/cryptography_tool.py generate_rsa " + rsaBits).toStdWString();
 
-
+                // generate
                 ThreadFunctions shellThread;
                 shellThread.operation = 2;  // Thread func
                 shellThread.ShExecInfo.cbSize = sizeof(SHELLEXECUTEINFO);
@@ -246,7 +246,7 @@ void LoginDialog::on_pushButton_clicked()
                 shellThread.ShExecInfo.lpFile = L"cmd.exe";
                 shellThread.ShExecInfo.lpParameters = command.c_str();
                 shellThread.ShExecInfo.lpDirectory = QDir::currentPath().toStdWString().c_str();
-                shellThread.ShExecInfo.nShow = SW_HIDE;
+                shellThread.ShExecInfo.nShow = SW_SHOW;
                 shellThread.ShExecInfo.hInstApp = NULL;
 
                 shellThread.start();
@@ -263,7 +263,7 @@ void LoginDialog::on_pushButton_clicked()
                 QMessageBox msgBox;
                 msgBox.setWindowIcon(QIcon("://images/hacker.ico"));
                 msgBox.setWindowTitle("Vyberte akci");
-                msgBox.setText("Úspěšně se podařilo získat symetrický klíč crypto-chat serveru. Vyberte zda chcete vytvořit novou místnost, nebo se připojit už k existující.");
+                msgBox.setText("Úspěšně se podařilo získat symetrický klíč ze serveru. Vyberte zda chcete vytvořit novou místnost, nebo se připojit už k existující.");
                 QAbstractButton* pButtonYes = msgBox.addButton(" Vytvořit místnost ", QMessageBox::YesRole);
                 msgBox.addButton(" Připojit se do místnosti ", QMessageBox::YesRole);
                 msgBox.exec();

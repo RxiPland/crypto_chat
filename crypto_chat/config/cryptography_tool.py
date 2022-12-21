@@ -8,6 +8,8 @@ import os.path
 import tempfile
 import uuid
 
+app_dir = os.path.dirname(__file__).replace("\\", "/") + "/"
+
 def main():
 
     # operations -> [generate_rsa, decrypt_rsa, encrypt_aes, decrypt_aes]
@@ -26,8 +28,9 @@ def main():
     
     operation = argv[0].lower()
 
-    if not os.path.exists("/temp"):
-        os.system("mkdir temp")
+
+    if not os.path.exists(app_dir + "temp"):
+        os.system(f"cd {app_dir} & mkdir temp")
     
     if operation == "generate_rsa":
         # generate RSA key pairs (public & private)
@@ -58,18 +61,18 @@ def main():
                     os.system(f"mkdir \"{room_id_file}\"")
 
                 # save id to file
-                with open("temp/hex_id", "w") as f:
+                with open(app_dir + "temp/hex_id", "w") as f:
                     f.write(room_id)
 
                 # generate keys
                 public_k, private_k = rsa.newkeys(int(argv[1]))
 
                 # save to file
-                with open(tempfile.gettempdir() + f"\\{room_id}\\public_key.pem", "wb") as f:
+                with open(room_id_file + "\\public_key.pem", "wb") as f:
                     f.write(public_k.save_pkcs1())
 
                 # save to file
-                with open(tempfile.gettempdir() + f"\\{room_id}\\private_key.pem", "wb") as f:
+                with open(room_id_file + "\\private_key.pem", "wb") as f:
                     f.write(private_k.save_pkcs1())
 
         else:
@@ -81,7 +84,7 @@ def main():
 
         symetric_key = Fernet.generate_key()
         
-        with open("temp/symetric_key", "wb") as f:
+        with open(app_dir + "temp/symetric_key", "wb") as f:
             f.write(symetric_key)
         
 
@@ -90,15 +93,15 @@ def main():
         # save AES to file
 
             
-        with open("temp/encrypted_aes", "rb") as f:
+        with open(app_dir + "temp/encrypted_aes", "rb") as f:
             aes_crypt = f.read()
 
-        with open("temp/private_key.pem", "rb") as f:
+        with open(app_dir + "temp/private_key.pem", "rb") as f:
             private_k = rsa.PrivateKey.load_pkcs1(f.read())
 
         aes_plain = rsa.decrypt(crypto=aes_crypt, priv_key=private_k)
 
-        with open("temp/symetric_key", "wb") as f:
+        with open(app_dir + "temp/symetric_key", "wb") as f:
             f.write(aes_plain)
 
 
@@ -109,12 +112,12 @@ def main():
         
             message_plain = argv[1].encode("utf-8")
 
-            with open("temp/symetric_key", "rb") as f:
+            with open(app_dir + "temp/symetric_key", "rb") as f:
                 symetric_key = Fernet(f.read())
 
             message_crypt = symetric_key.encrypt(data=message_plain)
 
-            with open("temp/encrypted_message", "wb") as f:
+            with open(app_dir + "temp/encrypted_message", "wb") as f:
                 f.write(message_crypt)
 
         else:
@@ -125,15 +128,15 @@ def main():
         # open encrypted_message file and decrypt it's content
         # save decrypted content to decrypted_message
 
-        with open("temp/encrypted_message", "rb") as f:
+        with open(app_dir + "temp/encrypted_message", "rb") as f:
             message_crypt = f.read()
 
-        with open("temp/symetric_key", "rb") as f:
+        with open(app_dir + "temp/symetric_key", "rb") as f:
             symetric_key = Fernet(f.read())
 
         message_plain = symetric_key.decrypt(message_crypt)
 
-        with open("temp/decrypted_message", "wb") as f:
+        with open(app_dir + "temp/decrypted_message", "wb") as f:
             f.write(base64.urlsafe_b64decode(message_plain))
 
     

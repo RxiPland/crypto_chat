@@ -165,6 +165,6 @@ void ChatWindow::on_action_zpravy_3_triggered()
     ui->textEdit->clear();
 
     QString current_time = QTime::currentTime().toString();
-    ui->textEdit->append(tr("<p style=\"color:grey;\">(%1)  &lt;Aplikace&gt;: Chat byl vyčištěn ...<br></p>").arg(current_time));
+    ui->textEdit->append(tr("<p style=\"color:grey;\">(%1)  &lt;Systém&gt;: Chat byl vyčištěn ...<br></p>").arg(current_time));
 }
 
