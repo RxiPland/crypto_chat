@@ -3,16 +3,17 @@
 #include "chatwindow.h"
 
 #include <QApplication>
+#include <QFile>
 
 
 QString app_version = "v1.0.0";
 QByteArray user_agent = "crypto-chat " + QByteArray::fromStdString(app_version.toStdString());
 
+
 int main(int argc, char *argv[])
 {
     QApplication a(argc, argv);
     a.setQuitOnLastWindowClosed(true);
-
 
     // login to crypto-chat server && obtain server AES key
     LoginDialog ld;

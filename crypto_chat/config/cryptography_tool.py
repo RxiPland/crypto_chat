@@ -35,7 +35,7 @@ def main():
     if operation == "generate_rsa":
         # generate RSA key pairs (public & private)
         # generate random room_id
-        # save them to files in .../Temp/{room_id}/
+        # save them to files in Users/.../AppData/Local/Temp/{room_id}/
 
 
         # check if there is second argument
@@ -92,17 +92,27 @@ def main():
         # decrypt RSA cipher to obtain symetric key (AES)
         # save AES to file
 
-            
-        with open(app_dir + "temp/encrypted_aes", "rb") as f:
-            aes_crypt = f.read()
+        if length == 2:
 
-        with open(app_dir + "temp/private_key.pem", "rb") as f:
-            private_k = rsa.PrivateKey.load_pkcs1(f.read())
+            room_id = argv[1]
+            room_id_file = tempfile.gettempdir() + f"\\{room_id}"
 
-        aes_plain = rsa.decrypt(crypto=aes_crypt, priv_key=private_k)
+            with open(room_id_file + "\\symetric_key", "r") as f:
+                aes_crypt = f.read()
+                aes_crypt = bytes.fromhex(aes_crypt)
 
-        with open(app_dir + "temp/symetric_key", "wb") as f:
-            f.write(aes_plain)
+            with open(room_id_file + "\\private_key.pem", "rb") as f:
+                private_k = rsa.PrivateKey.load_pkcs1(f.read())
+
+            aes_plain = rsa.decrypt(crypto=aes_crypt, priv_key=private_k)
+
+            with open(room_id_file + "\\symetric_key", "wb") as f:
+                f.write(aes_plain)
+
+        else:
+
+            print("Chybí ID místnosti!")
+            return
 
 
     elif operation == "encrypt_aes":

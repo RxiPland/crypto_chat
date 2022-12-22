@@ -5,6 +5,9 @@
 #include <QMessageBox>
 #include <QDir>
 #include <QTextCodec>
+#include <QJsonDocument>
+#include <QJsonObject>
+#include <QJsonValue>
 #include <windows.h>
 
 
@@ -181,7 +184,8 @@ void LoginDialog::on_pushButton_clicked()
         }
 
         request.setUrl(qurl_address);
-        request.setRawHeader("User-Agent", user_agent);
+        request.setHeader(QNetworkRequest::UserAgentHeader, user_agent);
+        request.setHeader(QNetworkRequest::ContentTypeHeader, "text/html; charset=utf-8");
 
         msgBox.setText(msgBox.text() + "2/3 Ověření verze serveru s verzí aplikací");
 
@@ -277,6 +281,7 @@ void LoginDialog::on_pushButton_clicked()
                 QFile hexFile("config/temp/hex_id");
 
                 if(!hexFile.exists()){
+                    // python did not create the file
                     QMessageBox::critical(this, "Chyba", "Program nenašel soubor s náhodně vygenerovaným ID místnosti!");
 
                 } else{
@@ -288,6 +293,7 @@ void LoginDialog::on_pushButton_clicked()
                     room_id = (QTextCodec::codecForMib(106)->toUnicode(content)).split("\r\n")[0].trimmed();
 
                     if(room_id == ""){
+                        // python did not create the file
                         QMessageBox::critical(this, "Chyba", "Nepodařilo se načíst hex hodnotu místnosti ze souboru!");
 
                     } else{
@@ -305,33 +311,72 @@ void LoginDialog::on_pushButton_clicked()
 
                             qurl_address = QUrl(url_address + "/get-key");
 
+                            if(ui->checkBox->isChecked()){
+                                // authentication
+
+                                qurl_address.setUserName(authentication_username);
+                                qurl_address.setPassword(authentication_password);
+                            }
+
                             request.setUrl(qurl_address);
-                            request.setRawHeader(QByteArray("rsa_pem"), content);
+                            request.setHeader(QNetworkRequest::ContentTypeHeader, "application/json");
 
-                            reply_get = manager.post(request, QByteArray());
 
-                            while (!reply_get->isFinished())
+                            QJsonObject obj;
+                            obj["rsa_pem"] = (QString)QUrl::toPercentEncoding(content);
+                            QJsonDocument doc(obj);
+                            QByteArray data = doc.toJson();
+
+                            QNetworkReply *reply_post = manager.post(request, data);
+
+
+                            while (!reply_post->isFinished())
                             {
                                 qApp->processEvents();
                             }
 
+                            QJsonDocument jsonResponse = QJsonDocument::fromJson(reply_post->readAll());
+                            QJsonObject jsonObject = jsonResponse.object();
 
-                            pButtonCreate->setHidden(false);
-                            pButtonJoin->setHidden(false);
+                            QString encryptedAesKeyHex = jsonObject["aes_key"].toString();
 
-                            // wait for user input
-                            while(msgBox.isActiveWindow()){
-                                qApp->processEvents();
+                            QFile aes_key(QDir::tempPath() + "/" + room_id + "/symetric_key");
+                            aes_key.open(QIODevice::WriteOnly);
+                            aes_key.write(encryptedAesKeyHex.toStdString().c_str());
+                            aes_key.close();
+
+                            if(!aes_key.exists()){
+                                QMessageBox::critical(this, "Chyba", "Nepodařilo se zapsat zašifrovaný symetrický klíč do souboru!");
+
+                            } else{
+
+                                //command = QString("/C config/cryptography_tool.exe decrypt_rsa " + room_id).toStdWString();
+                                command = QString("/C python config/cryptography_tool.py decrypt_rsa " + room_id).toStdWString();
+
+                                shellThread.start();
+
+                                // wait for thread to complete
+                                while(shellThread.isRunning()){
+                                    qApp->processEvents();
+                                }
+
+                                pButtonCreate->setHidden(false);
+                                pButtonJoin->setHidden(false);
+
+                                // wait for user input
+                                while(!msgBox.isHidden()){
+                                    qApp->processEvents();
+                                }
+
+                                if (msgBox.clickedButton()==pButtonCreate) {
+                                    create_room = true;
+                                }
+
+                                msgBox.close();
+                                this->close();
+
+                                return;
                             }
-
-                            if (msgBox.clickedButton()==pButtonCreate) {
-                                create_room = true;
-                            }
-
-                            msgBox.close();
-                            this->close();
-
-                            return;
                         }
                     }
                 }
