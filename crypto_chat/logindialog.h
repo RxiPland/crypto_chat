@@ -22,6 +22,7 @@ public:
     QByteArray user_agent;
     bool successful_login = false;
     bool create_room = false;
+    bool deleleFolder = true;
     QString room_id;
 
     bool authentication_required = false;
@@ -46,6 +47,7 @@ private slots:
 private:
     Ui::LoginDialog *ui;
     QNetworkAccessManager manager;
+    void closeEvent(QCloseEvent *bar = nullptr);
 
     void hide_widgets(bool hide=true);
     void disable_widgets(bool disable=true);

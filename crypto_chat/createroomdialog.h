@@ -18,15 +18,19 @@ public:
     QString server_url;
     QString app_version;
     QByteArray user_agent;
+    QString room_id;
 
     bool created = false;
+    bool deleleFolder = true;
 
 
 private slots:
     void on_checkBox_clicked();
 
+
 private:
     Ui::CreateRoomDialog *ui;
+    void closeEvent(QCloseEvent *bar = nullptr);
 };
 
 #endif // CREATEROOMDIALOG_H

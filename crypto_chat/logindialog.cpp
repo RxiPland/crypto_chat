@@ -8,6 +8,7 @@
 #include <QJsonDocument>
 #include <QJsonObject>
 #include <QJsonValue>
+#include <QCloseEvent>
 #include <windows.h>
 
 
@@ -60,6 +61,28 @@ LoginDialog::~LoginDialog()
     delete ui;
 }
 
+
+void LoginDialog::closeEvent(QCloseEvent *bar)
+{
+    // Before application close
+
+    if(LoginDialog::deleleFolder && room_id != ""){
+
+        QDir roomFolder(QDir::tempPath() + "/" + room_id);
+
+        if(roomFolder.exists()){
+            roomFolder.removeRecursively();
+        }
+    }
+
+    this->close();
+
+    if(bar != nullptr){
+        bar->accept();
+    }
+
+    QApplication::quit();
+}
 
 void LoginDialog::hide_widgets(bool hide){
     // hide authentication lines
@@ -379,12 +402,12 @@ void LoginDialog::on_pushButton_clicked()
 
                                     msgBox.setText(previousText + "<span style=\"color:green;\"> [Dokončeno]<br></span>");
 
-                                    msgBox.setText(msgBox.text() + "7/8 Zapisuji přijatý zašifrovaný symetrický klíč do souboru (AES)");
+                                    msgBox.setText(msgBox.text() + "7/8 Zapisuji přijatý zašifrovaný symetrický klíč (AES) do souboru");
                                     previousText = msgBox.text();
                                     msgBox.setText(msgBox.text() + "<span style=\"color:orange;\"> [Probíhá]<br></span>");
 
 
-                                    QFile aes_key(QDir::tempPath() + "/" + room_id + "/symetric_key");
+                                    QFile aes_key(QDir::tempPath() + "/" + room_id + "/symetric_key_server");
                                     aes_key.open(QIODevice::WriteOnly);
                                     aes_key.write(encryptedAesKeyHex.toStdString().c_str());
                                     aes_key.close();
@@ -428,6 +451,8 @@ void LoginDialog::on_pushButton_clicked()
                                         if (msgBox.clickedButton()==pButtonCreate) {
                                             create_room = true;
                                         }
+
+                                        LoginDialog::deleleFolder = false;
 
                                         msgBox.close();
                                         this->close();

@@ -327,8 +327,14 @@ li.checked::marker { content: &quot;\2612&quot;; }
     <property name="title">
      <string>Zprávy</string>
     </property>
+    <widget class="QMenu" name="menuZpravy_2">
+     <property name="title">
+      <string>Aktualizace za 5s</string>
+     </property>
+     <addaction name="action_zpravy_2_1"/>
+    </widget>
     <addaction name="action_zpravy_1"/>
-    <addaction name="action_zpravy_2"/>
+    <addaction name="menuZpravy_2"/>
     <addaction name="separator"/>
     <addaction name="action_zpravy_3"/>
     <addaction name="action_zpravy_4"/>
@@ -364,11 +370,6 @@ li.checked::marker { content: &quot;\2612&quot;; }
     <string>Počet přijatých: 0</string>
    </property>
   </action>
-  <action name="action_zpravy_2">
-   <property name="text">
-    <string>Aktualizace za 5s</string>
-   </property>
-  </action>
   <action name="action_room_3">
    <property name="icon">
     <iconset resource="resources.qrc">
@@ -400,6 +401,11 @@ li.checked::marker { content: &quot;\2612&quot;; }
    </property>
    <property name="toolTip">
     <string>Aktualizovat</string>
+   </property>
+  </action>
+  <action name="action_zpravy_2_1">
+   <property name="text">
+    <string>Nastavit vlastní interval</string>
    </property>
   </action>
  </widget>

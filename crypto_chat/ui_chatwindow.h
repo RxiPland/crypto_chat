@@ -33,10 +33,10 @@ public:
     QAction *action_room_1;
     QAction *action_room_2;
     QAction *action_zpravy_1;
-    QAction *action_zpravy_2;
     QAction *action_room_3;
     QAction *action_zpravy_3;
     QAction *action_zpravy_4;
+    QAction *action_zpravy_2_1;
     QWidget *centralwidget;
     QVBoxLayout *verticalLayout_3;
     QSpacerItem *verticalSpacer_4;
@@ -62,6 +62,7 @@ public:
     QMenuBar *menubar;
     QMenu *menuMistnost;
     QMenu *menuZpravy;
+    QMenu *menuZpravy_2;
     QStatusBar *statusbar;
 
     void setupUi(QMainWindow *ChatWindow)
@@ -85,8 +86,6 @@ public:
         QIcon icon2;
         icon2.addFile(QString::fromUtf8(":/images/email.ico"), QSize(), QIcon::Normal, QIcon::Off);
         action_zpravy_1->setIcon(icon2);
-        action_zpravy_2 = new QAction(ChatWindow);
-        action_zpravy_2->setObjectName("action_zpravy_2");
         action_room_3 = new QAction(ChatWindow);
         action_room_3->setObjectName("action_room_3");
         QIcon icon3;
@@ -102,6 +101,8 @@ public:
         QIcon icon5;
         icon5.addFile(QString::fromUtf8(":/images/refresh.ico"), QSize(), QIcon::Normal, QIcon::Off);
         action_zpravy_4->setIcon(icon5);
+        action_zpravy_2_1 = new QAction(ChatWindow);
+        action_zpravy_2_1->setObjectName("action_zpravy_2_1");
         centralwidget = new QWidget(ChatWindow);
         centralwidget->setObjectName("centralwidget");
         verticalLayout_3 = new QVBoxLayout(centralwidget);
@@ -238,6 +239,8 @@ public:
         menuMistnost->setObjectName("menuMistnost");
         menuZpravy = new QMenu(menubar);
         menuZpravy->setObjectName("menuZpravy");
+        menuZpravy_2 = new QMenu(menuZpravy);
+        menuZpravy_2->setObjectName("menuZpravy_2");
         ChatWindow->setMenuBar(menubar);
         statusbar = new QStatusBar(ChatWindow);
         statusbar->setObjectName("statusbar");
@@ -250,10 +253,11 @@ public:
         menuMistnost->addAction(action_room_2);
         menuMistnost->addAction(action_room_3);
         menuZpravy->addAction(action_zpravy_1);
-        menuZpravy->addAction(action_zpravy_2);
+        menuZpravy->addAction(menuZpravy_2->menuAction());
         menuZpravy->addSeparator();
         menuZpravy->addAction(action_zpravy_3);
         menuZpravy->addAction(action_zpravy_4);
+        menuZpravy_2->addAction(action_zpravy_2_1);
 
         retranslateUi(ChatWindow);
 
@@ -266,7 +270,6 @@ public:
         action_room_1->setText(QCoreApplication::translate("ChatWindow", "Smazat m\303\255stnost", nullptr));
         action_room_2->setText(QCoreApplication::translate("ChatWindow", "Kop\303\255rovat ID m\303\255stnosti", nullptr));
         action_zpravy_1->setText(QCoreApplication::translate("ChatWindow", "Po\304\215et p\305\231ijat\303\275ch: 0", nullptr));
-        action_zpravy_2->setText(QCoreApplication::translate("ChatWindow", "Aktualizace za 5s", nullptr));
         action_room_3->setText(QCoreApplication::translate("ChatWindow", "Odpojit se", nullptr));
         action_zpravy_3->setText(QCoreApplication::translate("ChatWindow", "Vy\304\215istit chat", nullptr));
 #if QT_CONFIG(tooltip)
@@ -276,6 +279,7 @@ public:
 #if QT_CONFIG(tooltip)
         action_zpravy_4->setToolTip(QCoreApplication::translate("ChatWindow", "Aktualizovat", nullptr));
 #endif // QT_CONFIG(tooltip)
+        action_zpravy_2_1->setText(QCoreApplication::translate("ChatWindow", "Nastavit vlastn\303\255 interval", nullptr));
         textEdit->setHtml(QCoreApplication::translate("ChatWindow", "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" \"http://www.w3.org/TR/REC-html40/strict.dtd\">\n"
 "<html><head><meta name=\"qrichtext\" content=\"1\" /><meta charset=\"utf-8\" /><style type=\"text/css\">\n"
 "p, li { white-space: pre-wrap; }\n"
@@ -297,6 +301,7 @@ public:
         pushButton_5->setText(QCoreApplication::translate("ChatWindow", "Soubory", nullptr));
         menuMistnost->setTitle(QCoreApplication::translate("ChatWindow", "M\303\255stnost", nullptr));
         menuZpravy->setTitle(QCoreApplication::translate("ChatWindow", "Zpr\303\241vy", nullptr));
+        menuZpravy_2->setTitle(QCoreApplication::translate("ChatWindow", "Aktualizace za 5s", nullptr));
     } // retranslateUi
 
 };

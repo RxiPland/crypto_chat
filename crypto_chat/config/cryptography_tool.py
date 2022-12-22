@@ -78,15 +78,7 @@ def main():
         else:
             print("Chybí velikost RSA klíče v bitech! [2048, 4096]")
             return
-
-    elif operation == "generate_aes":
-        # not using
-
-        symetric_key = Fernet.generate_key()
-        
-        with open(app_dir + "temp/symetric_key", "wb") as f:
-            f.write(symetric_key)
-        
+   
 
     elif operation == "decrypt_rsa":
         # decrypt RSA cipher to obtain symetric key (AES)
@@ -97,7 +89,7 @@ def main():
             room_id = argv[1]
             room_id_file = tempfile.gettempdir() + f"\\{room_id}"
 
-            with open(room_id_file + "\\symetric_key", "r") as f:
+            with open(room_id_file + "\\symetric_key_server", "r") as f:
                 aes_crypt = f.read()
                 aes_crypt = bytes.fromhex(aes_crypt)
 
@@ -106,7 +98,7 @@ def main():
 
             aes_plain = rsa.decrypt(crypto=aes_crypt, priv_key=private_k)
 
-            with open(room_id_file + "\\symetric_key", "wb") as f:
+            with open(room_id_file + "\\symetric_key_server", "wb") as f:
                 f.write(aes_plain)
 
         else:
@@ -156,3 +148,14 @@ def main():
     
 
 main()
+
+
+"""
+    elif operation == "generate_aes":
+        # not using
+
+        symetric_key = Fernet.generate_key()
+        
+        with open(app_dir + "temp/symetric_key", "wb") as f:
+            f.write(symetric_key)
+"""     

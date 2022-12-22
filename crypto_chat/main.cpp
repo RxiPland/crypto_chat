@@ -40,7 +40,13 @@ int main(int argc, char *argv[])
         crd.app_version = app_version;
         crd.user_agent = user_agent;
         crd.exec();
+
+        if(!crd.created){
+            QMetaObject::invokeMethod(qApp, "quit", Qt::QueuedConnection);
+            return 0;
+        }
     }
+
 
     // TODO: join room ...
     QString user_name;

@@ -38,6 +38,11 @@ set(PROJECT_SOURCES
         logindialog.ui
         ui_logindialog.h
 
+        intervaldialog.h
+        intervaldialog.cpp
+        intervaldialog.ui
+        ui_intervaldialog.h
+
         threadfunctions.h
         threadfunctions.cpp
 

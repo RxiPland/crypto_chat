@@ -8,6 +8,7 @@
 #include <QCloseEvent>
 #include <QTime>
 #include <QDir>
+#include <QProcess>
 
 ThreadFunctions refreshChatLoop;
 
@@ -32,7 +33,7 @@ ChatWindow::ChatWindow(QWidget *parent, QString server_url, QString user_name)
 
     refreshChatLoop.operation = 3;
     refreshChatLoop.sleep_time = 5.9;
-    refreshChatLoop.actionObject = ui->action_zpravy_2;
+    refreshChatLoop.actionObject = ui->menuZpravy_2->menuAction();
     refreshChatLoop.continueLoop = true;
     refreshChatLoop.start();
 
@@ -48,20 +49,34 @@ void ChatWindow::closeEvent(QCloseEvent *bar)
 {
     // Before application close
 
+    if(restart){
+        ChatWindow::restart = false;
+        QProcess::startDetached(QApplication::applicationFilePath());
+    }
+
     refreshChatLoop.stopLoop();
 
     QDir roomFolder(QDir::tempPath() + "/" + room_id);
-    roomFolder.removeRecursively();
+
+    if(roomFolder.exists() && room_id != ""){
+        roomFolder.removeRecursively();
+    }
 
     this->close();
-    bar->accept();
+
+    if(bar != nullptr){
+        bar->accept();
+    }
 
     while(refreshChatLoop.isRunning()){
         // wait for thread to finish
         qApp->processEvents();
     }
 
-    QApplication::quit();
+
+    if(!restart){
+        QApplication::quit();
+    }
 }
 
 QString convert_color(QString color){
@@ -169,6 +184,13 @@ void ChatWindow::on_action_zpravy_3_triggered()
     ui->textEdit->clear();
 
     QString current_time = QTime::currentTime().toString();
-    ui->textEdit->append(tr("<p style=\"color:grey;\">(%1)  &lt;Systém&gt;: Chat byl vyčištěn ...<br></p>").arg(current_time));
+    ui->textEdit->append(tr("<span style=\"color:grey;\">(%1)  &lt;Systém&gt;: Chat byl vyčištěn ...<br></span>").arg(current_time));
+}
+
+
+void ChatWindow::on_action_room_3_triggered()
+{
+    ChatWindow::restart = true;
+    ChatWindow::closeEvent();
 }
 

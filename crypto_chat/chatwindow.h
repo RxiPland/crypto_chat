@@ -2,6 +2,7 @@
 #define CHATWINDOW_H
 
 #include <QMainWindow>
+#include <QCloseEvent>
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class ChatWindow; }
@@ -36,9 +37,13 @@ private slots:
     void on_action_zpravy_4_triggered();
     void on_action_zpravy_3_triggered();
 
+    void on_action_room_3_triggered();
+
 private:
-    void closeEvent(QCloseEvent *bar);
+    void closeEvent(QCloseEvent *bar = nullptr);
     Ui::ChatWindow *ui;
+
+    bool restart = false;
 
 };
 #endif // CHATWINDOW_H
