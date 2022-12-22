@@ -4,11 +4,14 @@ import rsa
 from cryptography.fernet import Fernet
 
 import os
-import uuid
+import json
 
 
 app = flask.Flask(__name__)
 app_dir = os.path.dirname(__file__) + "/"
+
+# generate AES key for server
+server_aes_key = Fernet.generate_key()
 
 version = "crypto-chat v1.0.0"
 
@@ -21,24 +24,52 @@ def hello_world():
     return '<a href=\"https://github.com/RxiPland/crypto_chat\">https://github.com/RxiPland/crypto_chat</a>'
 
 
-@app.route('/test', methods=["GET"])
-def test():
+@app.route('/version', methods=["GET"])
+def check_version():
 
-    if not "crypt-chat" in flask.request.user_agent.string:
+    if not "crypto-chat" in flask.request.user_agent.string:
         return "Forbidden", 403
 
-    # test compatibility with app
+    # app will check compatibility
     return version
+
+
+@app.route('/get-key', methods=["POST"])
+def get_key():
+
+    if not "crypto-chat" in flask.request.user_agent.string:
+        return "Forbidden", 403
+
+    request_json: dict = json.loads(flask.request.get_json())
+
+    if not "rsa_pem" in request_json.keys():
+        return "Forbidden", 403
+
+    rsa_public_key = rsa.PublicKey.load_pkcs1(request_json["rsa_pem"])
+    encrypted_aes = rsa.encrypt(server_aes_key, rsa_public_key)
+
+
+    data = {
+        "aes_key": encrypted_aes.hex()
+    }
+
+    return data
 
 
 @app.route('/create-room', methods=["POST"])
 def create_room():
 
-    if not "crypt-chat" in flask.request.user_agent.string:
+    if not "crypto-chat" in flask.request.user_agent.string:
         return "Forbidden", 403
 
+    request_json: dict = json.loads(flask.request.get_json())
+
+    if not "room_id" in request_json.keys():
+        return "Forbidden", 403
+
+    room_id: str = request_json["room_id"]
+
     # create room's file with random HEX name
-    room_id = uuid.uuid4().hex
     os.system("mkdir " + "\"" + app_dir + room_id + "\"")
 
     # generate AES key for room and save it to file
