@@ -4,6 +4,7 @@
 
 #include <QMessageBox>
 #include <QDir>
+#include <QTextCodec>
 #include <windows.h>
 
 
@@ -116,6 +117,17 @@ void LoginDialog::on_pushButton_clicked()
 
     LoginDialog::disable_widgets(true);
 
+    QMessageBox msgBox;
+    msgBox.setWindowIcon(QIcon("://images/hacker.ico"));
+    msgBox.setWindowTitle("Postup");
+    msgBox.setText("");
+    msgBox.setModal(true);
+    QAbstractButton* pButtonCreate = msgBox.addButton(" Vytvořit místnost ", QMessageBox::YesRole);
+    QAbstractButton* pButtonJoin = msgBox.addButton(" Připojit se do místnosti ", QMessageBox::YesRole);
+
+    pButtonCreate->setHidden(true);
+    pButtonJoin->setHidden(true);
+
 
     QString url_address = ui->lineEdit->text();
 
@@ -128,8 +140,12 @@ void LoginDialog::on_pushButton_clicked()
     } else{
         // validate version && exchange server's AES key
 
+        msgBox.show();
+
         QStringList temp_list;
         int i;
+
+        msgBox.setText(msgBox.text() + "1/3 Vyčištění URL adresy");
 
         // convert string to list
         for(i=0; i<url_address.length(); i++){
@@ -144,6 +160,8 @@ void LoginDialog::on_pushButton_clicked()
 
         // set cleaned URL back to lineEdit
         ui->lineEdit->setText(url_address);
+
+        msgBox.setText(msgBox.text() + "<p style=\"color:green;\"> [Dokončeno]<br></p>");
 
         QNetworkRequest request;
         QUrl qurl_address = QUrl(url_address + "/version");
@@ -164,6 +182,8 @@ void LoginDialog::on_pushButton_clicked()
 
         request.setUrl(qurl_address);
         request.setRawHeader("User-Agent", user_agent);
+
+        msgBox.setText(msgBox.text() + "2/3 Ověření verze serveru s verzí aplikací");
 
         QNetworkReply *reply_get = manager.get(request);
 
@@ -212,6 +232,8 @@ void LoginDialog::on_pushButton_clicked()
             } else{
                 // Validation succesful
 
+                msgBox.setText(msgBox.text() + "<p style=\"color:green;\"> [Dokončeno]<br></p>");
+
                 successful_login = true;
                 server_url = ui->lineEdit->text();
 
@@ -219,15 +241,8 @@ void LoginDialog::on_pushButton_clicked()
                 server_url.replace("http://", "");
                 server_url.replace("//", "/");
 
+                msgBox.setText(msgBox.text() + "3/3 Generace veřejného a soukromého klíče (RSA)");
 
-                QMessageBox msgBoxRSA;
-                msgBoxRSA.setWindowIcon(QIcon("://images/hacker.ico"));
-                msgBoxRSA.setWindowTitle("Generace RSA klíčů");
-                msgBoxRSA.setText("Může to chvíli trvat, záleží na jejich velikosti\n\nGeneruji ...");
-                QAbstractButton* pButtonOk = msgBoxRSA.addButton(" Hotovo ", QMessageBox::YesRole);
-                pButtonOk->setDisabled(true);
-                msgBoxRSA.setWindowFlags(Qt::CustomizeWindowHint | Qt::WindowTitleHint);
-                msgBoxRSA.show();
 
                 QString rsaBits = ui->comboBox->currentText();
                 rsaBits.replace(" (defaultní)", "");
@@ -246,7 +261,7 @@ void LoginDialog::on_pushButton_clicked()
                 shellThread.ShExecInfo.lpFile = L"cmd.exe";
                 shellThread.ShExecInfo.lpParameters = command.c_str();
                 shellThread.ShExecInfo.lpDirectory = QDir::currentPath().toStdWString().c_str();
-                shellThread.ShExecInfo.nShow = SW_SHOW;
+                shellThread.ShExecInfo.nShow = SW_HIDE;
                 shellThread.ShExecInfo.hInstApp = NULL;
 
                 shellThread.start();
@@ -256,29 +271,75 @@ void LoginDialog::on_pushButton_clicked()
                     qApp->processEvents();
                 }
 
-                pButtonOk->setDisabled(false);
-                msgBoxRSA.close();
+                msgBox.setText(msgBox.text() + "<p style=\"color:green;\"> [Dokončeno]<br></p>");
+                msgBox.setText(msgBox.text() + "\nVyberte zda chcete vytvořit novou místnost, nebo se připojit už k existující:");
+
+                QFile hexFile("config/temp/hex_id");
+
+                if(!hexFile.exists()){
+                    QMessageBox::critical(this, "Chyba", "Program nenašel soubor s náhodně vygenerovaným ID místnosti!");
+
+                } else{
+
+                    hexFile.open(QIODevice::ReadOnly);
+                    QByteArray content = hexFile.readAll();
+                    hexFile.close();
+
+                    room_id = (QTextCodec::codecForMib(106)->toUnicode(content)).split("\r\n")[0].trimmed();
+
+                    if(room_id == ""){
+                        QMessageBox::critical(this, "Chyba", "Nepodařilo se načíst hex hodnotu místnosti ze souboru!");
+
+                    } else{
+
+                        QFile public_pem(QDir::tempPath() + "/" + room_id + "/public_key.pem");
+
+                        if(!public_pem.exists()){
+                            QMessageBox::critical(this, "Chyba", "Program nenašel soubor s veřejným klíčem!");
+
+                        } else {
+
+                            public_pem.open(QIODevice::ReadOnly);
+                            content = public_pem.readAll();
+                            public_pem.close();
+
+                            qurl_address = QUrl(url_address + "/get-key");
+
+                            request.setUrl(qurl_address);
+                            request.setRawHeader(QByteArray("rsa_pem"), content);
+
+                            reply_get = manager.post(request, QByteArray());
+
+                            while (!reply_get->isFinished())
+                            {
+                                qApp->processEvents();
+                            }
 
 
-                QMessageBox msgBox;
-                msgBox.setWindowIcon(QIcon("://images/hacker.ico"));
-                msgBox.setWindowTitle("Vyberte akci");
-                msgBox.setText("Úspěšně se podařilo získat symetrický klíč ze serveru. Vyberte zda chcete vytvořit novou místnost, nebo se připojit už k existující.");
-                QAbstractButton* pButtonYes = msgBox.addButton(" Vytvořit místnost ", QMessageBox::YesRole);
-                msgBox.addButton(" Připojit se do místnosti ", QMessageBox::YesRole);
-                msgBox.exec();
+                            pButtonCreate->setHidden(false);
+                            pButtonJoin->setHidden(false);
 
+                            // wait for user input
+                            while(msgBox.isActiveWindow()){
+                                qApp->processEvents();
+                            }
 
-                if (msgBox.clickedButton()==pButtonYes) {
-                    create_room = true;
+                            if (msgBox.clickedButton()==pButtonCreate) {
+                                create_room = true;
+                            }
+
+                            msgBox.close();
+                            this->close();
+
+                            return;
+                        }
+                    }
                 }
-
-                this->close();
-                return;
             }
         }
     }
 
+    msgBox.close();
     LoginDialog::disable_widgets(false);
 }
 

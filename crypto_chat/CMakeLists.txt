@@ -91,3 +91,6 @@ endif()
 
 find_package(Qt6 REQUIRED COMPONENTS Network)
 target_link_libraries(crypto_chat PRIVATE Qt6::Network)
+
+find_package(Qt6 REQUIRED COMPONENTS Core5Compat)
+target_link_libraries(crypto_chat PRIVATE Qt6::Core5Compat)

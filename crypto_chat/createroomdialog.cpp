@@ -1,7 +1,7 @@
 #include "createroomdialog.h"
 #include "ui_createroomdialog.h"
 
-CreateRoomDialog::CreateRoomDialog(QWidget *parent, QString server_url) :
+CreateRoomDialog::CreateRoomDialog(QWidget *parent, QString server_url, QString room_id) :
     QDialog(parent),
     ui(new Ui::CreateRoomDialog)
 {
@@ -15,7 +15,7 @@ CreateRoomDialog::CreateRoomDialog(QWidget *parent, QString server_url) :
     ui->lineEdit_3->setDisabled(true);
 
     ui->lineEdit_2->setText(server_url);
-    ui->lineEdit_3->setText("Vytvoří server");
+    ui->lineEdit_3->setText(room_id);
 
     ui->pushButton->setFocusPolicy(Qt::FocusPolicy::NoFocus);
 

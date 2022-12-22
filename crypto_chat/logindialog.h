@@ -22,6 +22,7 @@ public:
     QByteArray user_agent;
     bool successful_login = false;
     bool create_room = false;
+    QString room_id;
 
     bool authentication_required = false;
     QString authentication_username;

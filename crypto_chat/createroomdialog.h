@@ -12,7 +12,7 @@ class CreateRoomDialog : public QDialog
     Q_OBJECT
 
 public:
-    explicit CreateRoomDialog(QWidget *parent = nullptr, QString server_url = "");
+    explicit CreateRoomDialog(QWidget *parent = nullptr, QString server_url = "", QString room_id = "");
     ~CreateRoomDialog();
 
     QString server_url;
