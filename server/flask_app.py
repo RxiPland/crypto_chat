@@ -5,6 +5,7 @@ from cryptography.fernet import Fernet
 
 import os
 import json
+from urllib.parse import unquote
 
 
 app = flask.Flask(__name__)
@@ -29,31 +30,31 @@ def check_version():
 
     if not "crypto-chat" in flask.request.user_agent.string:
         return "Forbidden", 403
-
+    
     # app will check compatibility
     return version
 
 
 @app.route('/get-key', methods=["POST"])
 def get_key():
+    # params: rsa_pem
 
     if not "crypto-chat" in flask.request.user_agent.string:
         return "Forbidden", 403
 
-    request_json: dict = json.loads(flask.request.get_json())
+    request_json: dict = flask.request.get_json()
 
     if not "rsa_pem" in request_json.keys():
         return "Forbidden", 403
 
-    rsa_public_key = rsa.PublicKey.load_pkcs1(request_json["rsa_pem"])
+    rsa_public_key = rsa.PublicKey.load_pkcs1(unquote(request_json["rsa_pem"]))
     encrypted_aes = rsa.encrypt(server_aes_key, rsa_public_key)
-
 
     data = {
         "aes_key": encrypted_aes.hex()
     }
 
-    return data
+    return flask.jsonify(data)
 
 
 @app.route('/create-room', methods=["POST"])
