@@ -7,6 +7,7 @@
 #include <QMessageBox>
 #include <QCloseEvent>
 #include <QTime>
+#include <QDir>
 
 ThreadFunctions refreshChatLoop;
 
@@ -48,6 +49,9 @@ void ChatWindow::closeEvent(QCloseEvent *bar)
     // Before application close
 
     refreshChatLoop.stopLoop();
+
+    QDir roomFolder(QDir::tempPath() + "/" + room_id);
+    roomFolder.removeRecursively();
 
     this->close();
     bar->accept();

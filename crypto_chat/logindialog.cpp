@@ -128,6 +128,8 @@ void LoginDialog::on_pushButton_clicked()
     QAbstractButton* pButtonCreate = msgBox.addButton(" Vytvořit místnost ", QMessageBox::YesRole);
     QAbstractButton* pButtonJoin = msgBox.addButton(" Připojit se do místnosti ", QMessageBox::YesRole);
 
+    QString previousText;
+
     pButtonCreate->setHidden(true);
     pButtonJoin->setHidden(true);
 
@@ -148,7 +150,9 @@ void LoginDialog::on_pushButton_clicked()
         QStringList temp_list;
         int i;
 
-        msgBox.setText(msgBox.text() + "1/3 Vyčištění URL adresy");
+        msgBox.setText(msgBox.text() + "1/8 Vyčištění URL adresy");
+        previousText = msgBox.text();
+        msgBox.setText(msgBox.text() + "<span style=\"color:orange;\"> [Probíhá]<br></span>");
 
         // convert string to list
         for(i=0; i<url_address.length(); i++){
@@ -164,7 +168,7 @@ void LoginDialog::on_pushButton_clicked()
         // set cleaned URL back to lineEdit
         ui->lineEdit->setText(url_address);
 
-        msgBox.setText(msgBox.text() + "<p style=\"color:green;\"> [Dokončeno]<br></p>");
+        msgBox.setText(previousText + "<span style=\"color:green;\"> [Dokončeno]<br></span>");
 
         QNetworkRequest request;
         QUrl qurl_address = QUrl(url_address + "/version");
@@ -187,7 +191,9 @@ void LoginDialog::on_pushButton_clicked()
         request.setHeader(QNetworkRequest::UserAgentHeader, user_agent);
         request.setHeader(QNetworkRequest::ContentTypeHeader, "text/html; charset=utf-8");
 
-        msgBox.setText(msgBox.text() + "2/3 Ověření verze serveru s verzí aplikací");
+        msgBox.setText(msgBox.text() + "2/8 Ověření verze serveru s verzí aplikace");
+        previousText = msgBox.text();
+        msgBox.setText(msgBox.text() + "<span style=\"color:orange;\"> [Probíhá]<br></span>");
 
         QNetworkReply *reply_get = manager.get(request);
 
@@ -236,7 +242,7 @@ void LoginDialog::on_pushButton_clicked()
             } else{
                 // Validation succesful
 
-                msgBox.setText(msgBox.text() + "<p style=\"color:green;\"> [Dokončeno]<br></p>");
+                msgBox.setText(previousText + "<span style=\"color:green;\"> [Dokončeno]<br></span>");
 
                 successful_login = true;
                 server_url = ui->lineEdit->text();
@@ -245,7 +251,9 @@ void LoginDialog::on_pushButton_clicked()
                 server_url.replace("http://", "");
                 server_url.replace("//", "/");
 
-                msgBox.setText(msgBox.text() + "3/3 Generace veřejného a soukromého klíče (RSA)");
+                msgBox.setText(msgBox.text() + "3/8 Generace veřejného a soukromého klíče (RSA) + generace náhodného ID pro vytvoření složky v /Temp");
+                previousText = msgBox.text();
+                msgBox.setText(msgBox.text() + "<span style=\"color:orange;\"> [Probíhá]<br></span>");
 
 
                 QString rsaBits = ui->comboBox->currentText();
@@ -275,14 +283,19 @@ void LoginDialog::on_pushButton_clicked()
                     qApp->processEvents();
                 }
 
-                msgBox.setText(msgBox.text() + "<p style=\"color:green;\"> [Dokončeno]<br></p>");
-                msgBox.setText(msgBox.text() + "\nVyberte zda chcete vytvořit novou místnost, nebo se připojit už k existující:");
+                msgBox.setText(previousText + "<span style=\"color:green;\"> [Dokončeno]<br></span>");
+
+
+                msgBox.setText(msgBox.text() + "4/8 Čtení náhodného ID ze souboru");
+                previousText = msgBox.text();
+                msgBox.setText(msgBox.text() + "<span style=\"color:orange;\"> [Probíhá]<br></span>");
+
 
                 QFile hexFile("config/temp/hex_id");
 
                 if(!hexFile.exists()){
                     // python did not create the file
-                    QMessageBox::critical(this, "Chyba", "Program nenašel soubor s náhodně vygenerovaným ID místnosti!");
+                    QMessageBox::critical(this, "Chyba", "Program nenašel soubor s náhodně vygenerovaným ID!");
 
                 } else{
 
@@ -294,9 +307,15 @@ void LoginDialog::on_pushButton_clicked()
 
                     if(room_id == ""){
                         // python did not create the file
-                        QMessageBox::critical(this, "Chyba", "Nepodařilo se načíst hex hodnotu místnosti ze souboru!");
+                        QMessageBox::critical(this, "Chyba", "ID je prázdné!");
 
                     } else{
+
+                        msgBox.setText(previousText + "<span style=\"color:green;\"> [Dokončeno]<br></span>");
+
+                        msgBox.setText(msgBox.text() + "5/8 Čtení vygenerovaného veřejného klíče (RSA) ze souboru");
+                        previousText = msgBox.text();
+                        msgBox.setText(msgBox.text() + "<span style=\"color:orange;\"> [Probíhá]<br></span>");
 
                         QFile public_pem(QDir::tempPath() + "/" + room_id + "/public_key.pem");
 
@@ -309,73 +328,113 @@ void LoginDialog::on_pushButton_clicked()
                             content = public_pem.readAll();
                             public_pem.close();
 
-                            qurl_address = QUrl(url_address + "/get-key");
-
-                            if(ui->checkBox->isChecked()){
-                                // authentication
-
-                                qurl_address.setUserName(authentication_username);
-                                qurl_address.setPassword(authentication_password);
-                            }
-
-                            request.setUrl(qurl_address);
-                            request.setHeader(QNetworkRequest::ContentTypeHeader, "application/json");
-
-
-                            QJsonObject obj;
-                            obj["rsa_pem"] = (QString)QUrl::toPercentEncoding(content);
-                            QJsonDocument doc(obj);
-                            QByteArray data = doc.toJson();
-
-                            QNetworkReply *reply_post = manager.post(request, data);
-
-
-                            while (!reply_post->isFinished())
-                            {
-                                qApp->processEvents();
-                            }
-
-                            QJsonDocument jsonResponse = QJsonDocument::fromJson(reply_post->readAll());
-                            QJsonObject jsonObject = jsonResponse.object();
-
-                            QString encryptedAesKeyHex = jsonObject["aes_key"].toString();
-
-                            QFile aes_key(QDir::tempPath() + "/" + room_id + "/symetric_key");
-                            aes_key.open(QIODevice::WriteOnly);
-                            aes_key.write(encryptedAesKeyHex.toStdString().c_str());
-                            aes_key.close();
-
-                            if(!aes_key.exists()){
-                                QMessageBox::critical(this, "Chyba", "Nepodařilo se zapsat zašifrovaný symetrický klíč do souboru!");
+                            if(room_id == ""){
+                                // python did not create the file
+                                QMessageBox::critical(this, "Chyba", "Veřejný klíč je prázdný!");
 
                             } else{
 
-                                //command = QString("/C config/cryptography_tool.exe decrypt_rsa " + room_id).toStdWString();
-                                command = QString("/C python config/cryptography_tool.py decrypt_rsa " + room_id).toStdWString();
+                                msgBox.setText(previousText + "<span style=\"color:green;\"> [Dokončeno]<br></span>");
 
-                                shellThread.start();
 
-                                // wait for thread to complete
-                                while(shellThread.isRunning()){
+                                qurl_address = QUrl(url_address + "/get-key");
+
+                                msgBox.setText(msgBox.text() + "6/8 Posílání veřejného klíče (RSA) serveru, aby tím zašifroval svůj symetrický klíč (AES)");
+                                previousText = msgBox.text();
+                                msgBox.setText(msgBox.text() + "<span style=\"color:orange;\"> [Probíhá]<br></span>");
+
+                                if(ui->checkBox->isChecked()){
+                                    // authentication
+
+                                    qurl_address.setUserName(authentication_username);
+                                    qurl_address.setPassword(authentication_password);
+                                }
+
+                                request.setUrl(qurl_address);
+                                request.setHeader(QNetworkRequest::ContentTypeHeader, "application/json");
+
+
+                                QJsonObject obj;
+                                obj["rsa_pem"] = (QString)QUrl::toPercentEncoding(content);
+                                QJsonDocument doc(obj);
+                                QByteArray data = doc.toJson();
+
+                                QNetworkReply *reply_post = manager.post(request, data);
+
+
+                                while (!reply_post->isFinished())
+                                {
                                     qApp->processEvents();
                                 }
 
-                                pButtonCreate->setHidden(false);
-                                pButtonJoin->setHidden(false);
+                                QJsonDocument jsonResponse = QJsonDocument::fromJson(reply_post->readAll());
+                                QJsonObject jsonObject = jsonResponse.object();
 
-                                // wait for user input
-                                while(!msgBox.isHidden()){
-                                    qApp->processEvents();
+                                QString encryptedAesKeyHex = jsonObject["aes_key"].toString();
+
+                                if(encryptedAesKeyHex == ""){
+                                    QMessageBox::critical(this, "Chyba", "Server neposlal zašifrovaný symetrický klíč! (AES)");
+
+                                } else{
+
+                                    msgBox.setText(previousText + "<span style=\"color:green;\"> [Dokončeno]<br></span>");
+
+                                    msgBox.setText(msgBox.text() + "7/8 Zapisuji přijatý zašifrovaný symetrický klíč do souboru (AES)");
+                                    previousText = msgBox.text();
+                                    msgBox.setText(msgBox.text() + "<span style=\"color:orange;\"> [Probíhá]<br></span>");
+
+
+                                    QFile aes_key(QDir::tempPath() + "/" + room_id + "/symetric_key");
+                                    aes_key.open(QIODevice::WriteOnly);
+                                    aes_key.write(encryptedAesKeyHex.toStdString().c_str());
+                                    aes_key.close();
+
+                                    if(!aes_key.exists()){
+                                        QMessageBox::critical(this, "Chyba", "Nepodařilo se zapsat zašifrovaný symetrický klíč do souboru!");
+
+                                    } else{
+
+                                        msgBox.setText(previousText + "<span style=\"color:green;\"> [Dokončeno]<br></span>");
+
+                                        msgBox.setText(msgBox.text() + "8/8 Dešifruji přijatý symetrický klíč (AES) serveru pomocí soukromého klíče (RSA) + zapisuji do souboru");
+                                        previousText = msgBox.text();
+                                        msgBox.setText(msgBox.text() + "<span style=\"color:orange;\"> [Probíhá]<br></span>");
+
+
+                                        //command = QString("/C config/cryptography_tool.exe decrypt_rsa " + room_id).toStdWString();
+                                        command = QString("/C python config/cryptography_tool.py decrypt_rsa " + room_id).toStdWString();
+
+                                        shellThread.ShExecInfo.lpParameters = command.c_str();
+                                        shellThread.start();
+
+                                        // wait for thread to complete
+                                        while(shellThread.isRunning()){
+                                            qApp->processEvents();
+                                        }
+
+                                        msgBox.setText(previousText + "<span style=\"color:green;\"> [Dokončeno]<br></span>");
+
+
+                                        msgBox.setText(msgBox.text() + "<br>Vyberte zda chcete vytvořit novou místnost, nebo se připojit už k existující:");
+
+                                        pButtonCreate->setHidden(false);
+                                        pButtonJoin->setHidden(false);
+
+                                        // wait for user input
+                                        while(!msgBox.isHidden()){
+                                            qApp->processEvents();
+                                        }
+
+                                        if (msgBox.clickedButton()==pButtonCreate) {
+                                            create_room = true;
+                                        }
+
+                                        msgBox.close();
+                                        this->close();
+
+                                        return;
+                                    }
                                 }
-
-                                if (msgBox.clickedButton()==pButtonCreate) {
-                                    create_room = true;
-                                }
-
-                                msgBox.close();
-                                this->close();
-
-                                return;
                             }
                         }
                     }
