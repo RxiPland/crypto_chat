@@ -45,10 +45,12 @@ int main(int argc, char *argv[])
             QMetaObject::invokeMethod(qApp, "quit", Qt::QueuedConnection);
             return 0;
         }
+
+    } else{
+
+        // TODO: join room ...
     }
 
-
-    // TODO: join room ...
     QString user_name;
 
 

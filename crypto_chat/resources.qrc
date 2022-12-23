@@ -7,5 +7,7 @@
         <file>images/refresh.ico</file>
         <file>images/email.ico</file>
         <file>images/clean.ico</file>
+        <file>images/zoom_in.ico</file>
+        <file>images/zoom_out.ico</file>
     </qresource>
 </RCC>

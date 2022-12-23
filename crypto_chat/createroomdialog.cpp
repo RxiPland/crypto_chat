@@ -3,6 +3,7 @@
 
 #include <QDir>
 #include <QCloseEvent>
+#include <QMessageBox>
 
 
 CreateRoomDialog::CreateRoomDialog(QWidget *parent, QString server_url, QString room_id) :
@@ -63,6 +64,34 @@ void CreateRoomDialog::on_checkBox_clicked()
 
     } else{
         ui->lineEdit->setHidden(true);
+    }
+}
+
+
+void CreateRoomDialog::on_pushButton_clicked()
+{
+    QString username = ui->lineEdit_4->text().trimmed();
+
+    if(username == ""){
+        QMessageBox::critical(this, "Chyba", "Pole pro jméno nemůže být prázdné!");
+        return;
+    }
+
+
+
+}
+
+
+void CreateRoomDialog::on_lineEdit_4_textEdited(const QString &arg1)
+{
+    if(arg1.length() == 26){
+        QString text = arg1;
+        text.chop(1);
+
+        ui->lineEdit_4->setText(text);
+
+        QMessageBox::critical(this, "Upozornění", "Délka jména nemůže přesáhnout 25 znaků!");
+
     }
 }
 

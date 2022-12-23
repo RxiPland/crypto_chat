@@ -110,7 +110,7 @@ public:
 
         lineEdit_4 = new QLineEdit(CreateRoomDialog);
         lineEdit_4->setObjectName("lineEdit_4");
-        lineEdit_4->setMaxLength(25);
+        lineEdit_4->setMaxLength(26);
         lineEdit_4->setClearButtonEnabled(true);
 
         horizontalLayout_6->addWidget(lineEdit_4);

@@ -11,6 +11,7 @@
 
 #include <QtCore/QVariant>
 #include <QtWidgets/QApplication>
+#include <QtWidgets/QCheckBox>
 #include <QtWidgets/QDialog>
 #include <QtWidgets/QHBoxLayout>
 #include <QtWidgets/QLabel>
@@ -31,6 +32,10 @@ public:
     QHBoxLayout *horizontalLayout;
     QLabel *label;
     QLineEdit *lineEdit;
+    QSpacerItem *verticalSpacer_3;
+    QHBoxLayout *horizontalLayout_5;
+    QCheckBox *checkBox;
+    QLineEdit *lineEdit_2;
     QSpacerItem *verticalSpacer;
     QHBoxLayout *horizontalLayout_2;
     QSpacerItem *horizontalSpacer;
@@ -42,7 +47,7 @@ public:
     {
         if (NameChangeDialog->objectName().isEmpty())
             NameChangeDialog->setObjectName("NameChangeDialog");
-        NameChangeDialog->resize(367, 116);
+        NameChangeDialog->resize(367, 178);
         horizontalLayout_3 = new QHBoxLayout(NameChangeDialog);
         horizontalLayout_3->setObjectName("horizontalLayout_3");
         horizontalSpacer_2 = new QSpacerItem(5, 20, QSizePolicy::Fixed, QSizePolicy::Minimum);
@@ -59,19 +64,55 @@ public:
         horizontalLayout->setObjectName("horizontalLayout");
         label = new QLabel(NameChangeDialog);
         label->setObjectName("label");
+        QSizePolicy sizePolicy(QSizePolicy::Preferred, QSizePolicy::Fixed);
+        sizePolicy.setHorizontalStretch(0);
+        sizePolicy.setVerticalStretch(0);
+        sizePolicy.setHeightForWidth(label->sizePolicy().hasHeightForWidth());
+        label->setSizePolicy(sizePolicy);
+        label->setMinimumSize(QSize(0, 24));
 
         horizontalLayout->addWidget(label);
 
         lineEdit = new QLineEdit(NameChangeDialog);
         lineEdit->setObjectName("lineEdit");
-        lineEdit->setMaxLength(25);
+        lineEdit->setMinimumSize(QSize(0, 24));
+        lineEdit->setMaxLength(26);
 
         horizontalLayout->addWidget(lineEdit);
 
 
         verticalLayout->addLayout(horizontalLayout);
 
-        verticalSpacer = new QSpacerItem(20, 10, QSizePolicy::Minimum, QSizePolicy::Fixed);
+        verticalSpacer_3 = new QSpacerItem(20, 20, QSizePolicy::Minimum, QSizePolicy::Minimum);
+
+        verticalLayout->addItem(verticalSpacer_3);
+
+        horizontalLayout_5 = new QHBoxLayout();
+        horizontalLayout_5->setObjectName("horizontalLayout_5");
+        checkBox = new QCheckBox(NameChangeDialog);
+        checkBox->setObjectName("checkBox");
+        QSizePolicy sizePolicy1(QSizePolicy::Minimum, QSizePolicy::Fixed);
+        sizePolicy1.setHorizontalStretch(0);
+        sizePolicy1.setVerticalStretch(0);
+        sizePolicy1.setHeightForWidth(checkBox->sizePolicy().hasHeightForWidth());
+        checkBox->setSizePolicy(sizePolicy1);
+        checkBox->setMinimumSize(QSize(0, 24));
+
+        horizontalLayout_5->addWidget(checkBox);
+
+        lineEdit_2 = new QLineEdit(NameChangeDialog);
+        lineEdit_2->setObjectName("lineEdit_2");
+        sizePolicy1.setHeightForWidth(lineEdit_2->sizePolicy().hasHeightForWidth());
+        lineEdit_2->setSizePolicy(sizePolicy1);
+        lineEdit_2->setMinimumSize(QSize(255, 24));
+        lineEdit_2->setMaxLength(26);
+
+        horizontalLayout_5->addWidget(lineEdit_2);
+
+
+        verticalLayout->addLayout(horizontalLayout_5);
+
+        verticalSpacer = new QSpacerItem(20, 10, QSizePolicy::Minimum, QSizePolicy::Minimum);
 
         verticalLayout->addItem(verticalSpacer);
 
@@ -111,6 +152,8 @@ public:
     {
         NameChangeDialog->setWindowTitle(QCoreApplication::translate("NameChangeDialog", "Dialog", nullptr));
         label->setText(QCoreApplication::translate("NameChangeDialog", "Nov\303\241 p\305\231ezd\303\255vka:", nullptr));
+        checkBox->setText(QCoreApplication::translate("NameChangeDialog", "Prefix", nullptr));
+        lineEdit_2->setPlaceholderText(QCoreApplication::translate("NameChangeDialog", "Objev\303\255 se p\305\231ed jm\303\251nem", nullptr));
         pushButton_2->setText(QCoreApplication::translate("NameChangeDialog", "Zru\305\241it", nullptr));
         pushButton->setText(QCoreApplication::translate("NameChangeDialog", "Ok", nullptr));
     } // retranslateUi

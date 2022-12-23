@@ -267,12 +267,6 @@ void LoginDialog::on_pushButton_clicked()
 
                 msgBox.setText(previousText + "<span style=\"color:green;\"> [Dokončeno]<br></span>");
 
-                successful_login = true;
-                server_url = ui->lineEdit->text();
-
-                server_url.replace("https://", "");
-                server_url.replace("http://", "");
-                server_url.replace("//", "/");
 
                 msgBox.setText(msgBox.text() + "3/8 Generace veřejného a soukromého klíče (RSA) + generace náhodného ID pro vytvoření složky v /Temp");
                 previousText = msgBox.text();
@@ -438,7 +432,7 @@ void LoginDialog::on_pushButton_clicked()
                                         msgBox.setText(previousText + "<span style=\"color:green;\"> [Dokončeno]<br></span>");
 
 
-                                        msgBox.setText(msgBox.text() + "<br>Vyberte zda chcete vytvořit novou místnost, nebo se připojit už k existující:");
+                                        msgBox.setText(msgBox.text() + "<br>Symetrický klíč serveru byl úspěšně přijat. Vyberte zda chcete vytvořit novou místnost, nebo se připojit už k existující:");
 
                                         pButtonCreate->setHidden(false);
                                         pButtonJoin->setHidden(false);
@@ -451,6 +445,9 @@ void LoginDialog::on_pushButton_clicked()
                                         if (msgBox.clickedButton()==pButtonCreate) {
                                             create_room = true;
                                         }
+
+                                        LoginDialog::successful_login = true;
+                                        LoginDialog::server_url = ui->lineEdit->text();
 
                                         LoginDialog::deleleFolder = false;
 

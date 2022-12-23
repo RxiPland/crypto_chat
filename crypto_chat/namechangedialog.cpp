@@ -13,6 +13,8 @@ NameChangeDialog::NameChangeDialog(QWidget *parent) :
 
     ui->pushButton->setFocusPolicy(Qt::FocusPolicy::NoFocus);
     ui->pushButton_2->setFocusPolicy(Qt::FocusPolicy::NoFocus);
+
+    ui->lineEdit_2->setHidden(true);
 }
 
 NameChangeDialog::~NameChangeDialog()
@@ -46,8 +48,14 @@ void NameChangeDialog::on_pushButton_clicked()
     this->hide();
 
     NameChangeDialog::new_name = ui->lineEdit->text().trimmed();
+    NameChangeDialog::prefix = ui->lineEdit_2->text().trimmed();
 
-    QMessageBox::information(this, "Oznámení", "Jméno bylo úspěšně změněno.");
+    if(ui->checkBox->isChecked()){
+        QMessageBox::information(this, "Oznámení", "Údaje o jménu a prefixu byly úspěšně změněny.");
+
+    } else{
+        QMessageBox::information(this, "Oznámení", "Jméno bylo úspěšně změněno.");
+    }
 
 
     this->close();
@@ -78,5 +86,50 @@ void NameChangeDialog::on_lineEdit_returnPressed()
         NameChangeDialog::on_pushButton_clicked();
     }
 
+}
+
+
+void NameChangeDialog::on_lineEdit_textEdited(const QString &arg1)
+{
+    if(arg1.length() == 26){
+        QString text = arg1;
+        text.chop(1);
+
+        ui->lineEdit->setText(text);
+
+        QMessageBox::critical(this, "Upozornění", "Délka jména nemůže přesáhnout 25 znaků!");
+
+    }
+}
+
+
+void NameChangeDialog::on_checkBox_clicked()
+{
+    if(ui->checkBox->isChecked()){
+        ui->lineEdit_2->setHidden(false);
+
+    } else{
+        ui->lineEdit_2->setHidden(true);
+    }
+}
+
+
+void NameChangeDialog::on_lineEdit_2_textEdited(const QString &arg1)
+{
+    if(arg1.length() == 26){
+        QString text = arg1;
+        text.chop(1);
+
+        ui->lineEdit_2->setText(text);
+
+        QMessageBox::critical(this, "Upozornění", "Délka prefixu nemůže přesáhnout 25 znaků!");
+
+    }
+}
+
+
+void NameChangeDialog::on_lineEdit_2_returnPressed()
+{
+    on_lineEdit_returnPressed();
 }
 

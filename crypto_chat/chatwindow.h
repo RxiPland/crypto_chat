@@ -22,6 +22,7 @@ public:
     // user
     QString user_color = "black";  // default color
     QString user_name;
+    QString prefix;
 
     // server
     bool authentication_required = false;
@@ -36,8 +37,13 @@ private slots:
     void on_pushButton_4_clicked();
     void on_action_zpravy_4_triggered();
     void on_action_zpravy_3_triggered();
-
     void on_action_room_3_triggered();
+
+    void on_action_zpravy_3_1_triggered();
+
+    void on_action_zpravy_3_2_triggered();
+
+    void on_action_zpravy_3_3_triggered();
 
 private:
     void closeEvent(QCloseEvent *bar = nullptr);

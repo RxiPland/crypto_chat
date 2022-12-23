@@ -102,7 +102,7 @@
        <item>
         <widget class="QLineEdit" name="lineEdit_4">
          <property name="maxLength">
-          <number>25</number>
+          <number>26</number>
          </property>
          <property name="clearButtonEnabled">
           <bool>true</bool>

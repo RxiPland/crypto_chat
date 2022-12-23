@@ -56,6 +56,11 @@
        <layout class="QVBoxLayout" name="verticalLayout">
         <item>
          <widget class="QTextEdit" name="textEdit">
+          <property name="font">
+           <font>
+            <pointsize>9</pointsize>
+           </font>
+          </property>
           <property name="focusPolicy">
            <enum>Qt::NoFocus</enum>
           </property>
@@ -333,11 +338,22 @@ li.checked::marker { content: &quot;\2612&quot;; }
      </property>
      <addaction name="action_zpravy_2_1"/>
     </widget>
+    <widget class="QMenu" name="menuZpravy_3">
+     <property name="title">
+      <string>Velikost písma</string>
+     </property>
+     <addaction name="action_zpravy_3_1"/>
+     <addaction name="action_zpravy_3_2"/>
+     <addaction name="separator"/>
+     <addaction name="action_zpravy_3_3"/>
+    </widget>
     <addaction name="action_zpravy_1"/>
     <addaction name="menuZpravy_2"/>
     <addaction name="separator"/>
     <addaction name="action_zpravy_3"/>
     <addaction name="action_zpravy_4"/>
+    <addaction name="separator"/>
+    <addaction name="menuZpravy_3"/>
    </widget>
    <addaction name="menuMistnost"/>
    <addaction name="menuZpravy"/>
@@ -406,6 +422,35 @@ li.checked::marker { content: &quot;\2612&quot;; }
   <action name="action_zpravy_2_1">
    <property name="text">
     <string>Nastavit vlastní interval</string>
+   </property>
+  </action>
+  <action name="action_zpravy_3_1">
+   <property name="icon">
+    <iconset resource="resources.qrc">
+     <normaloff>:/images/zoom_in.ico</normaloff>:/images/zoom_in.ico</iconset>
+   </property>
+   <property name="text">
+    <string>Zvětšit</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl++</string>
+   </property>
+  </action>
+  <action name="action_zpravy_3_2">
+   <property name="icon">
+    <iconset resource="resources.qrc">
+     <normaloff>:/images/zoom_out.ico</normaloff>:/images/zoom_out.ico</iconset>
+   </property>
+   <property name="text">
+    <string>Zmenšit</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+-</string>
+   </property>
+  </action>
+  <action name="action_zpravy_3_3">
+   <property name="text">
+    <string>Reset</string>
    </property>
   </action>
  </widget>

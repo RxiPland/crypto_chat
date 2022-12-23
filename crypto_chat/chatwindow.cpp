@@ -24,7 +24,7 @@ ChatWindow::ChatWindow(QWidget *parent, QString server_url, QString user_name)
     ui->setupUi(this);
     this->setWindowIcon(QIcon(":/images/hacker.ico"));
     this->setWindowTitle(tr("crypto-chat  |  %1  |  %2").arg(server_url).arg(user_name));
-    this->setWindowFlags(windowFlags() &(~Qt::WindowMaximizeButtonHint));
+    //this->setWindowFlags(windowFlags() &(~Qt::WindowMaximizeButtonHint));
 
     ui->label->setStyleSheet(tr("QLabel { background-color : %1 }").arg(user_color));
     ui->lineEdit->setFocus();
@@ -164,12 +164,16 @@ void ChatWindow::on_pushButton_3_clicked()
         this->setWindowTitle(tr("crypto-chat  |  %1  |  %2").arg(server_url).arg(user_name));
     }
 
+    if(nchd.prefix != ""){
+        ChatWindow::prefix = nchd.prefix;
+    }
+
 }
 
 
 void ChatWindow::on_pushButton_2_clicked()
 {
-    QMessageBox::about(this, "Informace o místnosti", tr("Verze aplikace:  %1<br><br>URL:  %2<br>ID:  %3<br><br>Vaše přezdívka:  %4<br>Vaše barva:  %5").arg(app_version).arg(server_url).arg(room_id).arg(user_name).arg(convert_color(user_color)));
+    QMessageBox::about(this, "Informace o místnosti", tr("Verze aplikace:  %1<br><br>URL:  %2<br>ID:  %3<br><br>Vaše přezdívka:  %4<br>Váš prefix: %5<br>Vaše barva:  %6").arg(app_version).arg(server_url).arg(room_id).arg(user_name).arg(prefix).arg(convert_color(user_color)));
 }
 
 
@@ -182,9 +186,7 @@ void ChatWindow::on_action_zpravy_4_triggered()
 void ChatWindow::on_action_zpravy_3_triggered()
 {
     ui->textEdit->clear();
-
-    QString current_time = QTime::currentTime().toString();
-    ui->textEdit->append(tr("<span style=\"color:grey;\">(%1)  &lt;Systém&gt;: Chat byl vyčištěn ...<br></span>").arg(current_time));
+    ui->textEdit->append(tr("<span style=\"color:grey;\">Chat byl vyčištěn ...<br></span>"));
 }
 
 
@@ -192,5 +194,37 @@ void ChatWindow::on_action_room_3_triggered()
 {
     ChatWindow::restart = true;
     ChatWindow::closeEvent();
+}
+
+
+void ChatWindow::on_action_zpravy_3_1_triggered()
+{
+    QFont fontInfo = ui->textEdit->font();
+    int pointSize = fontInfo.pointSize();
+
+    if(pointSize < 20){
+        fontInfo.setPointSize(pointSize + 1);
+        ui->textEdit->setFont(fontInfo);
+    }
+}
+
+
+void ChatWindow::on_action_zpravy_3_2_triggered()
+{
+    QFont fontInfo = ui->textEdit->font();
+    int pointSize = fontInfo.pointSize();
+
+    if(pointSize > 7){
+        fontInfo.setPointSize(pointSize - 1);
+        ui->textEdit->setFont(fontInfo);
+    }
+}
+
+
+void ChatWindow::on_action_zpravy_3_3_triggered()
+{
+    QFont fontInfo = ui->textEdit->font();
+    fontInfo.setPointSize(9);
+    ui->textEdit->setFont(fontInfo);
 }
 

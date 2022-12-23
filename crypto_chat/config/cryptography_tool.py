@@ -114,13 +114,13 @@ def main():
         
             message_plain = argv[1].encode("utf-8")
 
-            with open(app_dir + "temp/symetric_key", "rb") as f:
+            with open(room_id_file + "\\symetric_key_server", "rb") as f:
                 symetric_key = Fernet(f.read())
 
             message_crypt = symetric_key.encrypt(data=message_plain)
 
-            with open(app_dir + "temp/encrypted_message", "wb") as f:
-                f.write(message_crypt)
+            with open(room_id_file + "\\encrypted_message", "wb") as f:
+                f.write(message_crypt.hex())
 
         else:
             print("Chybí text k zašifrování!")
