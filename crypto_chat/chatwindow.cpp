@@ -3,6 +3,7 @@
 #include "colordialog.h"
 #include "namechangedialog.h"
 #include "threadfunctions.h"
+#include "intervaldialog.h"
 
 #include <QMessageBox>
 #include <QCloseEvent>
@@ -31,7 +32,7 @@ ChatWindow::ChatWindow(QWidget *parent, QString server_url, QString user_name)
     QApplication::setQuitOnLastWindowClosed(true);
 
     refreshChatLoop.operation = 3;
-    refreshChatLoop.sleep_time = 5.9;
+    refreshChatLoop.sleep_time = refreshInterval;
     refreshChatLoop.actionObject = ui->menuZpravy_2->menuAction();
     refreshChatLoop.continueLoop = true;
     refreshChatLoop.start();
@@ -172,7 +173,7 @@ void ChatWindow::on_pushButton_3_clicked()
 
 void ChatWindow::on_pushButton_2_clicked()
 {
-    QMessageBox::about(this, "Informace o místnosti", tr("Verze aplikace:  %1<br><br>URL:  %2<br>ID:  %3<br><br>Vaše přezdívka:  %4<br>Váš prefix: %5<br>Vaše barva:  %6").arg(app_version).arg(server_url).arg(room_id).arg(user_name).arg(prefix).arg(convert_color(user_color)));
+    QMessageBox::about(this, "Informace o místnosti", tr("Verze aplikace:  %1<br><br>URL:  %2<br>ID:  %3<br>Interval aktualizace chatu: %4s<br><br>Vaše přezdívka:  %5<br>Váš prefix: %6<br>Vaše barva:  %7").arg(app_version).arg(server_url).arg(room_id).arg(refreshInterval).arg(user_name).arg(prefix).arg(convert_color(user_color)));
 }
 
 
@@ -225,5 +226,23 @@ void ChatWindow::on_action_zpravy_3_3_triggered()
     QFont fontInfo = ui->textEdit->font();
     fontInfo.setPointSize(9);
     ui->textEdit->setFont(fontInfo);
+}
+
+
+void ChatWindow::on_action_zpravy_2_1_triggered()
+{
+    IntervalDialog ind;
+    ind.interval = ChatWindow::refreshInterval;
+    ind.set_interval(ChatWindow::refreshInterval);
+    ind.setModal(true);
+    ind.exec();
+
+    if(ChatWindow::refreshInterval != ind.interval){
+
+        ChatWindow::refreshInterval = ind.interval;
+        refreshChatLoop.sleep_time = ChatWindow::refreshInterval;
+        refreshChatLoop.reload();
+    }
+
 }
 

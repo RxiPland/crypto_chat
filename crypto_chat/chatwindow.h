@@ -24,6 +24,8 @@ public:
     QString user_name;
     QString prefix;
 
+    float refreshInterval = 5.9;
+
     // server
     bool authentication_required = false;
     QString authentication_username;
@@ -38,12 +40,10 @@ private slots:
     void on_action_zpravy_4_triggered();
     void on_action_zpravy_3_triggered();
     void on_action_room_3_triggered();
-
     void on_action_zpravy_3_1_triggered();
-
     void on_action_zpravy_3_2_triggered();
-
     void on_action_zpravy_3_3_triggered();
+    void on_action_zpravy_2_1_triggered();
 
 private:
     void closeEvent(QCloseEvent *bar = nullptr);

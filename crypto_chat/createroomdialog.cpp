@@ -195,11 +195,10 @@ void CreateRoomDialog::on_pushButton_clicked()
     }
 
     //command = QString("/C python config/cryptography_tool.exe decrypt_aes_server").toStdWString();
-    command = QString("/C python config/cryptography_tool.py decrypt_aes_server & pause").toStdWString();
+    command = QString("/C python config/cryptography_tool.py decrypt_aes_server").toStdWString();
 
     // decrypt room's AES key with server's AES key
     shellThread.ShExecInfo.lpParameters = command.c_str();
-    shellThread.ShExecInfo.nShow = SW_SHOW;
     shellThread.start();
 
     // wait for thread to complete

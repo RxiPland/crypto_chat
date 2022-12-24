@@ -15,6 +15,17 @@ public:
     explicit IntervalDialog(QWidget *parent = nullptr);
     ~IntervalDialog();
 
+    float interval;
+
+    void set_interval(float interval);
+
+private slots:
+    void on_pushButton_2_clicked();
+
+    void on_pushButton_clicked();
+
+    void on_doubleSpinBox_valueChanged(double arg1);
+
 private:
     Ui::IntervalDialog *ui;
 };
