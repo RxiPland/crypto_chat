@@ -63,15 +63,27 @@ def create_room():
     if not "crypto-chat" in flask.request.user_agent.string:
         return "Forbidden", 403
 
-    request_json: dict = json.loads(flask.request.get_json())
+    request_json: dict = flask.request.get_json()
 
-    if not "room_id" in request_json.keys():
+    if not "data" in request_json.keys():
         return "Forbidden", 403
 
-    room_id: str = request_json["room_id"]
+    symetric_key = Fernet(server_aes_key)
+
+    decrypted_data: dict = json.loads(symetric_key.decrypt(bytes.fromhex(request_json["data"])))
+
+    if not "room_id" in decrypted_data.keys() or not "room_password" in decrypted_data.keys():
+        return "Forbidden", 403
+
+    room_id: str = decrypted_data["room_id"]
+    password: str = decrypted_data["room_password"]
 
     # create room's file with random HEX name
-    os.system("mkdir " + "\"" + app_dir + room_id + "\"")
+    os.system(f"cd {app_dir} & mkdir " + room_id)
+
+    # save password to file
+    with open(app_dir + room_id + "/password", "w") as f:
+        f.write(password)
 
     # generate AES key for room and save it to file
     key = Fernet.generate_key()
@@ -82,7 +94,7 @@ def create_room():
 
     # prepare data for return
     data = {
-        "roomId": room_id
+        "room_aes_key": symetric_key.encrypt(key).hex()
     }
 
     return flask.jsonify(data)
