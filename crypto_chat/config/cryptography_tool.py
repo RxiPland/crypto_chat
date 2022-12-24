@@ -23,7 +23,7 @@ def main():
     
 
     if length == 0:
-        print("Chybí operace! [generate_rsa, generate_aes, decrypt_rsa, encrypt_aes, decrypt_aes]")
+        print("Chybí operace! [generate_rsa, generate_aes, decrypt_rsa, encrypt_aes_server, decrypt_aes_server]")
         return
     
     operation = argv[0].lower()
@@ -107,43 +107,51 @@ def main():
             return
 
 
-    elif operation == "encrypt_aes":
-        # encrypt user's input to encrypted_message file
+    elif operation == "encrypt_aes_server":
+        # encrypt user's input with server's key to encrypted_message file
 
         if length == 2:
+
+            with open(app_dir + "temp/hex_id", "r") as f:
+                room_id = f.read()
+                room_id_file = tempfile.gettempdir() + f"\\{room_id}"
         
-            message_plain = argv[1].encode("utf-8")
+            message_plain = bytes.fromhex(argv[1])
 
             with open(room_id_file + "\\symetric_key_server", "rb") as f:
                 symetric_key = Fernet(f.read())
 
             message_crypt = symetric_key.encrypt(data=message_plain)
 
-            with open(room_id_file + "\\encrypted_message", "wb") as f:
+            with open(room_id_file + "\\encrypted_message", "w") as f:
                 f.write(message_crypt.hex())
 
         else:
             print("Chybí text k zašifrování!")
             return
 
-    elif operation == "decrypt_aes":
+    elif operation == "decrypt_aes_server":
         # open encrypted_message file and decrypt it's content
         # save decrypted content to decrypted_message
 
-        with open(app_dir + "temp/encrypted_message", "rb") as f:
-            message_crypt = f.read()
+        with open(app_dir + "temp/hex_id", "r") as f:
+            room_id = f.read()
+            room_id_file = tempfile.gettempdir() + f"\\{room_id}"
 
-        with open(app_dir + "temp/symetric_key", "rb") as f:
+        with open(room_id_file + "\\encrypted_message", "r") as f:
+            message_crypt = bytes.fromhex(f.read())
+
+        with open(room_id_file + "\\symetric_key_server", "rb") as f:
             symetric_key = Fernet(f.read())
 
         message_plain = symetric_key.decrypt(message_crypt)
 
-        with open(app_dir + "temp/decrypted_message", "wb") as f:
-            f.write(base64.urlsafe_b64decode(message_plain))
+        with open(room_id_file + "\\decrypted_message", "wb") as f:
+            f.write(message_plain)
 
     
     else:
-        print("Neplatná operace! [generate_rsa, generate_aes, decrypt_rsa, encrypt_aes, decrypt_aes]")
+        print("Neplatná operace! [generate_rsa, generate_aes, decrypt_rsa, encrypt_aes_server, decrypt_aes_server]")
         return
     
 

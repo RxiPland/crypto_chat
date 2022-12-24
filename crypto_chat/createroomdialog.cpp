@@ -1,10 +1,14 @@
 #include "createroomdialog.h"
 #include "ui_createroomdialog.h"
+#include "threadfunctions.h"
 
 #include <QDir>
 #include <QCloseEvent>
 #include <QMessageBox>
-
+#include <QJsonDocument>
+#include <QJsonObject>
+#include <QJsonValue>
+#include <QNetworkReply>
 
 CreateRoomDialog::CreateRoomDialog(QWidget *parent, QString server_url, QString room_id) :
     QDialog(parent),
@@ -38,15 +42,13 @@ void CreateRoomDialog::closeEvent(QCloseEvent *bar)
 {
     // Before application close
 
-    if(deleleFolder){
-
+    if(deleleFolder && !created){
         QDir roomFolder(QDir::tempPath() + "/" + room_id);
 
         if(roomFolder.exists() && room_id != ""){
             roomFolder.removeRecursively();
         }
     }
-
 
     this->close();
 
@@ -55,6 +57,33 @@ void CreateRoomDialog::closeEvent(QCloseEvent *bar)
     }
 
     QApplication::quit();
+}
+
+QByteArray CreateRoomDialog::readTempFile(QString filename){
+
+    QFile file(QDir::tempPath() + "/" + room_id + "/" + filename);
+    QByteArray content;
+
+    if(!file.exists()){
+        // python did not create the file
+        QMessageBox::critical(this, "Chyba", "Program nenašel soubor!");
+
+    } else{
+        file.open(QIODevice::ReadOnly);
+        content = file.readAll();
+        file.close();
+    }
+
+    return content;
+}
+
+QString CreateRoomDialog::getJson(QString name, QByteArray data){
+
+    QJsonDocument jsonResponse = QJsonDocument::fromJson(data);
+    QJsonObject jsonObject = jsonResponse.object();
+    QString jsonData = jsonObject[name].toString();
+
+    return jsonData;
 }
 
 void CreateRoomDialog::on_checkBox_clicked()
@@ -78,7 +107,122 @@ void CreateRoomDialog::on_pushButton_clicked()
     }
 
 
+    // data for POST
+    QJsonObject objMessage;
+    objMessage["room_id"] = ui->lineEdit_3->text();
 
+    if(ui->checkBox->isChecked()){
+        objMessage["room_password"] = ui->lineEdit_4->text();
+    } else{
+        objMessage["room_password"] = "";
+    }
+
+    QJsonDocument docMessage(objMessage);
+    QString message_data = docMessage.toJson().toHex();
+
+    //std::wstring command = QString("/C python config/cryptography_tool.exe encrypt_aes_server \"" + message_data + "\"").toStdWString();
+    std::wstring command = QString("/C python config/cryptography_tool.py encrypt_aes_server \"" + message_data + "\"").toStdWString();
+
+    // encrypt
+    ThreadFunctions shellThread;
+    shellThread.operation = 2;  // Thread func
+    shellThread.ShExecInfo.cbSize = sizeof(SHELLEXECUTEINFO);
+    shellThread.ShExecInfo.fMask = SEE_MASK_NOCLOSEPROCESS;
+    shellThread.ShExecInfo.hwnd = NULL;
+    shellThread.ShExecInfo.lpVerb = L"open";
+    shellThread.ShExecInfo.lpFile = L"cmd.exe";
+    shellThread.ShExecInfo.lpParameters = command.c_str();
+    shellThread.ShExecInfo.lpDirectory = QDir::currentPath().toStdWString().c_str();
+    shellThread.ShExecInfo.nShow = SW_HIDE;
+    shellThread.ShExecInfo.hInstApp = NULL;
+
+    shellThread.start();
+
+    // wait for thread to complete
+    while(shellThread.isRunning()){
+        qApp->processEvents();
+    }
+
+    QByteArray content = readTempFile("encrypted_message");
+
+    QJsonObject objData;
+    objData["data"] = (QString)content;
+    QJsonDocument docData(objData);
+    QByteArray CreateRoomData = docData.toJson();
+
+    QNetworkRequest request;
+    QUrl qurl_address = QUrl(server_url + "/create-room");
+
+    request.setHeader(QNetworkRequest::ContentTypeHeader, "application/json");
+    request.setHeader(QNetworkRequest::UserAgentHeader, CreateRoomDialog::user_agent);
+
+    if(ui->checkBox->isChecked()){
+        // authentication
+
+        qurl_address.setUserName(authentication_username);
+        qurl_address.setPassword(authentication_password);
+    }
+
+    request.setUrl(qurl_address);
+
+    QNetworkReply *reply_post = manager.post(request, CreateRoomData);
+
+    while (!reply_post->isFinished())
+    {
+        qApp->processEvents();
+    }
+
+    QByteArray reponse = reply_post->readAll();
+
+    if(reply_post->error() != QNetworkReply::NoError){
+        // Any error
+
+        QMessageBox::critical(this, "Odpověd serveru (chyba)", tr("Nastala neznámá chyba!\nOznačení QNetworkReply chyby: %1\n\nOdpověd serveru: %2").arg(reply_post->error()).arg(reponse));
+        return;
+    }
+
+
+    QString roomAesKeyEncryptedHex = getJson("room_aes_key", reponse);
+
+    QFile encryptedMessage(QDir::tempPath() + "/" + room_id + "/encrypted_message");
+    encryptedMessage.open(QIODevice::WriteOnly);
+    encryptedMessage.write(roomAesKeyEncryptedHex.toStdString().c_str());
+    encryptedMessage.close();
+
+    if(!encryptedMessage.exists()){
+        QMessageBox::critical(this, "Chyba", "Nepodařilo se zapsat zašifrovaný symetrický klíč do souboru!");
+        return;
+    }
+
+    //command = QString("/C python config/cryptography_tool.exe decrypt_aes_server").toStdWString();
+    command = QString("/C python config/cryptography_tool.py decrypt_aes_server & pause").toStdWString();
+
+    // decrypt room's AES key with server's AES key
+    shellThread.ShExecInfo.lpParameters = command.c_str();
+    shellThread.ShExecInfo.nShow = SW_SHOW;
+    shellThread.start();
+
+    // wait for thread to complete
+    while(shellThread.isRunning()){
+        qApp->processEvents();
+    }
+
+    // read decrypted room's AES key
+    QFile decryptedSymetricKey(QDir::tempPath() + "/" + room_id + "/decrypted_message");
+    decryptedSymetricKey.open(QIODevice::ReadOnly);
+    QByteArray roomAesKey = decryptedSymetricKey.readAll();
+    decryptedSymetricKey.close();
+
+    // write decrypted room's AES key to new file
+    QFile decryptedSymetricKeyRoom(QDir::tempPath() + "/" + room_id + "/symetric_key_room");
+    decryptedSymetricKeyRoom.open(QIODevice::WriteOnly);
+    decryptedSymetricKeyRoom.write(roomAesKey.toStdString().c_str());
+    decryptedSymetricKeyRoom.close();
+
+    QMessageBox::information(this, "Oznámení", "Místnost byla úspěšně vytvořena");
+
+    CreateRoomDialog::created = true;
+    this->close();
 }
 
 

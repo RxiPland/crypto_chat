@@ -24,7 +24,6 @@ ChatWindow::ChatWindow(QWidget *parent, QString server_url, QString user_name)
     ui->setupUi(this);
     this->setWindowIcon(QIcon(":/images/hacker.ico"));
     this->setWindowTitle(tr("crypto-chat  |  %1  |  %2").arg(server_url).arg(user_name));
-    //this->setWindowFlags(windowFlags() &(~Qt::WindowMaximizeButtonHint));
 
     ui->label->setStyleSheet(tr("QLabel { background-color : %1 }").arg(user_color));
     ui->lineEdit->setFocus();

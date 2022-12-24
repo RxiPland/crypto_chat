@@ -39,6 +39,13 @@ int main(int argc, char *argv[])
         CreateRoomDialog crd(nullptr, server_url, ld.room_id);
         crd.app_version = app_version;
         crd.user_agent = user_agent;
+
+        if(ld.authentication_required){
+            crd.authentication_required = true;
+            crd.authentication_username = ld.authentication_username;
+            crd.authentication_password = ld.authentication_password;
+        }
+
         crd.exec();
 
         if(!crd.created){
