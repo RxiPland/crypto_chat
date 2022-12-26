@@ -33,6 +33,7 @@ public:
     QSpacerItem *verticalSpacer;
     QHBoxLayout *horizontalLayout_2;
     QSpacerItem *horizontalSpacer;
+    QPushButton *pushButton_3;
     QPushButton *pushButton_2;
     QPushButton *pushButton;
     QSpacerItem *horizontalSpacer_2;
@@ -84,6 +85,11 @@ public:
 
         horizontalLayout_2->addItem(horizontalSpacer);
 
+        pushButton_3 = new QPushButton(IntervalDialog);
+        pushButton_3->setObjectName("pushButton_3");
+
+        horizontalLayout_2->addWidget(pushButton_3);
+
         pushButton_2 = new QPushButton(IntervalDialog);
         pushButton_2->setObjectName("pushButton_2");
 
@@ -115,6 +121,7 @@ public:
         IntervalDialog->setWindowTitle(QCoreApplication::translate("IntervalDialog", "Dialog", nullptr));
         label->setText(QCoreApplication::translate("IntervalDialog", "Aktualizace ka\305\276d\303\275ch X vte\305\231in", nullptr));
         doubleSpinBox->setSuffix(QString());
+        pushButton_3->setText(QCoreApplication::translate("IntervalDialog", "Defaultn\303\255", nullptr));
         pushButton_2->setText(QCoreApplication::translate("IntervalDialog", "Zru\305\241it", nullptr));
         pushButton->setText(QCoreApplication::translate("IntervalDialog", "Ok", nullptr));
     } // retranslateUi

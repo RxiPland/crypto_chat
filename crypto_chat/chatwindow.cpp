@@ -10,6 +10,7 @@
 #include <QTime>
 #include <QDir>
 #include <QProcess>
+#include <QClipboard>
 
 ThreadFunctions refreshChatLoop;
 
@@ -243,6 +244,14 @@ void ChatWindow::on_action_zpravy_2_1_triggered()
         refreshChatLoop.sleep_time = ChatWindow::refreshInterval;
         refreshChatLoop.reload();
     }
+}
 
+
+void ChatWindow::on_action_room_2_triggered()
+{
+    QClipboard* clipboard = QApplication::clipboard();
+    clipboard->setText(ChatWindow::room_id);
+
+    QMessageBox::information(this, "Oznámení", "Zkopírováno do schránky");
 }
 

@@ -20,6 +20,7 @@ public:
     QString app_version;
     QByteArray user_agent;
     QString room_id;
+    QString username;
 
     bool authentication_required = false;
     QString authentication_username;
@@ -33,12 +34,17 @@ private slots:
     void on_checkBox_clicked();
     void on_pushButton_clicked();
     void on_lineEdit_4_textEdited(const QString &arg1);
+    void on_lineEdit_4_returnPressed();
+    void on_lineEdit_returnPressed();
 
 private:
     Ui::CreateRoomDialog *ui;
     QNetworkAccessManager manager;
 
     void closeEvent(QCloseEvent *bar = nullptr);
+
+    void disable_widgets(bool disable=true);
+
     QByteArray readTempFile(QString filename);
     QString getJson(QString name, QByteArray data);
 };

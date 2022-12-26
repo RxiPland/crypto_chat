@@ -87,6 +87,7 @@ public:
         action_room_2->setIcon(icon1);
         action_zpravy_1 = new QAction(ChatWindow);
         action_zpravy_1->setObjectName("action_zpravy_1");
+        action_zpravy_1->setEnabled(false);
         QIcon icon2;
         icon2.addFile(QString::fromUtf8(":/images/email.ico"), QSize(), QIcon::Normal, QIcon::Off);
         action_zpravy_1->setIcon(icon2);
@@ -232,6 +233,7 @@ public:
 
         pushButton_5 = new QPushButton(centralwidget);
         pushButton_5->setObjectName("pushButton_5");
+        pushButton_5->setEnabled(false);
         pushButton_5->setMinimumSize(QSize(110, 30));
 
         verticalLayout_2->addWidget(pushButton_5);
@@ -306,7 +308,7 @@ public:
 #if QT_CONFIG(tooltip)
         action_zpravy_4->setToolTip(QCoreApplication::translate("ChatWindow", "Aktualizovat", nullptr));
 #endif // QT_CONFIG(tooltip)
-        action_zpravy_2_1->setText(QCoreApplication::translate("ChatWindow", "Nastavit vlastn\303\255 interval", nullptr));
+        action_zpravy_2_1->setText(QCoreApplication::translate("ChatWindow", "Nastavit vlastn\303\255", nullptr));
         action_zpravy_3_1->setText(QCoreApplication::translate("ChatWindow", "Zv\304\233t\305\241it", nullptr));
 #if QT_CONFIG(shortcut)
         action_zpravy_3_1->setShortcut(QCoreApplication::translate("ChatWindow", "Ctrl++", nullptr));

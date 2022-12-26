@@ -59,6 +59,16 @@ void CreateRoomDialog::closeEvent(QCloseEvent *bar)
     QApplication::quit();
 }
 
+void CreateRoomDialog::disable_widgets(bool disable){
+    // disable widgets during network requests, ...
+
+    ui->pushButton->setDisabled(disable);
+    ui->lineEdit->setDisabled(disable);
+    ui->lineEdit_4->setDisabled(disable);
+
+    ui->checkBox->setDisabled(disable);
+}
+
 QByteArray CreateRoomDialog::readTempFile(QString filename){
 
     QFile file(QDir::tempPath() + "/" + room_id + "/" + filename);
@@ -99,10 +109,14 @@ void CreateRoomDialog::on_checkBox_clicked()
 
 void CreateRoomDialog::on_pushButton_clicked()
 {
+    CreateRoomDialog::disable_widgets(true);
+
     QString username = ui->lineEdit_4->text().trimmed();
 
     if(username == ""){
         QMessageBox::critical(this, "Chyba", "Pole pro jméno nemůže být prázdné!");
+
+        CreateRoomDialog::disable_widgets(false);
         return;
     }
 
@@ -145,6 +159,11 @@ void CreateRoomDialog::on_pushButton_clicked()
 
     QByteArray content = readTempFile("encrypted_message");
 
+    if (content.isEmpty()){
+        CreateRoomDialog::disable_widgets(false);
+        return;
+    }
+
     QJsonObject objData;
     objData["data"] = (QString)content;
     QJsonDocument docData(objData);
@@ -178,6 +197,8 @@ void CreateRoomDialog::on_pushButton_clicked()
         // Any error
 
         QMessageBox::critical(this, "Odpověd serveru (chyba)", tr("Nastala neznámá chyba!\nOznačení QNetworkReply chyby: %1\n\nOdpověd serveru: %2").arg(reply_post->error()).arg(reponse));
+
+        CreateRoomDialog::disable_widgets(false);
         return;
     }
 
@@ -191,6 +212,8 @@ void CreateRoomDialog::on_pushButton_clicked()
 
     if(!encryptedMessage.exists()){
         QMessageBox::critical(this, "Chyba", "Nepodařilo se zapsat zašifrovaný symetrický klíč do souboru!");
+
+        CreateRoomDialog::disable_widgets(false);
         return;
     }
 
@@ -206,7 +229,7 @@ void CreateRoomDialog::on_pushButton_clicked()
         qApp->processEvents();
     }
 
-    // read decrypted room's AES key
+    // read decrypted room's AES key from temp file
     QFile decryptedSymetricKey(QDir::tempPath() + "/" + room_id + "/decrypted_message");
     decryptedSymetricKey.open(QIODevice::ReadOnly);
     QByteArray roomAesKey = decryptedSymetricKey.readAll();
@@ -221,13 +244,17 @@ void CreateRoomDialog::on_pushButton_clicked()
     QMessageBox::information(this, "Oznámení", "Místnost byla úspěšně vytvořena");
 
     CreateRoomDialog::created = true;
+    CreateRoomDialog::username = ui->lineEdit_4->text();
+
     this->close();
 }
 
 
 void CreateRoomDialog::on_lineEdit_4_textEdited(const QString &arg1)
 {
-    if(arg1.length() == 26){
+    int textLength = arg1.length();
+
+    if(textLength == 26){
         QString text = arg1;
         text.chop(1);
 
@@ -235,6 +262,23 @@ void CreateRoomDialog::on_lineEdit_4_textEdited(const QString &arg1)
 
         QMessageBox::critical(this, "Upozornění", "Délka jména nemůže přesáhnout 25 znaků!");
 
+    } else if (textLength == 0){
+        ui->pushButton->setDisabled(true);
+
+    } else{
+        ui->pushButton->setDisabled(false);
     }
+}
+
+
+void CreateRoomDialog::on_lineEdit_4_returnPressed()
+{
+    CreateRoomDialog::on_pushButton_clicked();
+}
+
+
+void CreateRoomDialog::on_lineEdit_returnPressed()
+{
+    CreateRoomDialog::on_pushButton_clicked();
 }
 

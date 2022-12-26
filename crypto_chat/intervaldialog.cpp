@@ -1,6 +1,9 @@
 #include "intervaldialog.h"
 #include "ui_intervaldialog.h"
 
+#include <QMessageBox>
+
+
 IntervalDialog::IntervalDialog(QWidget *parent) :
     QDialog(parent),
     ui(new Ui::IntervalDialog)
@@ -11,6 +14,7 @@ IntervalDialog::IntervalDialog(QWidget *parent) :
 
     ui->pushButton->setFocusPolicy(Qt::FocusPolicy::NoFocus);
     ui->pushButton_2->setFocusPolicy(Qt::FocusPolicy::NoFocus);
+    ui->pushButton_3->setFocusPolicy(Qt::FocusPolicy::NoFocus);
 }
 
 IntervalDialog::~IntervalDialog()
@@ -42,5 +46,13 @@ void IntervalDialog::on_pushButton_clicked()
 void IntervalDialog::on_doubleSpinBox_valueChanged(double arg1)
 {
     ui->label->setText(tr("Aktualizace každých %1 vteřin").arg(arg1));
+}
+
+
+void IntervalDialog::on_pushButton_3_clicked()
+{
+    ui->doubleSpinBox->setValue(5.9);
+    QMessageBox::information(this, "Oznámení", "Byl nastaven výchozí interval");
+
 }
 

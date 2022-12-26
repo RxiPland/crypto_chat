@@ -45,6 +45,8 @@ private slots:
     void on_action_zpravy_3_3_triggered();
     void on_action_zpravy_2_1_triggered();
 
+    void on_action_room_2_triggered();
+
 private:
     void closeEvent(QCloseEvent *bar = nullptr);
     Ui::ChatWindow *ui;
