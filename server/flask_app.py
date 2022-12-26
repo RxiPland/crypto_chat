@@ -18,7 +18,12 @@ version = "crypto-chat v1.0.0"
 
 # max:
 # délka jména: 25
+# délka prefixu: 25
 # délka hesla: 100
+# délka zprávy: 
+
+if not os.path.exists(app_dir + "/rooms"):
+    os.system(f"cd {app_dir} & mkdir rooms")
 
 @app.route('/')
 def hello_world():
@@ -28,76 +33,104 @@ def hello_world():
 @app.route('/version', methods=["GET"])
 def check_version():
 
+    # specific user-agent is required
     if not "crypto-chat" in flask.request.user_agent.string:
         return "Forbidden", 403
     
-    # app will check compatibility
+    # desktop client will compare versions
     return version
 
 
 @app.route('/get-key', methods=["POST"])
 def get_key():
-    # params: rsa_pem
+    # params: {'rsa_pem': "<user's RSA public key in PEM>"}
 
-    if not "crypto-chat" in flask.request.user_agent.string:
-        return "Forbidden", 403
+    try:
+        # specific user-agent is required
+        if not "crypto-chat" in flask.request.user_agent.string:
+            return "Forbidden", 403
 
-    request_json: dict = flask.request.get_json()
+        request_json: dict = flask.request.get_json()
 
-    if not "rsa_pem" in request_json.keys():
-        return "Forbidden", 403
+        # key 'rsa_pem' must be in JSON
+        if not "rsa_pem" in request_json.keys():
+            return "Forbidden", 403
 
-    rsa_public_key = rsa.PublicKey.load_pkcs1(unquote(request_json["rsa_pem"]))
-    encrypted_aes = rsa.encrypt(server_aes_key, rsa_public_key)
+        # load RSA public key from PEM
+        rsa_public_key = rsa.PublicKey.load_pkcs1(unquote(request_json["rsa_pem"]))
+        
 
-    data = {
-        "aes_key": encrypted_aes.hex()
-    }
+        # encrypt server's AES key
+        encrypted_aes = rsa.encrypt(server_aes_key, rsa_public_key)
 
-    return flask.jsonify(data)
+        data = {
+            "aes_key": encrypted_aes.hex()
+        }
+
+        return flask.jsonify(data)
+    
+    except Exception as e:
+        return e, 403
 
 
 @app.route('/create-room', methods=["POST"])
 def create_room():
+    # params: {'data': '<encrypted-data> in hex'}
+    #
+    # <encrypted-data> = {'room_id': '<random hex string (32)>', 'room_password': '<password from user>'}
 
-    if not "crypto-chat" in flask.request.user_agent.string:
-        return "Forbidden", 403
+    try:
+        # specific user-agent is required
+        if not "crypto-chat" in flask.request.user_agent.string:
+            return "Forbidden", 403
 
-    request_json: dict = flask.request.get_json()
+        request_json: dict = flask.request.get_json()
 
-    if not "data" in request_json.keys():
-        return "Forbidden", 403
+        # key 'data' must be in JSON
+        if not "data" in request_json.keys():
+            return "Forbidden", 403
 
-    symetric_key = Fernet(server_aes_key)
+        # load bytes as server's AES key
+        symetric_key = Fernet(server_aes_key)
 
-    decrypted_data: dict = json.loads(symetric_key.decrypt(bytes.fromhex(request_json["data"])))
-
-    if not "room_id" in decrypted_data.keys() or not "room_password" in decrypted_data.keys():
-        return "Forbidden", 403
-
-    room_id: str = decrypted_data["room_id"]
-    password: str = decrypted_data["room_password"]
-
-    # create room's file with random HEX name
-    os.system(f"cd {app_dir} & mkdir " + room_id)
-
-    # save password to file
-    with open(app_dir + room_id + "/password", "w") as f:
-        f.write(password)
-
-    # generate AES key for room and save it to file
-    key = Fernet.generate_key()
-
-    with open(app_dir + room_id + "/symetric_key", "wb") as f:
-        f.write(key)
+        # decrypt data from request
+        decrypted_data: dict = json.loads(symetric_key.decrypt(bytes.fromhex(request_json["data"])))
 
 
-    # prepare data for return
-    data = {
-        "room_aes_key": symetric_key.encrypt(key).hex()
-    }
+        # keys 'room_id' and 'room_password' must be in decrypted JSON
+        if not "room_id" in decrypted_data.keys() or not "room_password" in decrypted_data.keys():
+            return "Forbidden", 403
 
-    return flask.jsonify(data)
+        # rooms folder in server's directory
+        rooms_path = app_dir + "rooms" + "/"
+
+        room_id: str = decrypted_data["room_id"]
+        password: str = decrypted_data["room_password"]
+
+        # create folder with random HEX string (room_id)
+        os.system(f"cd {rooms_path} & mkdir " + room_id)
+
+        # save password to file (in plain)
+        with open(rooms_path + room_id + "/password", "w") as f:
+            f.write(password)
+
+        # generate AES key for room
+        key = Fernet.generate_key()
+
+        # save AES key to file
+        with open(rooms_path + room_id + "/symetric_key", "wb") as f:
+            f.write(key)
+
+
+        # prepare data for return
+        data = {
+            "room_aes_key": symetric_key.encrypt(key).hex()
+        }
+
+        return flask.jsonify(data)
+
+    except Exception as e:
+        return e, 403
 
 
 if __name__ == "__main__":
