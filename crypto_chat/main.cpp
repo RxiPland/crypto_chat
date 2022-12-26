@@ -2,6 +2,7 @@
 #include "createroomdialog.h"
 #include "chatwindow.h"
 #include "joinroomdialog.h"
+#include "roomdialog.h"
 
 #include <QApplication>
 #include <QFile>
@@ -23,7 +24,6 @@ int main(int argc, char *argv[])
     ld.setModal(true);
     ld.exec();
 
-
     if(!ld.successful_login){
         // unsuccessful -> exit
 
@@ -34,54 +34,25 @@ int main(int argc, char *argv[])
 
     QString server_url = ld.server_url;
 
-    QString user_name;
+    RoomDialog rd(nullptr, ld.create_room, server_url, ld.room_id);
+    rd.app_version = app_version;
+    rd.user_agent = user_agent;
 
-    if(ld.create_room){
-        // user choose to create room on server
+    if(ld.authentication_required){
+        rd.authentication_required = true;
+        rd.authentication_username = ld.authentication_username;
+        rd.authentication_password = ld.authentication_password;
+    }
 
-        CreateRoomDialog crd(nullptr, server_url, ld.room_id);
-        crd.app_version = app_version;
-        crd.user_agent = user_agent;
+    rd.exec();
 
-        if(ld.authentication_required){
-            crd.authentication_required = true;
-            crd.authentication_username = ld.authentication_username;
-            crd.authentication_password = ld.authentication_password;
-        }
-
-        crd.exec();
-
-        if(!crd.created){
-            QMetaObject::invokeMethod(qApp, "quit", Qt::QueuedConnection);
-            return 0;
-        }
-
-        user_name = crd.username;
-
-    } else{
-
-        JoinRoomDialog jrd(nullptr, server_url);
-        jrd.app_version = app_version;
-        jrd.user_agent = user_agent;
-
-        if(ld.authentication_required){
-            jrd.authentication_required = true;
-            jrd.authentication_username = ld.authentication_username;
-            jrd.authentication_password = ld.authentication_password;
-        }
-
-        jrd.exec();
-
-        if(!jrd.joined){
-            QMetaObject::invokeMethod(qApp, "quit", Qt::QueuedConnection);
-            return 0;
-        }
+    if(!rd.successful){
+        QMetaObject::invokeMethod(qApp, "quit", Qt::QueuedConnection);
+        return 0;
     }
 
 
-
-
-    ChatWindow chw(nullptr, server_url, user_name);
+    ChatWindow chw(nullptr, server_url, rd.username);
     chw.app_version = app_version;
     chw.user_agent = user_agent;
     chw.room_id = ld.room_id;

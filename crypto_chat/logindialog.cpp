@@ -173,7 +173,7 @@ void LoginDialog::on_pushButton_clicked()
         QStringList temp_list;
         int i;
 
-        msgBox.setText(msgBox.text() + "1/8 Vyčištění URL adresy");
+        msgBox.setText(msgBox.text() + "1/5 Čištění URL adresy");
         previousText = msgBox.text();
         msgBox.setText(msgBox.text() + "<span style=\"color:orange;\"> [Probíhá]<br></span>");
 
@@ -214,7 +214,7 @@ void LoginDialog::on_pushButton_clicked()
         request.setHeader(QNetworkRequest::UserAgentHeader, user_agent);
         request.setHeader(QNetworkRequest::ContentTypeHeader, "text/html; charset=utf-8");
 
-        msgBox.setText(msgBox.text() + "2/8 Ověření verze serveru s verzí aplikace");
+        msgBox.setText(msgBox.text() + "2/5 Ověření verze serveru s verzí aplikace");
         previousText = msgBox.text();
         msgBox.setText(msgBox.text() + "<span style=\"color:orange;\"> [Probíhá]<br></span>");
 
@@ -268,7 +268,7 @@ void LoginDialog::on_pushButton_clicked()
                 msgBox.setText(previousText + "<span style=\"color:green;\"> [Dokončeno]<br></span>");
 
 
-                msgBox.setText(msgBox.text() + "3/8 Generace veřejného a soukromého klíče (RSA) + generace náhodného ID pro vytvoření složky v /Temp");
+                msgBox.setText(msgBox.text() + "3/5 Generace veřejného a soukromého klíče (RSA)");
                 previousText = msgBox.text();
                 msgBox.setText(msgBox.text() + "<span style=\"color:orange;\"> [Probíhá]<br></span>");
 
@@ -302,12 +302,6 @@ void LoginDialog::on_pushButton_clicked()
 
                 msgBox.setText(previousText + "<span style=\"color:green;\"> [Dokončeno]<br></span>");
 
-
-                msgBox.setText(msgBox.text() + "4/8 Čtení náhodného ID ze souboru");
-                previousText = msgBox.text();
-                msgBox.setText(msgBox.text() + "<span style=\"color:orange;\"> [Probíhá]<br></span>");
-
-
                 QFile hexFile("config/temp/hex_id");
 
                 if(!hexFile.exists()){
@@ -328,12 +322,6 @@ void LoginDialog::on_pushButton_clicked()
 
                     } else{
 
-                        msgBox.setText(previousText + "<span style=\"color:green;\"> [Dokončeno]<br></span>");
-
-                        msgBox.setText(msgBox.text() + "5/8 Čtení vygenerovaného veřejného klíče (RSA) ze souboru");
-                        previousText = msgBox.text();
-                        msgBox.setText(msgBox.text() + "<span style=\"color:orange;\"> [Probíhá]<br></span>");
-
                         QFile public_pem(QDir::tempPath() + "/" + room_id + "/public_key.pem");
 
                         if(!public_pem.exists()){
@@ -351,12 +339,9 @@ void LoginDialog::on_pushButton_clicked()
 
                             } else{
 
-                                msgBox.setText(previousText + "<span style=\"color:green;\"> [Dokončeno]<br></span>");
-
-
                                 qurl_address = QUrl(url_address + "/get-key");
 
-                                msgBox.setText(msgBox.text() + "6/8 Posílání veřejného klíče (RSA) serveru, aby tím zašifroval svůj symetrický klíč (AES)");
+                                msgBox.setText(msgBox.text() + "4/5 Výměna symetrického klíče (AES) serveru pomocí veřejného klíče (RSA)");
                                 previousText = msgBox.text();
                                 msgBox.setText(msgBox.text() + "<span style=\"color:orange;\"> [Probíhá]<br></span>");
 
@@ -396,10 +381,6 @@ void LoginDialog::on_pushButton_clicked()
 
                                     msgBox.setText(previousText + "<span style=\"color:green;\"> [Dokončeno]<br></span>");
 
-                                    msgBox.setText(msgBox.text() + "7/8 Zapisuji přijatý zašifrovaný symetrický klíč (AES) do souboru");
-                                    previousText = msgBox.text();
-                                    msgBox.setText(msgBox.text() + "<span style=\"color:orange;\"> [Probíhá]<br></span>");
-
 
                                     QFile aes_key(QDir::tempPath() + "/" + room_id + "/symetric_key_server");
                                     aes_key.open(QIODevice::WriteOnly);
@@ -411,9 +392,7 @@ void LoginDialog::on_pushButton_clicked()
 
                                     } else{
 
-                                        msgBox.setText(previousText + "<span style=\"color:green;\"> [Dokončeno]<br></span>");
-
-                                        msgBox.setText(msgBox.text() + "8/8 Dešifruji přijatý symetrický klíč (AES) serveru pomocí soukromého klíče (RSA) + zapisuji do souboru");
+                                        msgBox.setText(msgBox.text() + "5/5 Dešifruji přijatý symetrický klíč (AES) pomocí privátního klíče (RSA)");
                                         previousText = msgBox.text();
                                         msgBox.setText(msgBox.text() + "<span style=\"color:orange;\"> [Probíhá]<br></span>");
 
