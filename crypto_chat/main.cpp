@@ -1,5 +1,5 @@
 /*
-Main file to handle other windows
+Main file for handling other windows
 */
 
 #include "logindialog.h"

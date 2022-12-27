@@ -385,7 +385,7 @@ void RoomDialog::on_pushButton_2_clicked()
         ui->pushButton->setText("Připojit se do místnosti");
 
         RoomDialog::createRoom = false;
-        QMessageBox::information(this, "Oznámení", "Úspěšně přepnuto na připojení do existující místnosti.");
+        QMessageBox::information(this, "Oznámení", "Úspěšně přepnuto na připojení do existující místnosti");
 
     } else{
 
@@ -398,7 +398,7 @@ void RoomDialog::on_pushButton_2_clicked()
         ui->pushButton->setText("Vytvořit místnost");
 
         RoomDialog::createRoom = true;
-        QMessageBox::information(this, "Oznámení", "Úspěšně přepnuto na vytváření nové místnosti.");
+        QMessageBox::information(this, "Oznámení", "Úspěšně přepnuto na vytváření nové místnosti");
 
     }
 }
