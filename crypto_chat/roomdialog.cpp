@@ -399,7 +399,6 @@ void RoomDialog::on_pushButton_2_clicked()
 
         RoomDialog::createRoom = true;
         QMessageBox::information(this, "Oznámení", "Úspěšně přepnuto na vytváření nové místnosti");
-
     }
 }
 
