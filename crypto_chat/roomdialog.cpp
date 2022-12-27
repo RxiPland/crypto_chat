@@ -272,8 +272,6 @@ void RoomDialog::joinRoomFunc()
         return;
     }
 
-
-
 }
 
 QByteArray RoomDialog::readTempFile(QString filename){

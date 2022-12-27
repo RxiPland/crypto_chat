@@ -46,16 +46,6 @@ set(PROJECT_SOURCES
         threadfunctions.h
         threadfunctions.cpp
 
-        joinroomdialog.h
-        joinroomdialog.cpp
-        joinroomdialog.ui
-        ui_joinroomdialog.h
-
-        createroomdialog.h
-        createroomdialog.cpp
-        createroomdialog.ui
-        ui_createroomdialog.h
-
         roomdialog.h
         roomdialog.cpp
         roomdialog.ui
