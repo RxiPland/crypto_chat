@@ -70,6 +70,7 @@ def get_key():
         return flask.jsonify(data)
     
     except Exception as e:
+        print(e)
         return e, 403
 
 
@@ -102,6 +103,9 @@ def create_room():
             return "Forbidden", 403
 
         # rooms folder in server's directory
+        if not os.path.exists(app_dir + "/rooms"):
+            os.system(f"cd {app_dir} & mkdir rooms")
+        
         rooms_path = app_dir + "rooms" + "/"
 
         room_id: str = decrypted_data["room_id"]
@@ -130,6 +134,7 @@ def create_room():
         return flask.jsonify(data)
 
     except Exception as e:
+        print(e)
         return e, 403
 
 
