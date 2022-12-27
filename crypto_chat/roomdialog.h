@@ -13,10 +13,10 @@ class RoomDialog : public QDialog
     Q_OBJECT
 
 public:
-    explicit RoomDialog(QWidget *parent = nullptr, bool createRoom = true, QString server_url = "", QString room_id = "");
+    explicit RoomDialog(QWidget *parent = nullptr, bool createRoom = false, QString server_url = "", QString room_id = "");
     ~RoomDialog();
 
-    bool createRoom = true;
+    bool createRoom = false;
 
     QString server_url;
     QString app_version;
@@ -31,6 +31,16 @@ public:
     bool successful = false;
     bool deleleFolder = true;
 
+private slots:
+    void on_lineEdit_3_textEdited(const QString &arg1);
+    void on_lineEdit_4_textEdited(const QString &arg1);
+    void on_pushButton_clicked();
+    void on_lineEdit_3_returnPressed();
+    void on_lineEdit_4_returnPressed();
+    void on_lineEdit_returnPressed();
+    void on_pushButton_2_clicked();
+    void on_checkBox_clicked();
+
 private:
     Ui::RoomDialog *ui;
     QNetworkAccessManager manager;
@@ -38,6 +48,9 @@ private:
     void closeEvent(QCloseEvent *bar = nullptr);
 
     void disable_widgets(bool disable=true);
+
+    void createRoomFunc();
+    void joinRoomFunc();
 
     QByteArray readTempFile(QString filename);
     QString getJson(QString name, QByteArray data);

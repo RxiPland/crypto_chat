@@ -214,7 +214,7 @@ void LoginDialog::on_pushButton_clicked()
         request.setHeader(QNetworkRequest::UserAgentHeader, user_agent);
         request.setHeader(QNetworkRequest::ContentTypeHeader, "text/html; charset=utf-8");
 
-        msgBox.setText(msgBox.text() + "2/5 Ověření verze serveru s verzí aplikace");
+        msgBox.setText(msgBox.text() + "2/5 Ověřování verze aplikace s verzí serveru");
         previousText = msgBox.text();
         msgBox.setText(msgBox.text() + "<span style=\"color:orange;\"> [Probíhá]<br></span>");
 
@@ -341,7 +341,7 @@ void LoginDialog::on_pushButton_clicked()
 
                                 qurl_address = QUrl(url_address + "/get-key");
 
-                                msgBox.setText(msgBox.text() + "4/5 Výměna symetrického klíče (AES) serveru pomocí veřejného klíče (RSA)");
+                                msgBox.setText(msgBox.text() + "4/5 Získávání symetrického klíče (AES) serveru pomocí veřejného klíče (RSA)");
                                 previousText = msgBox.text();
                                 msgBox.setText(msgBox.text() + "<span style=\"color:orange;\"> [Probíhá]<br></span>");
 
@@ -392,7 +392,7 @@ void LoginDialog::on_pushButton_clicked()
 
                                     } else{
 
-                                        msgBox.setText(msgBox.text() + "5/5 Dešifruji přijatý symetrický klíč (AES) pomocí privátního klíče (RSA)");
+                                        msgBox.setText(msgBox.text() + "5/5 Dešiforvání přijatého symetrického klíče (AES) pomocí privátního klíče (RSA)");
                                         previousText = msgBox.text();
                                         msgBox.setText(msgBox.text() + "<span style=\"color:orange;\"> [Probíhá]<br></span>");
 
@@ -422,7 +422,10 @@ void LoginDialog::on_pushButton_clicked()
                                         }
 
                                         if (msgBox.clickedButton()==pButtonCreate) {
-                                            create_room = true;
+                                            LoginDialog::create_room = true;
+
+                                        } else{
+                                            LoginDialog::create_room = false;
                                         }
 
                                         LoginDialog::successful_login = true;

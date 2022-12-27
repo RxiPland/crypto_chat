@@ -55,7 +55,7 @@ public:
     {
         if (RoomDialog->objectName().isEmpty())
             RoomDialog->setObjectName("RoomDialog");
-        RoomDialog->resize(400, 232);
+        RoomDialog->resize(400, 259);
         horizontalLayout_4 = new QHBoxLayout(RoomDialog);
         horizontalLayout_4->setObjectName("horizontalLayout_4");
         horizontalSpacer_3 = new QSpacerItem(5, 20, QSizePolicy::Fixed, QSizePolicy::Minimum);
@@ -93,8 +93,9 @@ public:
 
         lineEdit_3 = new QLineEdit(RoomDialog);
         lineEdit_3->setObjectName("lineEdit_3");
+        lineEdit_3->setCursor(QCursor(Qt::IBeamCursor));
         lineEdit_3->setMaxLength(100);
-        lineEdit_3->setReadOnly(true);
+        lineEdit_3->setReadOnly(false);
 
         horizontalLayout_3->addWidget(lineEdit_3);
 
@@ -121,7 +122,7 @@ public:
 
         verticalLayout = new QVBoxLayout();
         verticalLayout->setObjectName("verticalLayout");
-        verticalSpacer = new QSpacerItem(20, 30, QSizePolicy::Minimum, QSizePolicy::Expanding);
+        verticalSpacer = new QSpacerItem(20, 14, QSizePolicy::Minimum, QSizePolicy::Fixed);
 
         verticalLayout->addItem(verticalSpacer);
 
@@ -191,11 +192,12 @@ public:
         RoomDialog->setWindowTitle(QCoreApplication::translate("RoomDialog", "Dialog", nullptr));
         label->setText(QCoreApplication::translate("RoomDialog", "Server:", nullptr));
         label_2->setText(QCoreApplication::translate("RoomDialog", "ID m\303\255stnosti:", nullptr));
+        lineEdit_3->setPlaceholderText(QString());
         label_3->setText(QCoreApplication::translate("RoomDialog", "Va\305\241e p\305\231ezd\303\255vka:", nullptr));
         lineEdit_4->setPlaceholderText(QCoreApplication::translate("RoomDialog", "Povinn\303\251", nullptr));
         checkBox->setText(QCoreApplication::translate("RoomDialog", "Heslo m\303\255stnosti", nullptr));
         lineEdit->setPlaceholderText(QCoreApplication::translate("RoomDialog", "Bez hesla", nullptr));
-        pushButton_2->setText(QCoreApplication::translate("RoomDialog", "P\305\231ipojit se do exisutj\303\255c\303\255", nullptr));
+        pushButton_2->setText(QCoreApplication::translate("RoomDialog", "P\305\231epnout", nullptr));
         pushButton->setText(QCoreApplication::translate("RoomDialog", "Vytvo\305\231it m\303\255stnost", nullptr));
     } // retranslateUi
 
