@@ -1,7 +1,5 @@
 #include "logindialog.h"
-#include "createroomdialog.h"
 #include "chatwindow.h"
-#include "joinroomdialog.h"
 #include "roomdialog.h"
 
 #include <QApplication>

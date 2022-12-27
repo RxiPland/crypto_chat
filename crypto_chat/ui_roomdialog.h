@@ -113,7 +113,7 @@ public:
         lineEdit_4 = new QLineEdit(RoomDialog);
         lineEdit_4->setObjectName("lineEdit_4");
         lineEdit_4->setMaxLength(26);
-        lineEdit_4->setClearButtonEnabled(true);
+        lineEdit_4->setClearButtonEnabled(false);
 
         horizontalLayout_6->addWidget(lineEdit_4);
 
@@ -192,7 +192,7 @@ public:
         RoomDialog->setWindowTitle(QCoreApplication::translate("RoomDialog", "Dialog", nullptr));
         label->setText(QCoreApplication::translate("RoomDialog", "Server:", nullptr));
         label_2->setText(QCoreApplication::translate("RoomDialog", "ID m\303\255stnosti:", nullptr));
-        lineEdit_3->setPlaceholderText(QString());
+        lineEdit_3->setPlaceholderText(QCoreApplication::translate("RoomDialog", "Povinn\303\251", nullptr));
         label_3->setText(QCoreApplication::translate("RoomDialog", "Va\305\241e p\305\231ezd\303\255vka:", nullptr));
         lineEdit_4->setPlaceholderText(QCoreApplication::translate("RoomDialog", "Povinn\303\251", nullptr));
         checkBox->setText(QCoreApplication::translate("RoomDialog", "Heslo m\303\255stnosti", nullptr));

@@ -22,12 +22,13 @@ RoomDialog::RoomDialog(QWidget *parent, bool createRoom, QString server_url, QSt
     RoomDialog::server_url = server_url;
     RoomDialog::createRoom = createRoom;
 
+    ui->pushButton->setDisabled(true);
+
     ui->lineEdit->setHidden(true);
     ui->lineEdit_2->setDisabled(true);
     ui->lineEdit_2->setReadOnly(true);
     ui->lineEdit_2->setText(server_url);
 
-    ui->lineEdit_3->setPlaceholderText("Povinné");
 
     ui->pushButton->setFocusPolicy(Qt::FocusPolicy::NoFocus);
     ui->pushButton_2->setFocusPolicy(Qt::FocusPolicy::NoFocus);
@@ -266,6 +267,9 @@ void RoomDialog::joinRoomFunc()
         RoomDialog::disable_widgets(false);
         return;
     }
+
+
+
 }
 
 QByteArray RoomDialog::readTempFile(QString filename){
@@ -308,7 +312,7 @@ void RoomDialog::on_lineEdit_3_textEdited(const QString &arg1)
 
         QMessageBox::critical(this, "Upozornění", "Délka ID musí být přesně 32 znaků!");
 
-    } else if (textLength != 32){
+    } else if (textLength == 0 || ui->lineEdit_4->text().length() == 0){
         ui->pushButton->setDisabled(true);
 
     } else{
@@ -328,7 +332,7 @@ void RoomDialog::on_lineEdit_4_textEdited(const QString &arg1)
 
         QMessageBox::critical(this, "Upozornění", "Délka jména nemůže přesáhnout 25 znaků!");
 
-    } else if (textLength == 0){
+    } else if (textLength == 0 || ui->lineEdit_3->text().length() == 0){
         ui->pushButton->setDisabled(true);
 
     } else{
@@ -339,7 +343,6 @@ void RoomDialog::on_lineEdit_4_textEdited(const QString &arg1)
 
 void RoomDialog::on_pushButton_clicked()
 {
-
     if(RoomDialog::createRoom){
         RoomDialog::createRoomFunc();
 
@@ -367,7 +370,7 @@ void RoomDialog::on_lineEdit_returnPressed()
 
 void RoomDialog::on_pushButton_2_clicked()
 {
-    if(createRoom){
+    if(RoomDialog::createRoom){
 
         this->setWindowTitle("Připojení do chatovací místnosti");
 
