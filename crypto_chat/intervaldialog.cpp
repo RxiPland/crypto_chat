@@ -1,3 +1,7 @@
+/*
+Window for changing interval for refreshing chat
+*/
+
 #include "intervaldialog.h"
 #include "ui_intervaldialog.h"
 

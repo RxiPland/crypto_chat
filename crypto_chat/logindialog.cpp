@@ -1,3 +1,7 @@
+/*
+Window to check user's version with server's version & obtain server's symetric key
+*/
+
 #include "logindialog.h"
 #include "ui_logindialog.h"
 #include "threadfunctions.h"

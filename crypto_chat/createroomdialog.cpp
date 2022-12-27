@@ -1,3 +1,7 @@
+/*
+No longer used (DELETE)
+*/
+
 #include "createroomdialog.h"
 #include "ui_createroomdialog.h"
 #include "threadfunctions.h"

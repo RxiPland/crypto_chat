@@ -1,3 +1,7 @@
+/*
+Window for changing color of text
+*/
+
 #include "colordialog.h"
 #include "ui_colordialog.h"
 

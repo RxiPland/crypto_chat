@@ -1,3 +1,7 @@
+/*
+No longer used (DELETE)
+*/
+
 #include "joinroomdialog.h"
 #include "ui_joinroomdialog.h"
 

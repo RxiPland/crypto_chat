@@ -1,3 +1,7 @@
+/*
+Program for making threads
+*/
+
 #include "threadfunctions.h"
 
 ThreadFunctions::ThreadFunctions()

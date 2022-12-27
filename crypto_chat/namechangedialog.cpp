@@ -1,7 +1,12 @@
+/*
+Window for changing user's nickname
+*/
+
 #include "namechangedialog.h"
 #include "ui_namechangedialog.h"
 
 #include <QMessageBox.h>
+
 
 NameChangeDialog::NameChangeDialog(QWidget *parent) :
     QDialog(parent),

@@ -1,3 +1,7 @@
+/*
+Window for sending messages
+*/
+
 #include "chatwindow.h"
 #include "ui_chatwindow.h"
 #include "colordialog.h"

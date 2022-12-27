@@ -1,3 +1,7 @@
+/*
+Main file to handle other windows
+*/
+
 #include "logindialog.h"
 #include "chatwindow.h"
 #include "roomdialog.h"
