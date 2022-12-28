@@ -129,7 +129,7 @@ void RoomDialog::createRoomFunc()
         hash.addData("");
     }
 
-    objMessage["room_password"] = (QString)hash.result().toHex();
+    objMessage["room_password_sha256"] = (QString)hash.result().toHex();
 
     QJsonDocument docMessage(objMessage);
     QString message_data = docMessage.toJson().toHex();
