@@ -4,6 +4,8 @@
 #include <QMainWindow>
 #include <QCloseEvent>
 
+#include <QNetworkAccessManager>
+
 QT_BEGIN_NAMESPACE
 namespace Ui { class ChatWindow; }
 QT_END_NAMESPACE
@@ -15,6 +17,8 @@ class ChatWindow : public QMainWindow
 public:
     ChatWindow(QWidget *parent = nullptr, QString server_url = "", QString user_name = "");
     ~ChatWindow();
+
+    void welcomeMessage();
 
     QString app_version;
     QByteArray user_agent;
@@ -44,14 +48,16 @@ private slots:
     void on_action_zpravy_3_2_triggered();
     void on_action_zpravy_3_3_triggered();
     void on_action_zpravy_2_1_triggered();
-
     void on_action_room_2_triggered();
 
 private:
     void closeEvent(QCloseEvent *bar = nullptr);
     Ui::ChatWindow *ui;
+    QNetworkAccessManager manager;
 
     bool restart = false;
+
+    QString encrypt_message(QString message="");
 
 };
 #endif // CHATWINDOW_H

@@ -273,5 +273,35 @@ def join_room():
         return str(e), 403
 
 
+@app.route('/send-message', methods=["POST"])
+def send_message():
+
+    """
+    params: {'data': '<AES-encrypted-data> in hex'}
+    <AES-encrypted-data> = {'room_id': '<hex string (32)>', 'message': '<encrypted-message> with room symetric key', 'color': '<user-color>'}
+    
+    response: {'data': '<encrypted-data> in hex'}
+    <encrypted-data> = {'status_code': '<error code>'}
+    """
+
+    try:
+        # specific user-agent is required
+        if not "crypto-chat" in flask.request.user_agent.string:
+            return "Forbidden", 403
+
+        request_json: dict = flask.request.get_json()
+
+        # key 'data' must be in JSON
+        if not "data" in request_json.keys():
+            return "Forbidden", 403
+
+        # load bytes as server's AES key
+        symetric_key_server = Fernet(server_aes_key)
+
+
+    except Exception as e:
+        print(e)
+        return str(e), 403
+
 if __name__ == "__main__":
     app.run(debug=True, port=5000)

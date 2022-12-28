@@ -15,6 +15,8 @@ Window for sending messages
 #include <QDir>
 #include <QProcess>
 #include <QClipboard>
+#include <QNetworkRequest>
+#include <QNetworkReply>
 
 ThreadFunctions refreshChatLoop;
 
@@ -50,6 +52,26 @@ ChatWindow::~ChatWindow()
     delete ui;
 }
 
+void ChatWindow::welcomeMessage()
+{
+    QNetworkRequest request;
+    QUrl qurl_address = QUrl(server_url + "/send-message");
+
+    request.setHeader(QNetworkRequest::ContentTypeHeader, "application/json");
+    request.setHeader(QNetworkRequest::UserAgentHeader, ChatWindow::user_agent);
+
+    if(ChatWindow::authentication_required){
+        // authentication
+
+        qurl_address.setUserName(authentication_username);
+        qurl_address.setPassword(authentication_password);
+    }
+
+    request.setUrl(qurl_address);
+
+    QNetworkReply *reply_post = manager.post(request, CreateRoomData);
+}
+
 void ChatWindow::closeEvent(QCloseEvent *bar)
 {
     // Before application close
@@ -82,6 +104,14 @@ void ChatWindow::closeEvent(QCloseEvent *bar)
     if(!restart){
         QApplication::quit();
     }
+}
+
+QString ChatWindow::encrypt_message(QString message){
+
+    // encrypt with server's key
+    // encrypt with room's key
+
+
 }
 
 QString convert_color(QString color){
