@@ -159,10 +159,10 @@ def create_room():
 def join_room():
     """
     params: {'data': '<AES-encrypted-data> in hex'}
-    <AES-encrypted-data> = {'room_id': '<random hex string (32)>', 'room_password_sha256': '<hashed password from user>'}
+    <AES-encrypted-data> = {'room_id': '<random hex string (32)>', 'room_password': '<hashed password from user>'}
     
     response: {'data': '<encrypted-data> in hex'}
-    <encrypted-data> = {'status_code': '<error code>', 'room_aes_key': '<symetric key of room>'}
+    <encrypted-data> = {'status_code': '<error code>', 'room_aes_key': '<symetric key of room> in hex'}
     """
 
     try:
@@ -184,7 +184,7 @@ def join_room():
 
 
         # keys 'room_id' and 'room_password_sha256' must be in decrypted JSON
-        if not "room_id" in decrypted_data.keys() or not "room_password_sha256" in decrypted_data.keys():
+        if not "room_id" in decrypted_data.keys() or not "room_password" in decrypted_data.keys():
             return "Forbidden", 403
 
         room_id_user: str = decrypted_data["room_id"]
@@ -198,12 +198,12 @@ def join_room():
             }
 
         else:
-            password_user: str = decrypted_data["room_password_sha256"]
+            password_user: str = hashlib.sha256(decrypted_data["room_password"]).hexdigest()
 
             with open(app_dir + "/rooms/" + room_id_user + "/password", "r") as f:
                 password_file = f.read()
 
-            if password_user.strip() != password_file.strip():
+            if password_user != password_file.strip():
                 
                 # wrong password
                 data = {
