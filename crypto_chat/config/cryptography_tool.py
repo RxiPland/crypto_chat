@@ -152,28 +152,6 @@ def main():
         else:
             raise Exception("Room ID missing!")
 
-
-    elif operation == "sha256":
-        # calculate sha256 hash
-
-        if length >= 2:
-
-            if length >= 3:
-
-                room_id = argv[1]
-                room_id_file = tempfile.gettempdir() + f"\\{room_id}"
-
-                hashed_password = hashlib.sha256(message_crypt).hexdigest()
-
-                with open(room_id_file + "\\decrypted_message", "w") as f:
-                    f.write(hashed_password)
-
-            else:
-                raise Exception("Plain text missing!")
-
-        else:
-            raise Exception("Room ID missing!")
-    
     else:
         raise Exception(f"Invalid operation! {operations}")
     
