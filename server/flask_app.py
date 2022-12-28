@@ -125,7 +125,7 @@ def create_room():
         # create folder with random HEX string (room_id)
         os.system(f"cd {rooms_path} & mkdir " + room_id)
 
-        # save password to file (in plain)
+        # save password to file (already sha256 hash)
         with open(rooms_path + room_id + "/password", "w") as f:
             f.write(password)
 

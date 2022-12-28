@@ -36,7 +36,7 @@ def main():
     if operation == "generate_rsa":
         # generate RSA key pairs (public & private)
         # generate random room_id
-        # save them to files in Users/.../AppData/Local/Temp/{room_id}/
+        # save them to files in Users/<username>/AppData/Local/Temp/{room_id}/
 
 
         # check if there is second argument
@@ -51,7 +51,7 @@ def main():
 
             else:
                 
-                # generate random id
+                # generate random hex id (32)
                 room_id = uuid.uuid4().hex
                 temp_dir = tempfile.gettempdir()
 

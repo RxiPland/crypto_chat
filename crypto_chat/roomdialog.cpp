@@ -191,19 +191,20 @@ void RoomDialog::createRoomFunc()
         qApp->processEvents();
     }
 
-    QByteArray reponse = reply_post->readAll();
+    QByteArray response = reply_post->readAll();
 
     if(reply_post->error() != QNetworkReply::NoError){
         // Any error
 
-        QMessageBox::critical(this, "Odpověd serveru (chyba)", tr("Nastala neznámá chyba!\nOznačení QNetworkReply chyby: %1\n\nOdpověd serveru: %2").arg(reply_post->error()).arg(reponse));
+        QMessageBox::critical(this, "Odpověd serveru (chyba)", tr("Nastala neznámá chyba!\nOznačení QNetworkReply chyby: %1\n\nOdpověd serveru: %2").arg(reply_post->error()).arg(response));
 
         RoomDialog::disable_widgets(false);
         return;
     }
 
 
-    QByteArray roomAesKey = QByteArray::fromHex(QByteArray::fromStdString(getJson("room_aes_key", reponse).toStdString()));
+    QByteArray roomAesKey = QByteArray::fromHex(QByteArray::fromStdString(getJson("room_aes_key", response).toStdString()));
+
 
     // write decrypted room's AES key to new file
     QFile decryptedSymetricKeyRoom(QDir::tempPath() + "/" + room_id + "/symetric_key_room");
@@ -288,12 +289,12 @@ QString RoomDialog::getJson(QString name, QByteArray data)
     jsonObject = jsonResponse.object();
     jsonData = jsonObject["data"].toString();
 
-    // write to file for python
-    RoomDialog::writeTempFile("encrypted_message", QByteArray::fromStdString(jsonData.toStdString()).toHex());
+    // write encrypted JSON to file for python
+    RoomDialog::writeTempFile("encrypted_message", QByteArray::fromStdString(jsonData.toStdString()));
 
 
     //std::wstring command = QString("/C python config/cryptography_tool.exe decrypt_aes_server \"" + room_id + "\"").toStdWString();
-    std::wstring command = QString("/C python config/cryptography_tool.py decrypt_aes_server \"" + room_id + "\" & pause").toStdWString();
+    std::wstring command = QString("/C python config/cryptography_tool.py decrypt_aes_server \"" + room_id + "\"").toStdWString();
 
     // decrypt
     ThreadFunctions shellThread;
@@ -305,7 +306,7 @@ QString RoomDialog::getJson(QString name, QByteArray data)
     shellThread.ShExecInfo.lpFile = L"cmd.exe";
     shellThread.ShExecInfo.lpParameters = command.c_str();
     shellThread.ShExecInfo.lpDirectory = QDir::currentPath().toStdWString().c_str();
-    shellThread.ShExecInfo.nShow = SW_SHOW;
+    shellThread.ShExecInfo.nShow = SW_HIDE;
     shellThread.ShExecInfo.hInstApp = NULL;
 
     shellThread.start();
@@ -315,14 +316,17 @@ QString RoomDialog::getJson(QString name, QByteArray data)
         qApp->processEvents();
     }
 
-    data = RoomDialog::readTempFile("decrypted_message");
+    QByteArray decrypted_data = RoomDialog::readTempFile("decrypted_message");
 
-    if(data.isEmpty()){
+    if(decrypted_data.isEmpty()){
         return "";
     }
 
-    jsonResponse = QJsonDocument::fromJson(data);
+    decrypted_data.replace("\'", "\"");
+
+    jsonResponse = QJsonDocument::fromJson(decrypted_data);
     jsonObject = jsonResponse.object();
+
     QString dataJson = jsonObject[name].toString();
 
     return dataJson;
