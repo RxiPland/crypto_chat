@@ -140,6 +140,49 @@ def create_room():
         return e, 403
 
 
+@app.route('/join-room', methods=["POST"])
+def join_room():
+    # params: {'data': '<encrypted-data> in hex'}
+    # <encrypted-data> = {'room_id': '<random hex string (32)>', 'room_password': '<password from user>'}
+    #
+    # response: {'data': '<encrypted-data> in hex'}
+    # <encrypted-data> = {'message': '<>', 'room_password': '<password from user>'}
+    pass
+"""
+    try:
+        # specific user-agent is required
+        if not "crypto-chat" in flask.request.user_agent.string:
+            return "Forbidden", 403
+
+        request_json: dict = flask.request.get_json()
+
+        # key 'data' must be in JSON
+        if not "data" in request_json.keys():
+            return "Forbidden", 403
+
+        # load bytes as server's AES key
+        symetric_key = Fernet(server_aes_key)
+
+        # decrypt data from request
+        decrypted_data: dict = json.loads(symetric_key.decrypt(bytes.fromhex(request_json["data"])))
+
+
+        # keys 'room_id' and 'room_password' must be in decrypted JSON
+        if not "room_id" in decrypted_data.keys() or not "room_password" in decrypted_data.keys():
+            return "Forbidden", 403
+
+        room_id_user: str = decrypted_data["room_id"]
+
+        # room folder in server's directory must exist
+        if not os.path.exists(app_dir + "/rooms/" + room_id_user):
+            return "Not Found", 404
+
+        password_user: str = decrypted_data["room_password"]
+
+        with open(app_dir + "/rooms/" + room_id_user + "/password", "r")
+
+"""
+
 if __name__ == "__main__":
     app.run(debug=True, port=5000)
 
