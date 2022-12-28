@@ -45,7 +45,11 @@ def check_version():
 
 @app.route('/get-key', methods=["POST"])
 def get_key():
-    # params: {'rsa_pem': "<user's RSA public key in PEM>"}
+    """
+    params: {'rsa_pem': "<user's RSA public key in PEM>"}
+
+    response: {'status_code': '<error code>', 'server_aes_key': '<encrypted server's AES key with public key> in hex'}
+    """
 
     try:
         # specific user-agent is required
@@ -66,7 +70,8 @@ def get_key():
         encrypted_aes = rsa.encrypt(server_aes_key, rsa_public_key)
 
         data = {
-            "aes_key": encrypted_aes.hex()
+            "status_code": "1",
+            "server_aes_key": encrypted_aes.hex()
         }
 
         return flask.jsonify(data)
@@ -83,7 +88,7 @@ def create_room():
     <AES-encrypted-data> = {'room_id': '<random hex string (32)>', 'room_password_sha256_sha256': '<hashed password from user>'}
     
     response: {'data': '<encrypted-data> in hex'}
-    <encrypted-data> = {'status_code': '<error code>', 'room_aes_key': '<symetric key of room>'}
+    <encrypted-data> = {'status_code': '<error code>', 'room_aes_key': '<symetric key of room> in hex'}
     """
 
     try:

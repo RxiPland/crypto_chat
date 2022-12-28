@@ -376,13 +376,14 @@ void LoginDialog::on_pushButton_clicked()
                                 QJsonDocument jsonResponse = QJsonDocument::fromJson(reply_post->readAll());
                                 QJsonObject jsonObject = jsonResponse.object();
 
-                                QString encryptedAesKeyHex = jsonObject["aes_key"].toString();
+                                QString status_code = jsonObject["status_code"].toString();
 
-                                if(encryptedAesKeyHex == ""){
+                                if(status_code != "1"){
                                     QMessageBox::critical(this, "Chyba", "Server neposlal zašifrovaný symetrický klíč! (AES)");
 
                                 } else{
 
+                                    QString encryptedAesKeyHex = jsonObject["server_aes_key"].toString();
                                     msgBox.setText(previousText + "<span style=\"color:green;\"> [Dokončeno]<br></span>");
 
 
@@ -395,7 +396,6 @@ void LoginDialog::on_pushButton_clicked()
                                         QMessageBox::critical(this, "Chyba", "Nepodařilo se zapsat zašifrovaný symetrický klíč do souboru!");
 
                                     } else{
-
                                         msgBox.setText(msgBox.text() + "5/5 Dešiforvání přijatého symetrického klíče (AES) pomocí privátního klíče (RSA)");
                                         previousText = msgBox.text();
                                         msgBox.setText(msgBox.text() + "<span style=\"color:orange;\"> [Probíhá]<br></span>");

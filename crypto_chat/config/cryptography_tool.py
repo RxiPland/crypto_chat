@@ -53,11 +53,12 @@ def main():
                 
                 # generate random id
                 room_id = uuid.uuid4().hex
+                temp_dir = tempfile.gettempdir()
 
-                room_id_file = tempfile.gettempdir() + f"\\{room_id}"
+                room_id_folder = temp_dir + f"\\{room_id}"
 
-                if not os.path.exists(room_id_file):
-                    os.system(f"mkdir \"{room_id_file}\"")
+                if not os.path.exists(room_id_folder):
+                    os.system(f"cd {temp_dir} & mkdir \"{room_id}\"")
 
                 # save id to file
                 with open(app_dir + "temp/hex_id", "w") as f:
@@ -67,11 +68,11 @@ def main():
                 public_k, private_k = rsa.newkeys(int(argv[1]))
 
                 # save to file
-                with open(room_id_file + "\\public_key.pem", "wb") as f:
+                with open(room_id_folder + "\\public_key.pem", "wb") as f:
                     f.write(public_k.save_pkcs1())
 
                 # save to file
-                with open(room_id_file + "\\private_key.pem", "wb") as f:
+                with open(room_id_folder + "\\private_key.pem", "wb") as f:
                     f.write(private_k.save_pkcs1())
 
         else:
@@ -85,18 +86,18 @@ def main():
         if length >= 2:
 
             room_id = argv[1]
-            room_id_file = tempfile.gettempdir() + f"\\{room_id}"
+            room_id_folder = tempfile.gettempdir() + f"\\{room_id}"
 
-            with open(room_id_file + "\\symetric_key_server", "r") as f:
+            with open(room_id_folder + "\\symetric_key_server", "r") as f:
                 aes_crypt = f.read()
                 aes_crypt = bytes.fromhex(aes_crypt)
 
-            with open(room_id_file + "\\private_key.pem", "rb") as f:
+            with open(room_id_folder + "\\private_key.pem", "rb") as f:
                 private_k = rsa.PrivateKey.load_pkcs1(f.read())
 
             aes_plain = rsa.decrypt(crypto=aes_crypt, priv_key=private_k)
 
-            with open(room_id_file + "\\symetric_key_server", "wb") as f:
+            with open(room_id_folder + "\\symetric_key_server", "wb") as f:
                 f.write(aes_plain)
 
         else:
@@ -111,16 +112,16 @@ def main():
             if length >= 3:
 
                 room_id = argv[1]
-                room_id_file = tempfile.gettempdir() + f"\\{room_id}"
+                room_id_folder = tempfile.gettempdir() + f"\\{room_id}"
             
                 message_plain = bytes.fromhex(argv[2])
 
-                with open(room_id_file + "\\symetric_key_server", "rb") as f:
+                with open(room_id_folder + "\\symetric_key_server", "rb") as f:
                     symetric_key = Fernet(f.read())
 
                 message_crypt = symetric_key.encrypt(data=message_plain)
 
-                with open(room_id_file + "\\encrypted_message", "w") as f:
+                with open(room_id_folder + "\\encrypted_message", "w") as f:
                     f.write(message_crypt.hex())
 
             else:
@@ -136,17 +137,23 @@ def main():
         if length >= 2:
 
             room_id = argv[1]
-            room_id_file = tempfile.gettempdir() + f"\\{room_id}"
+            room_id_folder = tempfile.gettempdir() + f"\\{room_id}"
 
-            with open(room_id_file + "\\encrypted_message", "r") as f:
+            print(room_id_folder)
+
+            with open(room_id_folder + "\\encrypted_message", "r") as f:
                 message_crypt = bytes.fromhex(f.read())
+                
+                print(message_crypt)
 
-            with open(room_id_file + "\\symetric_key_server", "rb") as f:
+            with open(room_id_folder + "\\symetric_key_server", "rb") as f:
                 symetric_key = Fernet(f.read())
+
+            print(symetric_key)
 
             message_plain = symetric_key.decrypt(message_crypt)
 
-            with open(room_id_file + "\\decrypted_message", "wb") as f:
+            with open(room_id_folder + "\\decrypted_message", "wb") as f:
                 f.write(message_plain)
         
         else:

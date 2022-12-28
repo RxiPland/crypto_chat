@@ -53,6 +53,8 @@ private:
     void joinRoomFunc();
 
     QByteArray readTempFile(QString filename);
+    void writeTempFile(QString filename, QByteArray content);
+
     QString getJson(QString name, QByteArray data);
 };
 
