@@ -401,8 +401,8 @@ void LoginDialog::on_pushButton_clicked()
                                         msgBox.setText(msgBox.text() + "<span style=\"color:orange;\"> [Probíhá]<br></span>");
 
 
-                                        //command = QString("/C config/cryptography_tool.exe decrypt_rsa " + room_id).toStdWString();
-                                        command = QString("/C python config/cryptography_tool.py decrypt_rsa " + room_id).toStdWString();
+                                        //command = QString("/C config/cryptography_tool.exe decrypt_rsa \"" + room_id + "\"").toStdWString();
+                                        command = QString("/C python config/cryptography_tool.py decrypt_rsa \"" + room_id + "\"").toStdWString();
 
                                         shellThread.ShExecInfo.lpParameters = command.c_str();
                                         shellThread.start();
