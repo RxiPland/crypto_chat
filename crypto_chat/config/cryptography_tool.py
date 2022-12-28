@@ -2,7 +2,7 @@
 
 import rsa
 from cryptography.fernet import Fernet
-import base64
+import hashlib
 
 import sys
 import os
@@ -11,9 +11,9 @@ import tempfile
 import uuid
 
 app_dir = os.path.dirname(__file__).replace("\\", "/") + "/"
+operations = "[generate_rsa, generate_aes, decrypt_rsa, encrypt_aes_server, decrypt_aes_server, sha256]"
 
 def main():
-
     # operations -> [generate_rsa, decrypt_rsa, encrypt_aes, decrypt_aes]
     # arguments -> [key_size: int, b64_text: bytes, b64_text: bytes]
 
@@ -25,8 +25,7 @@ def main():
     
 
     if length == 0:
-        print("Chybí operace! [generate_rsa, generate_aes, decrypt_rsa, encrypt_aes_server, decrypt_aes_server]")
-        return
+        raise Exception(f"Operation is missing! {operations}")
     
     operation = argv[0].lower()
 
@@ -41,16 +40,14 @@ def main():
 
 
         # check if there is second argument
-        if length == 2:
+        if length >= 2:
             
             # check if string is an decimal
             if not argv[1].isdecimal():
-                print("Chybí velikost RSA klíče v bitech! [2048, 4096]")
-                return
+                raise Exception("Size of RSA key must be decimal! [2048, 4096]")
             
             elif not argv[1] in ["2048", "4096"]:
-                print("Velikost musí být z výběru! [2048, 4096]")
-                return
+                raise Exception("Size must be [2048, 4096] !")
 
             else:
                 
@@ -78,15 +75,14 @@ def main():
                     f.write(private_k.save_pkcs1())
 
         else:
-            print("Chybí velikost RSA klíče v bitech! [2048, 4096]")
-            return
+            raise Exception("Size of RSA key is missing! [2048, 4096]")
    
 
     elif operation == "decrypt_rsa":
         # decrypt RSA cipher to obtain symetric key (AES)
         # save AES to file
 
-        if length == 2:
+        if length >= 2:
 
             room_id = argv[1]
             room_id_file = tempfile.gettempdir() + f"\\{room_id}"
@@ -104,57 +100,82 @@ def main():
                 f.write(aes_plain)
 
         else:
-
-            print("Chybí ID místnosti!")
-            return
+            raise Exception("Room ID missing!")
 
 
     elif operation == "encrypt_aes_server":
-        # encrypt user's input with server's key to encrypted_message file
+        # encrypt user's input with server's key and save to encrypted_message file
 
-        if length == 2:
+        if length >= 2:
 
-            with open(app_dir + "temp/hex_id", "r") as f:
-                room_id = f.read()
+            if length >= 3:
+
+                room_id = argv[1]
                 room_id_file = tempfile.gettempdir() + f"\\{room_id}"
-        
-            message_plain = bytes.fromhex(argv[1])
+            
+                message_plain = bytes.fromhex(argv[2])
+
+                with open(room_id_file + "\\symetric_key_server", "rb") as f:
+                    symetric_key = Fernet(f.read())
+
+                message_crypt = symetric_key.encrypt(data=message_plain)
+
+                with open(room_id_file + "\\encrypted_message", "w") as f:
+                    f.write(message_crypt.hex())
+
+            else:
+                raise Exception("Plain text missing!")
+
+        else:
+            raise Exception("Room ID missing!")
+
+    elif operation == "decrypt_aes_server":
+        # open encrypted_message file and decrypt it's content
+        # save decrypted content to decrypted_message file
+
+        if length >= 2:
+
+            room_id = argv[1]
+            room_id_file = tempfile.gettempdir() + f"\\{room_id}"
+
+            with open(room_id_file + "\\encrypted_message", "r") as f:
+                message_crypt = bytes.fromhex(f.read())
 
             with open(room_id_file + "\\symetric_key_server", "rb") as f:
                 symetric_key = Fernet(f.read())
 
-            message_crypt = symetric_key.encrypt(data=message_plain)
+            message_plain = symetric_key.decrypt(message_crypt)
 
-            with open(room_id_file + "\\encrypted_message", "w") as f:
-                f.write(message_crypt.hex())
+            with open(room_id_file + "\\decrypted_message", "wb") as f:
+                f.write(message_plain)
+        
+        else:
+            raise Exception("Room ID missing!")
+
+
+    elif operation == "sha256":
+        # calculate sha256 hash
+
+        if length >= 2:
+
+            if length >= 3:
+
+                room_id = argv[1]
+                room_id_file = tempfile.gettempdir() + f"\\{room_id}"
+
+                hashed_password = hashlib.sha256(message_crypt).hexdigest()
+
+                with open(room_id_file + "\\decrypted_message", "w") as f:
+                    f.write(hashed_password)
+
+            else:
+                raise Exception("Plain text missing!")
 
         else:
-            print("Chybí text k zašifrování!")
-            return
-
-    elif operation == "decrypt_aes_server":
-        # open encrypted_message file and decrypt it's content
-        # save decrypted content to decrypted_message
-
-        with open(app_dir + "temp/hex_id", "r") as f:
-            room_id = f.read()
-            room_id_file = tempfile.gettempdir() + f"\\{room_id}"
-
-        with open(room_id_file + "\\encrypted_message", "r") as f:
-            message_crypt = bytes.fromhex(f.read())
-
-        with open(room_id_file + "\\symetric_key_server", "rb") as f:
-            symetric_key = Fernet(f.read())
-
-        message_plain = symetric_key.decrypt(message_crypt)
-
-        with open(room_id_file + "\\decrypted_message", "wb") as f:
-            f.write(message_plain)
-
+            raise Exception("Room ID missing!")
     
     else:
-        print("Neplatná operace! [generate_rsa, generate_aes, decrypt_rsa, encrypt_aes_server, decrypt_aes_server]")
-        return
+        raise Exception(f"Invalid operation! {operations}")
     
 
 main()
