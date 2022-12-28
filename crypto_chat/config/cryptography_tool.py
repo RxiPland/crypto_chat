@@ -157,14 +157,3 @@ def main():
     
 
 main()
-
-
-"""
-    elif operation == "generate_aes":
-        # not using
-
-        symetric_key = Fernet.generate_key()
-        
-        with open(app_dir + "temp/symetric_key", "wb") as f:
-            f.write(symetric_key)
-"""     
