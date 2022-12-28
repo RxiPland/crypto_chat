@@ -1,4 +1,4 @@
 .git
-crypto_chat/CMakeLists.txt.user
-/build-crypto_chat-Desktop_Qt_6_3_1_MinGW_64_bit-MinSizeRel
-server/rooms
+/crypto_chat/CMakeLists.txt.user
+/build-crypto_chat-*/
+/server/rooms/
