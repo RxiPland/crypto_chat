@@ -78,9 +78,11 @@ def get_key():
 
 @app.route('/create-room', methods=["POST"])
 def create_room():
-    # params: {'data': '<encrypted-data> in hex'}
+    # params: {'data': '<AES-encrypted-data> in hex'}
+    # <AES-encrypted-data> = {'room_id': '<random hex string (32)>', 'room_password_sha256': '<hashed password from user>'}
     #
-    # <encrypted-data> = {'room_id': '<random hex string (32)>', 'room_password': '<password from user>'}
+    # response: {'data': '<encrypted-data> in hex'}
+    # <encrypted-data> = {'message': '<success message>', 'aes_key': '<symetric key of room>'}
 
     try:
         # specific user-agent is required
@@ -142,11 +144,11 @@ def create_room():
 
 @app.route('/join-room', methods=["POST"])
 def join_room():
-    # params: {'data': '<encrypted-data> in hex'}
-    # <encrypted-data> = {'room_id': '<random hex string (32)>', 'room_password': '<password from user>'}
+    # params: {'data': '<AES-encrypted-data> in hex'}
+    # <AES-encrypted-data> = {'room_id': '<random hex string (32)>', 'room_password_sha256': '<hashed password from user>'}
     #
     # response: {'data': '<encrypted-data> in hex'}
-    # <encrypted-data> = {'message': '<>', 'room_password': '<password from user>'}
+    # <encrypted-data> = {'message': '<success message>', 'aes_key': '<symetric key of room>'}
     pass
 """
     try:
