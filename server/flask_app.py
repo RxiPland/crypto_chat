@@ -8,6 +8,7 @@ from cryptography.fernet import Fernet
 import os
 import json
 from urllib.parse import unquote
+import hashlib
 
 
 app = flask.Flask(__name__)
@@ -85,7 +86,7 @@ def get_key():
 def create_room():
     """
     params: {'data': '<AES-encrypted-data> in hex'}
-    <AES-encrypted-data> = {'room_id': '<random hex string (32)>', 'room_password_sha256_sha256': '<hashed password from user>'}
+    <AES-encrypted-data> = {'room_id': '<random hex string (32)>', 'room_password_sha256': '<hashed password from user>'}
     
     response: {'data': '<encrypted-data> in hex'}
     <encrypted-data> = {'status_code': '<error code>', 'room_aes_key': '<symetric key of room> in hex'}
@@ -158,7 +159,7 @@ def create_room():
 def join_room():
     """
     params: {'data': '<AES-encrypted-data> in hex'}
-    <AES-encrypted-data> = {'room_id': '<random hex string (32)>', 'room_password_sha256_sha256': '<hashed password from user>'}
+    <AES-encrypted-data> = {'room_id': '<random hex string (32)>', 'room_password_sha256': '<hashed password from user>'}
     
     response: {'data': '<encrypted-data> in hex'}
     <encrypted-data> = {'status_code': '<error code>', 'room_aes_key': '<symetric key of room>'}
