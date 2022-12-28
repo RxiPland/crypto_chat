@@ -55,7 +55,7 @@ private:
     QByteArray readTempFile(QString filename);
     void writeTempFile(QString filename, QByteArray content);
 
-    QString getJson(QString name, QByteArray data);
+    QStringList getJson(QStringList names, QByteArray data);
 };
 
 #endif // ROOMDIALOG_H

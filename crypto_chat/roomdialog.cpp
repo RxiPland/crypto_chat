@@ -107,10 +107,9 @@ void RoomDialog::disable_widgets(bool disable){
 void RoomDialog::createRoomFunc()
 {
     RoomDialog::disable_widgets(true);
+    QString nickname = ui->lineEdit_4->text().trimmed();
 
-    QString username = ui->lineEdit_4->text().trimmed();
-
-    if(username == ""){
+    if(nickname == ""){
         QMessageBox::critical(this, "Chyba", "Pole pro jméno nemůže být prázdné!");
 
         RoomDialog::disable_widgets(false);
@@ -202,8 +201,34 @@ void RoomDialog::createRoomFunc()
         return;
     }
 
+    QStringList names;
+    names.append("status_code");
+    names.append("room_aes_key");
 
-    QByteArray roomAesKey = QByteArray::fromHex(QByteArray::fromStdString(getJson("room_aes_key", response).toStdString()));
+    QStringList responseData = getJson(names, response);
+
+    if(responseData.isEmpty()){
+        QMessageBox::critical(this, "Chyba", "Server byl pravděpodobně restartován a kvůli tomu máte starý symetrický klíč. Restartuje program pro získání nového.");
+
+        RoomDialog::disable_widgets(false);
+        return;
+    }
+
+
+    if (responseData[0] == "5"){
+        QMessageBox::critical(this, "Chyba", "Server byl pravděpodobně restartován a kvůli tomu máte starý symetrický klíč. Restartuje program pro získání nového.");
+
+        RoomDialog::disable_widgets(false);
+        return;
+
+    } else if (responseData[0] != "1"){
+        QMessageBox::critical(this, "Chyba", "Nastala neznámá chyba! Server odpověděl {\"status_code\": " + responseData[0] + "}");
+
+        RoomDialog::disable_widgets(false);
+        return;
+    }
+
+    QByteArray roomAesKey = QByteArray::fromHex(QByteArray::fromStdString(responseData[1].toStdString()));
 
 
     // write decrypted room's AES key to new file
@@ -215,7 +240,7 @@ void RoomDialog::createRoomFunc()
     QMessageBox::information(this, "Oznámení", "Místnost byla úspěšně vytvořena");
 
     RoomDialog::successful = true;
-    RoomDialog::username = ui->lineEdit_4->text();
+    RoomDialog::username = nickname;
 
     this->close();
 }
@@ -224,7 +249,7 @@ void RoomDialog::joinRoomFunc()
 {
     RoomDialog::disable_widgets(true);
 
-    QString username = ui->lineEdit_4->text().trimmed();
+    QString nickname = ui->lineEdit_4->text().trimmed();
     QString roomId = ui->lineEdit_3->text().trimmed();
 
 
@@ -240,15 +265,159 @@ void RoomDialog::joinRoomFunc()
         RoomDialog::disable_widgets(false);
         return;
 
-    } else if (username == ""){
+    } else if (nickname == ""){
         QMessageBox::critical(this, "Chyba", "Pole pro jméno nemůže být prázdné!");
 
         RoomDialog::disable_widgets(false);
         return;
     }
 
+    QJsonObject objMessage;
+    objMessage["room_id"] = roomId;
+    objMessage["room_password"] = ui->lineEdit_4->text().trimmed();
+
+    if(ui->checkBox->isChecked()){
+        objMessage["room_password"] = ui->lineEdit->text();
+    } else{
+        objMessage["room_password"] = "";
+    }
+
+    QJsonDocument docMessage(objMessage);
+    QString message_data = docMessage.toJson().toHex();
+
+    //std::wstring command = QString("/C python config/cryptography_tool.exe encrypt_aes_server \"" + room_id + "\" \"" + message_data + "\"").toStdWString();
+    std::wstring command = QString("/C python config/cryptography_tool.py encrypt_aes_server \"" + room_id + "\" \"" + message_data + "\"").toStdWString();
+
+    // encrypt
+    ThreadFunctions shellThread;
+    shellThread.operation = 2;  // Thread func
+    shellThread.ShExecInfo.cbSize = sizeof(SHELLEXECUTEINFO);
+    shellThread.ShExecInfo.fMask = SEE_MASK_NOCLOSEPROCESS;
+    shellThread.ShExecInfo.hwnd = NULL;
+    shellThread.ShExecInfo.lpVerb = L"open";
+    shellThread.ShExecInfo.lpFile = L"cmd.exe";
+    shellThread.ShExecInfo.lpParameters = command.c_str();
+    shellThread.ShExecInfo.lpDirectory = QDir::currentPath().toStdWString().c_str();
+    shellThread.ShExecInfo.nShow = SW_HIDE;
+    shellThread.ShExecInfo.hInstApp = NULL;
+
+    shellThread.start();
+
+    // wait for thread to complete
+    while(shellThread.isRunning()){
+        qApp->processEvents();
+    }
+
+    QByteArray content = readTempFile("encrypted_message");
+
+    if (content.isEmpty()){
+        RoomDialog::disable_widgets(false);
+        return;
+    }
+
+    QJsonObject objData;
+    objData["data"] = (QString)content;
+    QJsonDocument docData(objData);
+    QByteArray JoinRoomData = docData.toJson();
+
+    QNetworkRequest request;
+    QUrl qurl_address = QUrl(server_url + "/join-room");
+
+    request.setHeader(QNetworkRequest::ContentTypeHeader, "application/json");
+    request.setHeader(QNetworkRequest::UserAgentHeader, RoomDialog::user_agent);
+
+    if(ui->checkBox->isChecked()){
+        // authentication
+
+        qurl_address.setUserName(authentication_username);
+        qurl_address.setPassword(authentication_password);
+    }
+
+    request.setUrl(qurl_address);
+
+    QNetworkReply *reply_post = manager.post(request, JoinRoomData);
+
+    while (!reply_post->isFinished())
+    {
+        qApp->processEvents();
+    }
+
+    QByteArray response = reply_post->readAll();
+
+    if(reply_post->error() != QNetworkReply::NoError){
+        // Any error
+
+        QMessageBox::critical(this, "Odpověd serveru (chyba)", tr("Nastala neznámá chyba!\nOznačení QNetworkReply chyby: %1\n\nOdpověd serveru: %2").arg(reply_post->error()).arg(response));
+
+        RoomDialog::disable_widgets(false);
+        return;
+    }
 
 
+    QStringList names;
+    names.append("status_code");
+    names.append("room_aes_key");
+
+    QStringList responseData = getJson(names, response);
+
+    if(responseData.isEmpty()){
+        QMessageBox::critical(this, "Chyba", "Server byl pravděpodobně restartován a kvůli tomu máte starý symetrický klíč. Restartuje program pro získání nového.");
+
+        RoomDialog::disable_widgets(false);
+        return;
+    }
+
+    if (responseData[0] == "2"){
+        QMessageBox::critical(this, "Chyba", "Na serveru neexistuje soubor se symetrickým klíčem místnosti!");
+
+        RoomDialog::disable_widgets(false);
+        return;
+
+    } else if (responseData[0] == "3"){
+        QMessageBox::critical(this, "Chyba", "Špatné heslo!");
+
+        RoomDialog::disable_widgets(false);
+        return;
+
+    } else if (responseData[0] == "4"){
+        QMessageBox::critical(this, "Chyba", "Místnost s tímto ID neexistuje!");
+
+        RoomDialog::disable_widgets(false);
+        return;
+
+    } else if (responseData[0] == "5"){
+        QMessageBox::critical(this, "Chyba", "Server byl pravděpodobně restartován a kvůli tomu máte starý symetrický klíč. Restartuje program pro získání nového.");
+
+        RoomDialog::disable_widgets(false);
+        return;
+
+    } else if (responseData[0] != "1"){
+        QMessageBox::critical(this, "Chyba", "Nastala neznámá chyba při pokusu o připojení do místnosti!");
+
+        RoomDialog::disable_widgets(false);
+        return;
+    }
+
+    QByteArray roomAesKey = QByteArray::fromHex(QByteArray::fromStdString(responseData[1].toStdString()));
+
+
+    // write decrypted room's AES key to new file
+    QFile decryptedSymetricKeyRoom(QDir::tempPath() + "/" + room_id + "/symetric_key_room");
+    decryptedSymetricKeyRoom.open(QIODevice::WriteOnly);
+    decryptedSymetricKeyRoom.write(roomAesKey);
+    decryptedSymetricKeyRoom.close();
+
+    QMessageBox::information(this, "Oznámení", "Připojení do místnosti proběhlo úspěšně");
+
+    RoomDialog::successful = true;
+    RoomDialog::username = nickname;
+
+    QFile roomFile(QDir::tempPath() + "/" + roomId);
+    roomFile.rename(roomId);
+
+    RoomDialog::room_id = roomId;
+
+    this->close();
 }
 
 QByteArray RoomDialog::readTempFile(QString filename){
@@ -258,7 +427,7 @@ QByteArray RoomDialog::readTempFile(QString filename){
 
     if(!file.exists()){
         // python did not create the file
-        QMessageBox::critical(this, "Chyba", "Program nenašel soubor!");
+        return content;
 
     } else{
         file.open(QIODevice::ReadOnly);
@@ -278,7 +447,7 @@ void RoomDialog::writeTempFile(QString filename, QByteArray content){
     file.close();
 }
 
-QString RoomDialog::getJson(QString name, QByteArray data)
+QStringList RoomDialog::getJson(QStringList names, QByteArray data)
 {
     QJsonDocument jsonResponse;
     QJsonObject jsonObject;
@@ -319,7 +488,7 @@ QString RoomDialog::getJson(QString name, QByteArray data)
     QByteArray decrypted_data = RoomDialog::readTempFile("decrypted_message");
 
     if(decrypted_data.isEmpty()){
-        return "";
+        return QStringList();
     }
 
     decrypted_data.replace("\'", "\"");
@@ -327,9 +496,14 @@ QString RoomDialog::getJson(QString name, QByteArray data)
     jsonResponse = QJsonDocument::fromJson(decrypted_data);
     jsonObject = jsonResponse.object();
 
-    QString dataJson = jsonObject[name].toString();
+    QStringList returnData;
+    int i;
 
-    return dataJson;
+    for(i=0; i<names.length(); i++){
+        returnData.append(jsonObject[names[i]].toString());
+    }
+
+    return returnData;
 }
 
 

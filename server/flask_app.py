@@ -79,7 +79,7 @@ def get_key():
     
     except Exception as e:
         print(e)
-        return e, 403
+        return str(e), 403
 
 
 @app.route('/create-room', methods=["POST"])
@@ -107,8 +107,22 @@ def create_room():
         symetric_key = Fernet(server_aes_key)
 
         # decrypt data from request
-        decrypted_data: dict = json.loads(symetric_key.decrypt(bytes.fromhex(request_json["data"])))
+        try:
+            decrypted_data = symetric_key.decrypt(bytes.fromhex(request_json["data"]))
+        
+        except:
 
+            data = {
+                "status_code": "5",
+                "room_aes_key": "None"
+            }
+
+            data = str(data).encode()
+            data = symetric_key.encrypt(data).hex()
+
+            return flask.jsonify({"data": data}), 200
+
+        decrypted_data: dict = json.loads(decrypted_data)
 
         # keys 'room_id' and 'room_password_sha256' must be in decrypted JSON
         if not "room_id" in decrypted_data.keys() or not "room_password_sha256" in decrypted_data.keys():
@@ -152,14 +166,14 @@ def create_room():
 
     except Exception as e:
         print(e)
-        return e, 403
+        return str(e), 403
 
 
 @app.route('/join-room', methods=["POST"])
 def join_room():
     """
     params: {'data': '<AES-encrypted-data> in hex'}
-    <AES-encrypted-data> = {'room_id': '<random hex string (32)>', 'room_password': '<hashed password from user>'}
+    <AES-encrypted-data> = {'room_id': '<random hex string (32)>', 'room_password': '<plaintext password from user>'}
     
     response: {'data': '<encrypted-data> in hex'}
     <encrypted-data> = {'status_code': '<error code>', 'room_aes_key': '<symetric key of room> in hex'}
@@ -179,11 +193,26 @@ def join_room():
         # load bytes as server's AES key
         symetric_key = Fernet(server_aes_key)
 
+
         # decrypt data from request
-        decrypted_data: dict = json.loads(symetric_key.decrypt(bytes.fromhex(request_json["data"])))
+        try:
+            decrypted_data = symetric_key.decrypt(bytes.fromhex(request_json["data"]))
+        
+        except:
+
+            data = {
+                "status_code": "5"
+            }
+
+            data = str(data).encode()
+            data = symetric_key.encrypt(data).hex()
+
+            return flask.jsonify({"data": data}), 200
 
 
-        # keys 'room_id' and 'room_password_sha256' must be in decrypted JSON
+        decrypted_data: dict = json.loads(decrypted_data)
+
+        # keys 'room_id' and 'room_password' must be in decrypted JSON
         if not "room_id" in decrypted_data.keys() or not "room_password" in decrypted_data.keys():
             return "Forbidden", 403
 
@@ -198,12 +227,12 @@ def join_room():
             }
 
         else:
-            password_user: str = hashlib.sha256(decrypted_data["room_password"]).hexdigest()
+            password_user_hash: str = hashlib.sha256(decrypted_data["room_password"].encode()).hexdigest()
 
             with open(app_dir + "/rooms/" + room_id_user + "/password", "r") as f:
                 password_file = f.read()
 
-            if password_user != password_file.strip():
+            if password_user_hash != password_file.strip():
                 
                 # wrong password
                 data = {
@@ -241,7 +270,7 @@ def join_room():
 
     except Exception as e:
         print(e)
-        return e, 403
+        return str(e), 403
 
 
 if __name__ == "__main__":
