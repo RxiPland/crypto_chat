@@ -80,10 +80,10 @@ def get_key():
 def create_room():
     """
     params: {'data': '<AES-encrypted-data> in hex'}
-    <AES-encrypted-data> = {'room_id': '<random hex string (32)>', 'room_password_sha256': '<hashed password from user>'}
+    <AES-encrypted-data> = {'room_id': '<random hex string (32)>', 'room_password_sha256_sha256': '<hashed password from user>'}
     
     response: {'data': '<encrypted-data> in hex'}
-    <encrypted-data> = {'message': '<success message>', 'room_aes_key': '<symetric key of room>'}
+    <encrypted-data> = {'status_code': '<error code>', 'room_aes_key': '<symetric key of room>'}
     """
 
     try:
@@ -104,8 +104,8 @@ def create_room():
         decrypted_data: dict = json.loads(symetric_key.decrypt(bytes.fromhex(request_json["data"])))
 
 
-        # keys 'room_id' and 'room_password' must be in decrypted JSON
-        if not "room_id" in decrypted_data.keys() or not "room_password" in decrypted_data.keys():
+        # keys 'room_id' and 'room_password_sha256' must be in decrypted JSON
+        if not "room_id" in decrypted_data.keys() or not "room_password_sha256" in decrypted_data.keys():
             return "Forbidden", 403
 
         # rooms folder in server's directory
@@ -115,7 +115,7 @@ def create_room():
         rooms_path = app_dir + "rooms" + "/"
 
         room_id: str = decrypted_data["room_id"]
-        password: str = decrypted_data["room_password"]
+        password: str = decrypted_data["room_password_sha256"]
 
         # create folder with random HEX string (room_id)
         os.system(f"cd {rooms_path} & mkdir " + room_id)
@@ -134,10 +134,15 @@ def create_room():
 
         # prepare data for return
         data = {
-            "room_aes_key": symetric_key.encrypt(key).hex()
+            "status_code": "1",
+            "room_aes_key": key.hex()
         }
 
-        return flask.jsonify(data)
+        # encrypt json
+        data = str(data).encode()
+        data = symetric_key.encrypt(data).hex()
+
+        return flask.jsonify({"data": data}), 200
 
     except Exception as e:
         print(e)
@@ -148,10 +153,10 @@ def create_room():
 def join_room():
     """
     params: {'data': '<AES-encrypted-data> in hex'}
-    <AES-encrypted-data> = {'room_id': '<random hex string (32)>', 'room_password_sha256': '<hashed password from user>'}
+    <AES-encrypted-data> = {'room_id': '<random hex string (32)>', 'room_password_sha256_sha256': '<hashed password from user>'}
     
     response: {'data': '<encrypted-data> in hex'}
-    <encrypted-data> = {'message': '<success message>', 'room_aes_key': '<symetric key of room>'}
+    <encrypted-data> = {'status_code': '<error code>', 'room_aes_key': '<symetric key of room>'}
     """
 
     try:
@@ -172,8 +177,8 @@ def join_room():
         decrypted_data: dict = json.loads(symetric_key.decrypt(bytes.fromhex(request_json["data"])))
 
 
-        # keys 'room_id' and 'room_password' must be in decrypted JSON
-        if not "room_id" in decrypted_data.keys() or not "room_password" in decrypted_data.keys():
+        # keys 'room_id' and 'room_password_sha256' must be in decrypted JSON
+        if not "room_id" in decrypted_data.keys() or not "room_password_sha256" in decrypted_data.keys():
             return "Forbidden", 403
 
         room_id_user: str = decrypted_data["room_id"]
@@ -187,7 +192,7 @@ def join_room():
             }
 
         else:
-            password_user: str = decrypted_data["room_password"]
+            password_user: str = decrypted_data["room_password_sha256"]
 
             with open(app_dir + "/rooms/" + room_id_user + "/password", "r") as f:
                 password_file = f.read()
@@ -225,7 +230,7 @@ def join_room():
         data = str(data).encode()
         data = symetric_key.encrypt(data).hex()
 
-        return flask.jsonify({"data": data})
+        return flask.jsonify({"data": data}), 200
 
 
     except Exception as e:
