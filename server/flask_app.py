@@ -78,11 +78,13 @@ def get_key():
 
 @app.route('/create-room', methods=["POST"])
 def create_room():
-    # params: {'data': '<AES-encrypted-data> in hex'}
-    # <AES-encrypted-data> = {'room_id': '<random hex string (32)>', 'room_password_sha256': '<hashed password from user>'}
-    #
-    # response: {'data': '<encrypted-data> in hex'}
-    # <encrypted-data> = {'message': '<success message>', 'aes_key': '<symetric key of room>'}
+    """
+    params: {'data': '<AES-encrypted-data> in hex'}
+    <AES-encrypted-data> = {'room_id': '<random hex string (32)>', 'room_password_sha256': '<hashed password from user>'}
+    
+    response: {'data': '<encrypted-data> in hex'}
+    <encrypted-data> = {'message': '<success message>', 'room_aes_key': '<symetric key of room>'}
+    """
 
     try:
         # specific user-agent is required
@@ -144,13 +146,14 @@ def create_room():
 
 @app.route('/join-room', methods=["POST"])
 def join_room():
-    # params: {'data': '<AES-encrypted-data> in hex'}
-    # <AES-encrypted-data> = {'room_id': '<random hex string (32)>', 'room_password_sha256': '<hashed password from user>'}
-    #
-    # response: {'data': '<encrypted-data> in hex'}
-    # <encrypted-data> = {'message': '<success message>', 'aes_key': '<symetric key of room>'}
-    pass
-"""
+    """
+    params: {'data': '<AES-encrypted-data> in hex'}
+    <AES-encrypted-data> = {'room_id': '<random hex string (32)>', 'room_password_sha256': '<hashed password from user>'}
+    
+    response: {'data': '<encrypted-data> in hex'}
+    <encrypted-data> = {'message': '<success message>', 'room_aes_key': '<symetric key of room>'}
+    """
+
     try:
         # specific user-agent is required
         if not "crypto-chat" in flask.request.user_agent.string:
@@ -177,13 +180,58 @@ def join_room():
 
         # room folder in server's directory must exist
         if not os.path.exists(app_dir + "/rooms/" + room_id_user):
-            return "Not Found", 404
+            
+            # wrong room ID
+            data = {
+                "status_code": "4"
+            }
 
-        password_user: str = decrypted_data["room_password"]
+        else:
+            password_user: str = decrypted_data["room_password"]
 
-        with open(app_dir + "/rooms/" + room_id_user + "/password", "r")
+            with open(app_dir + "/rooms/" + room_id_user + "/password", "r") as f:
+                password_file = f.read()
 
-"""
+            if password_user.strip() != password_file.strip():
+                
+                # wrong password
+                data = {
+                    "status_code": "3"
+                }
+
+            else:
+                key_path = app_dir + "/rooms/" + room_id_user + "/symetric_key"
+
+                # AES key file must exist
+                if not os.path.exists(key_path):
+
+                    # symetric key file not found
+                    data = {    
+                        "status_code": "2"
+                    }
+
+                else:
+                    # read room AES key from file
+                    with open(key_path, "rb") as f:
+                        aes_key = f.read()
+
+                    # success
+                    data = {
+                        "status_code": "1",
+                        "room_aes_key": aes_key.hex()
+                    }
+
+
+        data = str(data).encode()
+        data = symetric_key.encrypt(data).hex()
+
+        return flask.jsonify({"data": data})
+
+
+    except Exception as e:
+        print(e)
+        return e, 403
+
 
 if __name__ == "__main__":
     app.run(debug=True, port=5000)
