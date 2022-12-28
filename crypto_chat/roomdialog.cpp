@@ -13,6 +13,7 @@ Window for creating new room OR joining existing room
 #include <QJsonObject>
 #include <QJsonValue>
 #include <QNetworkReply>
+#include <QCryptographicHash>
 
 RoomDialog::RoomDialog(QWidget *parent, bool createRoom, QString server_url, QString room_id) :
     QDialog(parent),
@@ -116,16 +117,19 @@ void RoomDialog::createRoomFunc()
         return;
     }
 
+    QCryptographicHash hash(QCryptographicHash::Sha256);
 
     // data for POST
     QJsonObject objMessage;
     objMessage["room_id"] = ui->lineEdit_3->text();
 
     if(ui->checkBox->isChecked()){
-        objMessage["room_password"] = ui->lineEdit->text();
+        hash.addData(ui->lineEdit->text().toStdString());
     } else{
-        objMessage["room_password"] = "";
+        hash.addData("");
     }
+
+    objMessage["room_password"] = (QString)hash.result().toHex();
 
     QJsonDocument docMessage(objMessage);
     QString message_data = docMessage.toJson().toHex();
