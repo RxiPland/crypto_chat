@@ -59,6 +59,7 @@ RoomDialog::RoomDialog(QWidget *parent, bool createRoom, QString server_url, QSt
         ui->pushButton->setText("Připojit se do místnosti");
     }
 
+    this->show();
 }
 
 RoomDialog::~RoomDialog()

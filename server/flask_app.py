@@ -19,6 +19,15 @@ server_aes_key = Fernet.generate_key()
 
 version = "crypto-chat v1.0.0"
 
+"""
+Status codes:
+1 = ok
+2 = file with symetric key not found
+3 = wrong password
+4 = wrong room ID
+5 = wrong symetric key
+"""
+
 # max:
 # délka jména: 25
 # délka prefixu: 25
@@ -47,9 +56,9 @@ def check_version():
 @app.route('/get-key', methods=["POST"])
 def get_key():
     """
-    params: {'rsa_pem': "<user's RSA public key in PEM>"}
+    params: {'rsa_pem': "<user's RSA public key> in PEM"}
 
-    response: {'status_code': '<error code>', 'server_aes_key': '<encrypted server's AES key with public key> in hex'}
+    response: {'status_code': '<error code>', 'server_aes_key': '<encrypted server's AES key by public key> in hex'}
     """
 
     try:
@@ -143,6 +152,11 @@ def create_room():
         # save password to file (already sha256 hash)
         with open(rooms_path + room_id + "/password", "w") as f:
             f.write(password)
+
+        # create blank txt file for encrypted chat messages
+        with open(rooms_path + room_id + "/messages", "w") as f:
+            f.write("")
+            
 
         # generate AES key for room
         key = Fernet.generate_key()
@@ -275,10 +289,9 @@ def join_room():
 
 @app.route('/send-message', methods=["POST"])
 def send_message():
-
     """
     params: {'data': '<AES-encrypted-data> in hex'}
-    <AES-encrypted-data> = {'room_id': '<hex string (32)>', 'message': '<encrypted-message> with room symetric key', 'color': '<user-color>'}
+    <AES-encrypted-data> = {'room_id': '<hex string (32)>', 'message': '<encrypted-message> with room symetric key', 'room_password': '<plain text password>'}
     
     response: {'data': '<encrypted-data> in hex'}
     <encrypted-data> = {'status_code': '<error code>'}
@@ -297,6 +310,78 @@ def send_message():
 
         # load bytes as server's AES key
         symetric_key_server = Fernet(server_aes_key)
+
+        # decrypt data from request
+        try:
+            decrypted_data = symetric_key_server.decrypt(bytes.fromhex(request_json["data"]))
+        
+        except:
+
+            data = {
+                "status_code": "5"
+            }
+
+            data = str(data).encode()
+            data = symetric_key_server.encrypt(data).hex()
+
+            return flask.jsonify({"data": data}), 200
+
+
+        decrypted_data: dict = json.loads(decrypted_data)
+
+        # keys 'room_id', 'message' and 'room_password' must be in decrypted JSON
+        if not "room_id" in decrypted_data.keys() or not "message" in decrypted_data.keys() or not "room_password" in decrypted_data.keys():
+            return "Forbidden", 403
+
+        room_id = decrypted_data["room_id"]
+
+        # room folder in server's directory must exist
+        if not os.path.exists(app_dir + "/rooms/" + room_id):
+            
+            # wrong room ID (probably room was deleted by someone else)
+            data = {
+                "status_code": "4"
+            }
+
+            data = str(data).encode()
+            data = symetric_key_server.encrypt(data).hex()
+
+            return flask.jsonify({"data": data}), 200
+
+
+        password_user_hash: str = hashlib.sha256(decrypted_data["room_password"].encode()).hexdigest()
+
+        with open(app_dir + "/rooms/" + room_id + "/password", "r") as f:
+            password_file_hash = f.read()
+
+
+        if password_user_hash != password_file_hash.strip():
+                
+            # wrong password (should never happen)
+            data = {
+                "status_code": "3"
+            }
+
+            data = str(data).encode()
+            data = symetric_key_server.encrypt(data).hex()
+
+            return flask.jsonify({"data": data}), 200
+
+        message = decrypted_data["message"]
+
+        # write encrypted message with room's key into file
+        with open(app_dir + "/rooms/" + room_id + "/messages", "a") as f:
+            f.write(message)
+
+
+        data = {
+            "status_code": "1"
+        }
+
+        data = str(data).encode()
+        data = symetric_key_server.encrypt(data).hex()
+
+        return flask.jsonify({"data": data}), 200
 
 
     except Exception as e:

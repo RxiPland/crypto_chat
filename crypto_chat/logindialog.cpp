@@ -31,6 +31,7 @@ LoginDialog::LoginDialog(QWidget *parent) :
     ui->pushButton->setEnabled(false);
     ui->toolButton_3->setHidden(true);
     hide_widgets(true);
+
     this->show();
 
 

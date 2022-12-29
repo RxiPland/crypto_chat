@@ -44,6 +44,7 @@ ChatWindow::ChatWindow(QWidget *parent, QString server_url, QString user_name)
     refreshChatLoop.continueLoop = true;
     refreshChatLoop.start();
 
+
     this->show();
 }
 
