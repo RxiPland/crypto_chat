@@ -27,6 +27,7 @@ public:
     QString user_color = "black";  // default color
     QString user_name;
     QString prefix;
+    QString room_password;
 
     float refreshInterval = 5.9;
 
@@ -59,7 +60,7 @@ private:
 
     bool restart = false;
 
-    QString encrypt_message(QString message="");
+    void sendMessage(QString color="black", QString time="", QString prefix="", QString nickname="", QString message="");
 
 };
 #endif // CHATWINDOW_H

@@ -22,6 +22,7 @@ public:
     QString app_version;
     QByteArray user_agent;
     QString room_id;
+    QString room_password;
     QString username;
 
     bool authentication_required = false;

@@ -278,8 +278,11 @@ void RoomDialog::joinRoomFunc()
     objMessage["room_password"] = ui->lineEdit_4->text().trimmed();
 
     if(ui->checkBox->isChecked()){
-        objMessage["room_password"] = ui->lineEdit->text();
+        RoomDialog::room_password = ui->lineEdit->text();
+        objMessage["room_password"] = RoomDialog::room_password;
+
     } else{
+        RoomDialog::room_password = "";
         objMessage["room_password"] = "";
     }
 

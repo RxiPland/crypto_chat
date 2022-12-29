@@ -17,6 +17,9 @@ Window for sending messages
 #include <QClipboard>
 #include <QNetworkRequest>
 #include <QNetworkReply>
+#include <QJsonDocument>
+#include <QJsonObject>
+#include <QJsonValue>
 
 ThreadFunctions refreshChatLoop;
 
@@ -54,9 +57,20 @@ ChatWindow::~ChatWindow()
 }
 
 
-void ChatWindow::welcomeMessage()
+void ChatWindow::sendMessage(QString color, QString time, QString prefix, QString nickname, QString message)
 {
-    /*
+
+    // encrypt with server's key
+    // encrypt with room's key
+
+    QString messageHtml;  // html format
+    QString messageText;  // html escaped
+
+    messageText = tr("(%1) %2 <%3>: %4").arg(QTime::currentTime().toString()).arg(prefix).arg(nickname).arg(message);
+    messageHtml = tr("<span style=\"color:%1;\">%2<br></span>").arg(color).arg(messageText.toHtmlEscaped());
+
+
+
     QNetworkRequest request;
     QUrl qurl_address = QUrl(server_url + "/send-message");
 
@@ -72,8 +86,12 @@ void ChatWindow::welcomeMessage()
 
     request.setUrl(qurl_address);
 
+
+
+    data = ChatWindow::encryptMessage();
+
     QNetworkReply *reply_post = manager.post(request, CreateRoomData);
-    */
+
 }
 
 void ChatWindow::closeEvent(QCloseEvent *bar)
@@ -108,14 +126,6 @@ void ChatWindow::closeEvent(QCloseEvent *bar)
     if(!restart){
         QApplication::quit();
     }
-}
-
-QString ChatWindow::encrypt_message(QString message){
-
-    // encrypt with server's key
-    // encrypt with room's key
-
-    return "";
 }
 
 QString convert_color(QString color){
@@ -225,7 +235,7 @@ void ChatWindow::on_action_zpravy_4_triggered()
 void ChatWindow::on_action_zpravy_3_triggered()
 {
     ui->textEdit->clear();
-    ui->textEdit->append(tr("<span style=\"color:grey;\">Chat byl vyčištěn ...<br></span>"));
+    ui->textEdit->append("<span style=\"color:grey;\">Chat byl vyčištěn ...<br></span>");
 }
 
 

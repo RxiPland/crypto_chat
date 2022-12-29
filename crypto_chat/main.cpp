@@ -58,6 +58,7 @@ int main(int argc, char *argv[])
     chw.app_version = app_version;
     chw.user_agent = user_agent;
     chw.room_id = ld.room_id;
+    chw.room_password = rd.room_password;
     chw.authentication_required = ld.authentication_required;
     chw.authentication_username = ld.authentication_username;
     chw.authentication_password = ld.authentication_password;
