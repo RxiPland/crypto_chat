@@ -40,6 +40,8 @@ public:
     QAction *action_zpravy_3_1;
     QAction *action_zpravy_3_2;
     QAction *action_zpravy_3_3;
+    QAction *action_advanced_1;
+    QAction *action_advanced_2;
     QWidget *centralwidget;
     QVBoxLayout *verticalLayout_3;
     QSpacerItem *verticalSpacer_4;
@@ -67,6 +69,7 @@ public:
     QMenu *menuZpravy;
     QMenu *menuZpravy_2;
     QMenu *menuZpravy_3;
+    QMenu *menuAdvanced;
     QStatusBar *statusbar;
 
     void setupUi(QMainWindow *ChatWindow)
@@ -120,6 +123,16 @@ public:
         action_zpravy_3_2->setIcon(icon7);
         action_zpravy_3_3 = new QAction(ChatWindow);
         action_zpravy_3_3->setObjectName("action_zpravy_3_3");
+        action_advanced_1 = new QAction(ChatWindow);
+        action_advanced_1->setObjectName("action_advanced_1");
+        QIcon icon8;
+        icon8.addFile(QString::fromUtf8(":/images/github.ico"), QSize(), QIcon::Normal, QIcon::Off);
+        action_advanced_1->setIcon(icon8);
+        action_advanced_2 = new QAction(ChatWindow);
+        action_advanced_2->setObjectName("action_advanced_2");
+        QIcon icon9;
+        icon9.addFile(QString::fromUtf8(":/images/settings.ico"), QSize(), QIcon::Normal, QIcon::Off);
+        action_advanced_2->setIcon(icon9);
         centralwidget = new QWidget(ChatWindow);
         centralwidget->setObjectName("centralwidget");
         verticalLayout_3 = new QVBoxLayout(centralwidget);
@@ -264,6 +277,8 @@ public:
         menuZpravy_2->setObjectName("menuZpravy_2");
         menuZpravy_3 = new QMenu(menuZpravy);
         menuZpravy_3->setObjectName("menuZpravy_3");
+        menuAdvanced = new QMenu(menubar);
+        menuAdvanced->setObjectName("menuAdvanced");
         ChatWindow->setMenuBar(menubar);
         statusbar = new QStatusBar(ChatWindow);
         statusbar->setObjectName("statusbar");
@@ -271,6 +286,7 @@ public:
 
         menubar->addAction(menuMistnost->menuAction());
         menubar->addAction(menuZpravy->menuAction());
+        menubar->addAction(menuAdvanced->menuAction());
         menuMistnost->addAction(action_room_1);
         menuMistnost->addSeparator();
         menuMistnost->addAction(action_room_2);
@@ -287,6 +303,9 @@ public:
         menuZpravy_3->addAction(action_zpravy_3_2);
         menuZpravy_3->addSeparator();
         menuZpravy_3->addAction(action_zpravy_3_3);
+        menuAdvanced->addAction(action_advanced_1);
+        menuAdvanced->addSeparator();
+        menuAdvanced->addAction(action_advanced_2);
 
         retranslateUi(ChatWindow);
 
@@ -318,6 +337,8 @@ public:
         action_zpravy_3_2->setShortcut(QCoreApplication::translate("ChatWindow", "Ctrl+-", nullptr));
 #endif // QT_CONFIG(shortcut)
         action_zpravy_3_3->setText(QCoreApplication::translate("ChatWindow", "Reset", nullptr));
+        action_advanced_1->setText(QCoreApplication::translate("ChatWindow", "Zdrojov\303\275 k\303\263d", nullptr));
+        action_advanced_2->setText(QCoreApplication::translate("ChatWindow", "Nastaven\303\255", nullptr));
         textEdit->setHtml(QCoreApplication::translate("ChatWindow", "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" \"http://www.w3.org/TR/REC-html40/strict.dtd\">\n"
 "<html><head><meta name=\"qrichtext\" content=\"1\" /><meta charset=\"utf-8\" /><style type=\"text/css\">\n"
 "p, li { white-space: pre-wrap; }\n"
@@ -341,6 +362,7 @@ public:
         menuZpravy->setTitle(QCoreApplication::translate("ChatWindow", "Zpr\303\241vy", nullptr));
         menuZpravy_2->setTitle(QCoreApplication::translate("ChatWindow", "Aktualizace za 5s", nullptr));
         menuZpravy_3->setTitle(QCoreApplication::translate("ChatWindow", "Velikost p\303\255sma", nullptr));
+        menuAdvanced->setTitle(QCoreApplication::translate("ChatWindow", "Mo\305\276nosti", nullptr));
     } // retranslateUi
 
 };

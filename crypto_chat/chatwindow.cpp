@@ -52,8 +52,10 @@ ChatWindow::~ChatWindow()
     delete ui;
 }
 
+
 void ChatWindow::welcomeMessage()
 {
+    /*
     QNetworkRequest request;
     QUrl qurl_address = QUrl(server_url + "/send-message");
 
@@ -70,6 +72,7 @@ void ChatWindow::welcomeMessage()
     request.setUrl(qurl_address);
 
     QNetworkReply *reply_post = manager.post(request, CreateRoomData);
+    */
 }
 
 void ChatWindow::closeEvent(QCloseEvent *bar)
@@ -111,7 +114,7 @@ QString ChatWindow::encrypt_message(QString message){
     // encrypt with server's key
     // encrypt with room's key
 
-
+    return "";
 }
 
 QString convert_color(QString color){
@@ -287,5 +290,11 @@ void ChatWindow::on_action_room_2_triggered()
     clipboard->setText(ChatWindow::room_id);
 
     QMessageBox::information(this, "Oznámení", "Zkopírováno do schránky");
+}
+
+
+void ChatWindow::on_action_advanced_1_triggered()
+{
+    ShellExecute(0, 0, L"https://github.com/RxiPland/crypto_chat", 0, 0, SW_HIDE);
 }
 
