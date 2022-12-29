@@ -61,6 +61,7 @@ int main(int argc, char *argv[])
     chw.authentication_required = ld.authentication_required;
     chw.authentication_username = ld.authentication_username;
     chw.authentication_password = ld.authentication_password;
+    chw.welcomeMessage();
     chw.show();
 
     return a.exec();
