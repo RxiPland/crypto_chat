@@ -58,7 +58,7 @@ def main():
                 room_id_folder = temp_dir + f"\\{room_id}"
 
                 if not os.path.exists(room_id_folder):
-                    os.system(f"cd {temp_dir} & mkdir \"{room_id}\"")
+                    os.system("mkdir " + room_id_folder)
 
                 # save id to file
                 with open(app_dir + "temp/hex_id", "w") as f:
