@@ -9,5 +9,7 @@
         <file>images/clean.ico</file>
         <file>images/zoom_in.ico</file>
         <file>images/zoom_out.ico</file>
+        <file>images/github.ico</file>
+        <file>images/settings.ico</file>
     </qresource>
 </RCC>
