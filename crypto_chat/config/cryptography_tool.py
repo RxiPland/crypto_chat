@@ -139,17 +139,63 @@ def main():
             room_id = argv[1]
             room_id_folder = tempfile.gettempdir() + f"\\{room_id}"
 
-            print(room_id_folder)
-
             with open(room_id_folder + "\\encrypted_message", "r") as f:
                 message_crypt = bytes.fromhex(f.read())
                 
-                print(message_crypt)
-
             with open(room_id_folder + "\\symetric_key_server", "rb") as f:
                 symetric_key = Fernet(f.read())
 
-            print(symetric_key)
+            message_plain = symetric_key.decrypt(message_crypt)
+
+            with open(room_id_folder + "\\decrypted_message", "wb") as f:
+                f.write(message_plain)
+        
+        else:
+            raise Exception("Room ID missing!")
+
+
+    elif operation == "encrypt_aes_room":
+        # encrypt user's input with room's key and save to encrypted_message file
+
+        if length >= 2:
+
+            if length >= 3:
+
+                room_id = argv[1]
+                room_id_folder = tempfile.gettempdir() + f"\\{room_id}"
+            
+                message_plain = bytes.fromhex(argv[2])
+
+                with open(room_id_folder + "\\symetric_key_room", "rb") as f:
+                    symetric_key = Fernet(f.read())
+
+                message_crypt = symetric_key.encrypt(data=message_plain)
+
+                with open(room_id_folder + "\\encrypted_message", "w") as f:
+                    f.write(message_crypt.hex())
+
+            else:
+                raise Exception("Plain text missing!")
+
+        else:
+            raise Exception("Room ID missing!")
+
+
+    elif operation == "decrypt_aes_room":
+        # open encrypted_message file and decrypt it's content
+        # save decrypted content to decrypted_message file
+
+        if length >= 2:
+
+            room_id = argv[1]
+            room_id_folder = tempfile.gettempdir() + f"\\{room_id}"
+
+
+            with open(room_id_folder + "\\encrypted_message", "r") as f:
+                message_crypt = bytes.fromhex(f.read())
+
+            with open(room_id_folder + "\\symetric_key_room", "rb") as f:
+                symetric_key = Fernet(f.read())
 
             message_plain = symetric_key.decrypt(message_crypt)
 
