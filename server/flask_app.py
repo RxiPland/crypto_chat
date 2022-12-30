@@ -371,7 +371,7 @@ def send_message():
 
         # write encrypted message with room's key into file
         with open(app_dir + "/rooms/" + room_id + "/messages", "a") as f:
-            f.write(message)
+            f.write(message + "\n")
 
 
         data = {
