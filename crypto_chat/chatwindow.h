@@ -50,8 +50,9 @@ private slots:
     void on_action_zpravy_3_3_triggered();
     void on_action_zpravy_2_1_triggered();
     void on_action_room_2_triggered();
-
     void on_action_advanced_1_triggered();
+    void on_pushButton_clicked();
+    void on_lineEdit_returnPressed();
 
 private:
     void closeEvent(QCloseEvent *bar = nullptr);
@@ -67,6 +68,8 @@ private:
 
     void sendMessage(QString color="black", QString time="", QString prefix="", QString nickname="", QString message="");
     void disable_widgets(bool disable=true);
+
+    void roomNotExist();
 
 };
 #endif // CHATWINDOW_H

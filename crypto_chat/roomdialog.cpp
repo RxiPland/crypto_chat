@@ -402,8 +402,8 @@ void RoomDialog::joinRoomFunc()
     RoomDialog::successful = true;
     RoomDialog::username = nickname;
 
-    QFile roomFile(QDir::tempPath() + "/" + roomId);
-    roomFile.rename(roomId);
+    QDir roomFolder("");
+    roomFolder.rename(QDir::tempPath() + "/" + RoomDialog::room_id, QDir::tempPath() + "/" + roomId);
 
     RoomDialog::room_id = roomId;
 

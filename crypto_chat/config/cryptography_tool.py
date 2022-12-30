@@ -164,7 +164,7 @@ def main():
                 room_id = argv[1]
                 room_id_folder = tempfile.gettempdir() + f"\\{room_id}"
             
-                message_plain = bytes.fromhex(argv[2])
+                message_plain = argv[2].encode("utf-8")
 
                 with open(room_id_folder + "\\symetric_key_room", "rb") as f:
                     symetric_key = Fernet(f.read())

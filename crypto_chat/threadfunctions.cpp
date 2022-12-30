@@ -50,5 +50,7 @@ void ThreadFunctions::run()
             // TODO: get messages info
 
         }while(continueLoop);
+
+        actionObject->setText("Aktualizace za Nikdy");
     }
 }

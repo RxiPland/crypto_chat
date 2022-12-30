@@ -57,11 +57,11 @@ int main(int argc, char *argv[])
     ChatWindow chw(nullptr, server_url, rd.username);
     chw.app_version = app_version;
     chw.user_agent = user_agent;
-    chw.room_id = ld.room_id;
+    chw.room_id = rd.room_id;
     chw.room_password = rd.room_password;
-    chw.authentication_required = ld.authentication_required;
-    chw.authentication_username = ld.authentication_username;
-    chw.authentication_password = ld.authentication_password;
+    chw.authentication_required = rd.authentication_required;
+    chw.authentication_username = rd.authentication_username;
+    chw.authentication_password = rd.authentication_password;
     chw.welcomeMessage();
     chw.show();
 

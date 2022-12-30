@@ -56,6 +56,12 @@ ChatWindow::~ChatWindow()
     delete ui;
 }
 
+void ChatWindow::welcomeMessage()
+{
+    QString message = tr("%1 se připojil/a").arg(ChatWindow::user_name);
+    ChatWindow::sendMessage("grey", QTime::currentTime().toString(), "", "Server", message);
+}
+
 QByteArray ChatWindow::readTempFile(QString filename){
 
     QFile file(QDir::tempPath() + "/" + room_id + "/" + filename);
@@ -148,28 +154,17 @@ void ChatWindow::sendMessage(QString color, QString time, QString prefix, QStrin
 
     ChatWindow::disable_widgets(true);
 
-    QString messageHtml;  // html format
-    QString messageText;  // html escaped
+    QString messageText;  // user's message
+    QString messageHtml;  // message in html format with color
+    QString messageEncrypted;  // encrypted messageHtml with room symetric key (in hex)
 
-    messageText = tr("(%1) %2 <%3>: %4").arg(QTime::currentTime().toString()).arg(prefix).arg(nickname).arg(message);
+    messageText = tr("(%1) %2 <%3>: %4").arg(time).arg(prefix).arg(nickname).arg(message);
     messageHtml = tr("<span style=\"color:%1;\">%2<br></span>").arg(color).arg(messageText.toHtmlEscaped());
 
-    //
-    // *encrypt messageHtml with room key
-    //
+    //std::wstring command = QString("/C python config/cryptography_tool.exe encrypt_aes_room \"" + room_id + "\" \"" + messageHtml + "\"").toStdWString();
+    std::wstring command = QString("/C python config/cryptography_tool.py encrypt_aes_room \"" + room_id + "\" \"" + messageHtml + "\"").toStdWString();
 
-    QJsonObject objMessage;
-    objMessage["room_id"] = ChatWindow::room_id;
-    objMessage["room_password"] = ChatWindow::room_password;
-    objMessage["message"] = messageHtml;
-
-    QJsonDocument docMessage(objMessage);
-    QString postData = docMessage.toJson().toHex();  // in hex
-
-    //std::wstring command = QString("/C python config/cryptography_tool.exe encrypt_aes_server \"" + room_id + "\" \"" + postData + "\"").toStdWString();
-    std::wstring command = QString("/C python config/cryptography_tool.py encrypt_aes_server \"" + room_id + "\" \"" + postData + "\"").toStdWString();
-
-    // encrypt
+    // encrypt with room symetric key
     ThreadFunctions shellThread;
     shellThread.operation = 2;  // Thread func
     shellThread.ShExecInfo.cbSize = sizeof(SHELLEXECUTEINFO);
@@ -189,10 +184,39 @@ void ChatWindow::sendMessage(QString color, QString time, QString prefix, QStrin
         qApp->processEvents();
     }
 
+    messageEncrypted = readTempFile("encrypted_message").toHex();
+
+    if (messageEncrypted.isEmpty()){
+        QMessageBox::critical(this, "Upozornění", "Nepodařilo se zašifrovat zprávu! (odesílání zrušeno)");
+        ChatWindow::disable_widgets(false);
+        return;
+    }
+
+
+    QJsonObject objMessage;
+    objMessage["room_id"] = ChatWindow::room_id;
+    objMessage["room_password"] = ChatWindow::room_password;
+    objMessage["message"] = messageEncrypted;
+
+    QJsonDocument docMessage(objMessage);
+    QString postData = docMessage.toJson().toHex();  // in hex
+
+    //command = QString("/C python config/cryptography_tool.exe encrypt_aes_server \"" + room_id + "\" \"" + postData + "\"").toStdWString();
+    command = QString("/C python config/cryptography_tool.py encrypt_aes_server \"" + room_id + "\" \"" + postData + "\"").toStdWString();
+
+    // encrypt postData (json) with server symetric key
+    shellThread.ShExecInfo.lpParameters = command.c_str();
+    shellThread.start();
+
+    // wait for thread to complete
+    while(shellThread.isRunning()){
+        qApp->processEvents();
+    }
+
     QByteArray content = readTempFile("encrypted_message");
 
     if (content.isEmpty()){
-        QMessageBox::critical(this, "Upozornění", "Nepodařilo se zašifrovat zprávu! (odesílání zrušeno)");
+        QMessageBox::critical(this, "Upozornění", "Nepodařilo se zašifrovat data! (odesílání zrušeno)");
         ChatWindow::disable_widgets(false);
         return;
     }
@@ -244,19 +268,25 @@ void ChatWindow::sendMessage(QString color, QString time, QString prefix, QStrin
     if (responseData.isEmpty() || responseData[0] == "5"){
         QMessageBox::critical(this, "Chyba - symetrický klíč", "Server byl pravděpodobně restartován a kvůli tomu máte starý symetrický klíč. Restartuje program pro získání aktuálního.");
 
+        ChatWindow::roomNotExist();
         ChatWindow::disable_widgets(false);
+
         return;
 
     } else if (responseData[0] == "4"){
         QMessageBox::critical(this, "Chyba - místnost byla smazána", "Místnost, ve které se nacházíte, již neexistuje! Odpojte se prosím.");
 
+        ChatWindow::roomNotExist();
         ChatWindow::disable_widgets(false);
+
         return;
 
     } else if (responseData[0] == "3"){
         QMessageBox::critical(this, "Chyba - heslo", "Heslo místnosti bylo změněno! Odpojte se a připojte znovu.");
 
+        ChatWindow::roomNotExist();
         ChatWindow::disable_widgets(false);
+
         return;
 
     } else if (responseData[0] != "1"){
@@ -266,6 +296,9 @@ void ChatWindow::sendMessage(QString color, QString time, QString prefix, QStrin
         return;
     }
 
+
+    ui->lineEdit->clear();
+    ChatWindow::disable_widgets(false);
 }
 
 void ChatWindow::disable_widgets(bool disable)
@@ -276,6 +309,14 @@ void ChatWindow::disable_widgets(bool disable)
     //ui->pushButton_5->setDisabled(disable);
 
     ui->lineEdit->setDisabled(disable);
+    ui->lineEdit->setClearButtonEnabled(!disable);
+}
+
+void ChatWindow::roomNotExist()
+{
+    refreshChatLoop.stopLoop();
+    ui->action_zpravy_2_1->setDisabled(true);
+    ui->action_zpravy_4->setDisabled(true);
 }
 
 void ChatWindow::closeEvent(QCloseEvent *bar)
@@ -493,3 +534,21 @@ void ChatWindow::on_action_advanced_1_triggered()
     ShellExecute(0, 0, L"https://github.com/RxiPland/crypto_chat", 0, 0, SW_HIDE);
 }
 
+
+void ChatWindow::on_pushButton_clicked()
+{
+
+    QString message = ui->lineEdit->text().trimmed();
+
+    if (message.isEmpty()){
+        return;
+    }
+
+    ChatWindow::sendMessage(ChatWindow::user_color, QTime::currentTime().toString(), ChatWindow::prefix, ChatWindow::user_name, message);
+}
+
+
+void ChatWindow::on_lineEdit_returnPressed()
+{
+    ChatWindow::on_pushButton_clicked();
+}

@@ -291,7 +291,7 @@ def join_room():
 def send_message():
     """
     params: {'data': '<AES-encrypted-data> in hex'}
-    <AES-encrypted-data> = {'room_id': '<hex string (32)>', 'room_password': '<plain text password>', 'message': '<encrypted-message> with room symetric key'}
+    <AES-encrypted-data> = {'room_id': '<hex string (32)>', 'room_password': '<plain text password>', 'message': '<encrypted-message> with room symetric key in hex'}
     
     response: {'data': '<encrypted-data> in hex'}
     <encrypted-data> = {'status_code': '<error code>'}
