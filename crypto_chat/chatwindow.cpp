@@ -56,12 +56,97 @@ ChatWindow::~ChatWindow()
     delete ui;
 }
 
+QByteArray ChatWindow::readTempFile(QString filename){
+
+    QFile file(QDir::tempPath() + "/" + room_id + "/" + filename);
+    QByteArray content;
+
+    if(!file.exists()){
+        // python did not create the file
+        return content;
+
+    } else{
+        file.open(QIODevice::ReadOnly);
+        content = file.readAll();
+        file.close();
+    }
+
+    return content;
+}
+
+void ChatWindow::writeTempFile(QString filename, QByteArray content){
+
+    QFile file(QDir::tempPath() + "/" + room_id + "/" + filename);
+
+    file.open(QIODevice::WriteOnly);
+    file.write(content);
+    file.close();
+}
+
+QStringList ChatWindow::getJson(QStringList names, QByteArray data)
+{
+    QJsonDocument jsonResponse;
+    QJsonObject jsonObject;
+    QString jsonData;
+
+
+    jsonResponse = QJsonDocument::fromJson(data);
+    jsonObject = jsonResponse.object();
+    jsonData = jsonObject["data"].toString();
+
+    // write encrypted JSON to file for python
+    ChatWindow::writeTempFile("encrypted_message", QByteArray::fromStdString(jsonData.toStdString()));
+
+
+    //std::wstring command = QString("/C python config/cryptography_tool.exe decrypt_aes_server \"" + room_id + "\"").toStdWString();
+    std::wstring command = QString("/C python config/cryptography_tool.py decrypt_aes_server \"" + room_id + "\"").toStdWString();
+
+    // decrypt
+    ThreadFunctions shellThread;
+    shellThread.operation = 2;  // Thread func
+    shellThread.ShExecInfo.cbSize = sizeof(SHELLEXECUTEINFO);
+    shellThread.ShExecInfo.fMask = SEE_MASK_NOCLOSEPROCESS;
+    shellThread.ShExecInfo.hwnd = NULL;
+    shellThread.ShExecInfo.lpVerb = L"open";
+    shellThread.ShExecInfo.lpFile = L"cmd.exe";
+    shellThread.ShExecInfo.lpParameters = command.c_str();
+    shellThread.ShExecInfo.lpDirectory = QDir::currentPath().toStdWString().c_str();
+    shellThread.ShExecInfo.nShow = SW_HIDE;
+    shellThread.ShExecInfo.hInstApp = NULL;
+
+    shellThread.start();
+
+    // wait for thread to complete
+    while(shellThread.isRunning()){
+        qApp->processEvents();
+    }
+
+    QByteArray decrypted_data = ChatWindow::readTempFile("decrypted_message");
+
+    if(decrypted_data.isEmpty()){
+        return QStringList();
+    }
+
+    decrypted_data.replace("\'", "\"");
+
+    jsonResponse = QJsonDocument::fromJson(decrypted_data);
+    jsonObject = jsonResponse.object();
+
+    QStringList returnData;
+    int i;
+
+    for(i=0; i<names.length(); i++){
+        returnData.append(jsonObject[names[i]].toString());
+    }
+
+    return returnData;
+}
+
 
 void ChatWindow::sendMessage(QString color, QString time, QString prefix, QString nickname, QString message)
 {
 
-    // encrypt with server's key
-    // encrypt with room's key
+    ChatWindow::disable_widgets(true);
 
     QString messageHtml;  // html format
     QString messageText;  // html escaped
@@ -69,7 +154,53 @@ void ChatWindow::sendMessage(QString color, QString time, QString prefix, QStrin
     messageText = tr("(%1) %2 <%3>: %4").arg(QTime::currentTime().toString()).arg(prefix).arg(nickname).arg(message);
     messageHtml = tr("<span style=\"color:%1;\">%2<br></span>").arg(color).arg(messageText.toHtmlEscaped());
 
+    //
+    // *encrypt messageHtml with room key
+    //
 
+    QJsonObject objMessage;
+    objMessage["room_id"] = ChatWindow::room_id;
+    objMessage["room_password"] = ChatWindow::room_password;
+    objMessage["message"] = messageHtml;
+
+    QJsonDocument docMessage(objMessage);
+    QString postData = docMessage.toJson().toHex();  // in hex
+
+    //std::wstring command = QString("/C python config/cryptography_tool.exe encrypt_aes_server \"" + room_id + "\" \"" + postData + "\"").toStdWString();
+    std::wstring command = QString("/C python config/cryptography_tool.py encrypt_aes_server \"" + room_id + "\" \"" + postData + "\"").toStdWString();
+
+    // encrypt
+    ThreadFunctions shellThread;
+    shellThread.operation = 2;  // Thread func
+    shellThread.ShExecInfo.cbSize = sizeof(SHELLEXECUTEINFO);
+    shellThread.ShExecInfo.fMask = SEE_MASK_NOCLOSEPROCESS;
+    shellThread.ShExecInfo.hwnd = NULL;
+    shellThread.ShExecInfo.lpVerb = L"open";
+    shellThread.ShExecInfo.lpFile = L"cmd.exe";
+    shellThread.ShExecInfo.lpParameters = command.c_str();
+    shellThread.ShExecInfo.lpDirectory = QDir::currentPath().toStdWString().c_str();
+    shellThread.ShExecInfo.nShow = SW_HIDE;
+    shellThread.ShExecInfo.hInstApp = NULL;
+
+    shellThread.start();
+
+    // wait for thread to complete
+    while(shellThread.isRunning()){
+        qApp->processEvents();
+    }
+
+    QByteArray content = readTempFile("encrypted_message");
+
+    if (content.isEmpty()){
+        QMessageBox::critical(this, "Upozornění", "Nepodařilo se zašifrovat zprávu! (odesílání zrušeno)");
+        ChatWindow::disable_widgets(false);
+        return;
+    }
+
+    QJsonObject objData;
+    objData["data"] = (QString)content;
+    QJsonDocument docData(objData);
+    QByteArray SendMessageData = docData.toJson();
 
     QNetworkRequest request;
     QUrl qurl_address = QUrl(server_url + "/send-message");
@@ -85,13 +216,66 @@ void ChatWindow::sendMessage(QString color, QString time, QString prefix, QStrin
     }
 
     request.setUrl(qurl_address);
+    QNetworkReply *reply_post = manager.post(request, SendMessageData);
 
 
+    while (!reply_post->isFinished())
+    {
+        qApp->processEvents();
+    }
 
-    data = ChatWindow::encryptMessage();
+    QByteArray response = reply_post->readAll();
 
-    QNetworkReply *reply_post = manager.post(request, CreateRoomData);
+    if(reply_post->error() != QNetworkReply::NoError){
+        // Any error
 
+        QMessageBox::critical(this, "Odpověd serveru (chyba)", tr("Nastala neznámá chyba!\nOznačení QNetworkReply chyby: %1\n\nOdpověd serveru: %2").arg(reply_post->error()).arg(response));
+
+        ChatWindow::disable_widgets(false);
+        return;
+    }
+
+
+    QStringList names;
+    names.append("status_code");
+
+    QStringList responseData = getJson(names, response);
+
+    if (responseData.isEmpty() || responseData[0] == "5"){
+        QMessageBox::critical(this, "Chyba - symetrický klíč", "Server byl pravděpodobně restartován a kvůli tomu máte starý symetrický klíč. Restartuje program pro získání aktuálního.");
+
+        ChatWindow::disable_widgets(false);
+        return;
+
+    } else if (responseData[0] == "4"){
+        QMessageBox::critical(this, "Chyba - místnost byla smazána", "Místnost, ve které se nacházíte, již neexistuje! Odpojte se prosím.");
+
+        ChatWindow::disable_widgets(false);
+        return;
+
+    } else if (responseData[0] == "3"){
+        QMessageBox::critical(this, "Chyba - heslo", "Heslo místnosti bylo změněno! Odpojte se a připojte znovu.");
+
+        ChatWindow::disable_widgets(false);
+        return;
+
+    } else if (responseData[0] != "1"){
+        QMessageBox::critical(this, "Chyba", "Zprávu se nepodařilo odeslat! Server odpověděl {\"status_code\": " + responseData[0] + "}");
+
+        ChatWindow::disable_widgets(false);
+        return;
+    }
+
+}
+
+void ChatWindow::disable_widgets(bool disable)
+{
+    ui->pushButton->setDisabled(disable);
+    ui->pushButton_3->setDisabled(disable);
+    ui->pushButton_4->setDisabled(disable);
+    //ui->pushButton_5->setDisabled(disable);
+
+    ui->lineEdit->setDisabled(disable);
 }
 
 void ChatWindow::closeEvent(QCloseEvent *bar)

@@ -291,7 +291,7 @@ def join_room():
 def send_message():
     """
     params: {'data': '<AES-encrypted-data> in hex'}
-    <AES-encrypted-data> = {'room_id': '<hex string (32)>', 'message': '<encrypted-message> with room symetric key', 'room_password': '<plain text password>'}
+    <AES-encrypted-data> = {'room_id': '<hex string (32)>', 'room_password': '<plain text password>', 'message': '<encrypted-message> with room symetric key'}
     
     response: {'data': '<encrypted-data> in hex'}
     <encrypted-data> = {'status_code': '<error code>'}
@@ -330,7 +330,7 @@ def send_message():
         decrypted_data: dict = json.loads(decrypted_data)
 
         # keys 'room_id', 'message' and 'room_password' must be in decrypted JSON
-        if not "room_id" in decrypted_data.keys() or not "message" in decrypted_data.keys() or not "room_password" in decrypted_data.keys():
+        if not "room_id" in decrypted_data.keys() or not "room_password" in decrypted_data.keys() or not "message" in decrypted_data.keys():
             return "Forbidden", 403
 
         room_id = decrypted_data["room_id"]
@@ -338,7 +338,7 @@ def send_message():
         # room folder in server's directory must exist
         if not os.path.exists(app_dir + "/rooms/" + room_id):
             
-            # wrong room ID (probably room was deleted by someone else)
+            # wrong room ID (room was deleted by someone else)
             data = {
                 "status_code": "4"
             }

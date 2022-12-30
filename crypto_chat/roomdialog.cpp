@@ -208,16 +208,8 @@ void RoomDialog::createRoomFunc()
 
     QStringList responseData = getJson(names, response);
 
-    if(responseData.isEmpty()){
-        QMessageBox::critical(this, "Chyba", "Server byl pravděpodobně restartován a kvůli tomu máte starý symetrický klíč. Restartuje program pro získání nového.");
-
-        RoomDialog::disable_widgets(false);
-        return;
-    }
-
-
-    if (responseData[0] == "5"){
-        QMessageBox::critical(this, "Chyba", "Server byl pravděpodobně restartován a kvůli tomu máte starý symetrický klíč. Restartuje program pro získání nového.");
+    if (responseData.isEmpty() || responseData[0] == "5"){
+        QMessageBox::critical(this, "Chyba - symetrický klíč", "Server byl pravděpodobně restartován a kvůli tomu máte starý symetrický klíč. Restartuje program pro získání aktuálního.");
 
         RoomDialog::disable_widgets(false);
         return;
@@ -364,7 +356,7 @@ void RoomDialog::joinRoomFunc()
 
     QStringList responseData = getJson(names, response);
 
-    if(responseData.isEmpty()){
+    if(responseData.isEmpty() || responseData[0] == "5"){
         QMessageBox::critical(this, "Chyba", "Server byl pravděpodobně restartován a kvůli tomu máte starý symetrický klíč. Restartuje program pro získání nového.");
 
         RoomDialog::disable_widgets(false);
@@ -385,12 +377,6 @@ void RoomDialog::joinRoomFunc()
 
     } else if (responseData[0] == "4"){
         QMessageBox::critical(this, "Chyba", "Místnost s tímto ID neexistuje!");
-
-        RoomDialog::disable_widgets(false);
-        return;
-
-    } else if (responseData[0] == "5"){
-        QMessageBox::critical(this, "Chyba", "Server byl pravděpodobně restartován a kvůli tomu máte starý symetrický klíč. Restartuje program pro získání nového.");
 
         RoomDialog::disable_widgets(false);
         return;
