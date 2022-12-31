@@ -33,6 +33,7 @@ Status codes:
 # délka prefixu: 25
 # délka hesla: 100
 # délka zprávy: 
+# počet zpráv: 100
 
 if not os.path.exists(app_dir + "/rooms"):
     os.system(f"cd {app_dir} & mkdir rooms")
@@ -120,7 +121,8 @@ def create_room():
             decrypted_data = symetric_key.decrypt(bytes.fromhex(request_json["data"]))
         
         except:
-
+            
+            # wrong symetric key
             data = {
                 "status_code": "5",
                 "room_aes_key": "None"
@@ -153,9 +155,13 @@ def create_room():
         with open(rooms_path + room_id + "/password", "w") as f:
             f.write(password)
 
-        # create blank txt file for encrypted chat messages
+        # create blank txt file for storing encrypted chat messages (only 100)
         with open(rooms_path + room_id + "/messages", "w") as f:
             f.write("")
+
+        # create txt for storing count of recieved messages (not only 100)
+        with open(rooms_path + room_id + "/messages_count", "w") as f:
+            f.write("0")
             
 
         # generate AES key for room
@@ -213,7 +219,8 @@ def join_room():
             decrypted_data = symetric_key.decrypt(bytes.fromhex(request_json["data"]))
         
         except:
-
+            
+            # wrong symetric key
             data = {
                 "status_code": "5"
             }
@@ -316,7 +323,8 @@ def send_message():
             decrypted_data = symetric_key_server.decrypt(bytes.fromhex(request_json["data"]))
         
         except:
-
+            
+            # wrong symetric key
             data = {
                 "status_code": "5"
             }
@@ -372,6 +380,26 @@ def send_message():
         # write encrypted message with room's key into file
         with open(app_dir + "/rooms/" + room_id + "/messages", "a") as f:
             f.write(message + "\n")
+
+        messages_count_path = app_dir + "/rooms/" + room_id + "/messages_count"
+
+        # read value
+        if os.path.exists(messages_count_path):
+            with open(messages_count_path, "r") as f:
+                messages_count = f.read()
+
+                if messages_count.isdecimal():
+                    messages_count = int(messages_count)
+                
+                else:
+                    # (should never happen)
+                    messages_count = 0
+        else:
+            messages_count = 0
+        
+        # increment value
+        with open(messages_count_path, "w") as f:
+            f.write(str(messages_count + 1))
 
 
         data = {

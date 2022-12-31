@@ -159,7 +159,7 @@ void ChatWindow::sendMessage(QString color, QString time, QString prefix, QStrin
     QString messageEncrypted;  // encrypted messageHtml with room symetric key (in hex)
 
     messageText = tr("(%1) %2 <%3>: %4").arg(time).arg(prefix).arg(nickname).arg(message);
-    messageHtml = tr("<span style=\"color:%1;\">%2<br></span>").arg(color).arg(messageText.toHtmlEscaped());
+    messageHtml = tr("<span style=\"color:%1;\">%2</span><br>").arg(color).arg(messageText.toHtmlEscaped());
 
     //std::wstring command = QString("/C python config/cryptography_tool.exe encrypt_aes_room \"" + room_id + "\" \"" + messageHtml + "\"").toStdWString();
     std::wstring command = QString("/C python config/cryptography_tool.py encrypt_aes_room \"" + room_id + "\" \"" + messageHtml + "\"").toStdWString();
@@ -299,6 +299,15 @@ void ChatWindow::sendMessage(QString color, QString time, QString prefix, QStrin
 
     ui->lineEdit->clear();
     ChatWindow::disable_widgets(false);
+}
+
+void ChatWindow::appendMessage(QString messageHtml)
+{
+    ui->textEdit->append(messageHtml);  // append message
+
+    int messagesNumber = ui->action_zpravy_1->text().split(" ").back().toInt();  // get displayed messages number as int
+
+    ui->action_zpravy_1->setText(tr("Počet zobrazených: %1").arg(messagesNumber + 1));  // increment and set text back
 }
 
 void ChatWindow::disable_widgets(bool disable)
@@ -461,6 +470,7 @@ void ChatWindow::on_action_zpravy_3_triggered()
 {
     ui->textEdit->clear();
     ui->textEdit->append("<span style=\"color:grey;\">Chat byl vyčištěn ...<br></span>");
+    ui->action_zpravy_1->setText("Počet zobrazených: 1");
 }
 
 

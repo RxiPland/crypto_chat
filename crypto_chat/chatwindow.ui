@@ -398,7 +398,7 @@ li.checked::marker { content: &quot;\2612&quot;; }
      <normaloff>:/images/email.ico</normaloff>:/images/email.ico</iconset>
    </property>
    <property name="text">
-    <string>Počet přijatých: 0</string>
+    <string>Počet zobrazených: 0</string>
    </property>
   </action>
   <action name="action_room_3">

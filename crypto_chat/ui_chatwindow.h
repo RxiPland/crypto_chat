@@ -1,7 +1,7 @@
 /********************************************************************************
 ** Form generated from reading UI file 'chatwindow.ui'
 **
-** Created by: Qt User Interface Compiler version 6.4.0
+** Created by: Qt User Interface Compiler version 6.4.1
 **
 ** WARNING! All changes made in this file will be lost when recompiling UI file!
 ********************************************************************************/
@@ -317,7 +317,7 @@ public:
         ChatWindow->setWindowTitle(QCoreApplication::translate("ChatWindow", "ChatWindow", nullptr));
         action_room_1->setText(QCoreApplication::translate("ChatWindow", "Smazat m\303\255stnost", nullptr));
         action_room_2->setText(QCoreApplication::translate("ChatWindow", "Kop\303\255rovat ID m\303\255stnosti", nullptr));
-        action_zpravy_1->setText(QCoreApplication::translate("ChatWindow", "Po\304\215et p\305\231ijat\303\275ch: 0", nullptr));
+        action_zpravy_1->setText(QCoreApplication::translate("ChatWindow", "Po\304\215et zobrazen\303\275ch: 0", nullptr));
         action_room_3->setText(QCoreApplication::translate("ChatWindow", "Odpojit se", nullptr));
         action_zpravy_3->setText(QCoreApplication::translate("ChatWindow", "Vy\304\215istit chat", nullptr));
 #if QT_CONFIG(tooltip)
