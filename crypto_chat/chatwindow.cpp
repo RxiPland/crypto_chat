@@ -20,6 +20,7 @@ Window for sending messages
 #include <QJsonDocument>
 #include <QJsonObject>
 #include <QJsonValue>
+#include <QCryptographicHash>
 
 ThreadFunctions refreshChatLoop;
 
@@ -40,6 +41,18 @@ ChatWindow::ChatWindow(QWidget *parent, QString server_url, QString user_name)
     ui->lineEdit->setFocus();
 
     QApplication::setQuitOnLastWindowClosed(true);
+
+
+    refreshChatLoop.authentication_required = ChatWindow::authentication_required;
+    refreshChatLoop.authentication_username = ChatWindow::authentication_username;
+    refreshChatLoop.authentication_password = ChatWindow::authentication_password;
+    refreshChatLoop.room_id = ChatWindow::room_id;
+
+    QCryptographicHash hash(QCryptographicHash::Sha256);
+    hash.addData(ChatWindow::room_password.toStdString());
+
+    refreshChatLoop.room_password_sha256 = (QString)hash.result().toHex();
+    refreshChatLoop.server_url = ChatWindow::server_url;
 
     refreshChatLoop.operation = 3;
     refreshChatLoop.sleep_time = refreshInterval;

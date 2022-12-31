@@ -34,8 +34,8 @@ public:
 
     // server
     bool authentication_required = false;
-    QString authentication_username;
-    QString authentication_password;
+    QString authentication_username = "";
+    QString authentication_password = "";
     QString server_url;
     QString room_id;
 

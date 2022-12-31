@@ -28,10 +28,11 @@ public:
 
     // for comunicating with server
     bool authentication_required = false;
-    QString authentication_username;
-    QString authentication_password;
+    QString authentication_username = "";
+    QString authentication_password = "";
     QString server_url;
     QString room_id;
+    QString room_password_sha256;
 
 private:
     void getMessages();

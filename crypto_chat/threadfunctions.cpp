@@ -5,6 +5,13 @@ Program for making threads
 #include "threadfunctions.h"
 #include "ui_chatwindow.h"
 
+#include <QNetworkRequest>
+#include <QNetworkReply>
+#include <QJsonDocument>
+#include <QJsonObject>
+#include <QJsonValue>
+
+
 ThreadFunctions::ThreadFunctions()
 {
 
@@ -35,6 +42,14 @@ void ThreadFunctions::appendMessage(QString messageHtml)
 void ThreadFunctions::getMessages()
 {
     // checking new messages
+
+    QJsonObject objMessage;
+    objMessage["room_id"] = ThreadFunctions::room_id;
+    objMessage["room_password_sha256"] = ThreadFunctions::room_password;
+    QJsonDocument docMessage(objMessage);
+    QString postData = docMessage.toJson().toHex();  // in hex
+
+
 
 
 
