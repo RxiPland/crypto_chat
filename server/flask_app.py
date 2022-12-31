@@ -253,7 +253,7 @@ def join_room():
             with open(app_dir + "/rooms/" + room_id_user + "/password", "r") as f:
                 password_file = f.read()
 
-            if password_user_hash != password_file.strip():
+            if password_user_hash.strip() != password_file.strip():
                 
                 # wrong password
                 data = {
@@ -358,7 +358,6 @@ def send_message():
 
 
         password_user_hash: str = hashlib.sha256(decrypted_data["room_password"].encode()).hexdigest()
-
         password_file_path = app_dir + "/rooms/" + room_id + "/password"
 
         if os.path.exists(password_file_path):
@@ -366,15 +365,15 @@ def send_message():
                 password_file_hash = f.read()
         
         else:
-            # (should never happen)
-            
+            # password file missing (should never happen)
+
             with open(password_file_path, "w") as f:
                 f.write(password_user_hash)
 
             password_file_hash = password_user_hash
 
 
-        if password_user_hash != password_file_hash.strip():
+        if password_user_hash.strip() != password_file_hash.strip():
                 
             # wrong password (should never happen)
             data = {
