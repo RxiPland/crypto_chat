@@ -2,7 +2,6 @@
 
 import rsa
 from cryptography.fernet import Fernet
-import hashlib
 
 import sys
 import os
