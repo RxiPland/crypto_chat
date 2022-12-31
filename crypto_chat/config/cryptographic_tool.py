@@ -130,7 +130,7 @@ def main():
             raise Exception("Room ID missing!")
 
     elif operation == "decrypt_aes_server":
-        # open encrypted_message file and decrypt it's content
+        # open encrypted_message file and decrypt it's content with server symetric key
         # save decrypted content to decrypted_message file
 
         if length >= 2:
@@ -181,7 +181,7 @@ def main():
 
 
     elif operation == "decrypt_aes_room":
-        # open encrypted_message file and decrypt it's content
+        # open encrypted_message file and decrypt it's content with room symetric key
         # save decrypted content to decrypted_message file
 
         if length >= 2:
