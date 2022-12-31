@@ -43,7 +43,7 @@ ChatWindow::ChatWindow(QWidget *parent, QString server_url, QString user_name)
 
     refreshChatLoop.operation = 3;
     refreshChatLoop.sleep_time = refreshInterval;
-    refreshChatLoop.actionObject = ui->menuZpravy_2->menuAction();
+    refreshChatLoop.ui = this->ui;
     refreshChatLoop.continueLoop = true;
     refreshChatLoop.start();
 
@@ -370,15 +370,6 @@ void ChatWindow::sendMessage(QString color, QString time, QString prefix, QStrin
     }
 }
 
-void ChatWindow::appendMessage(QString messageHtml)
-{
-    ui->textEdit->append(messageHtml);  // append message
-
-    int messagesNumber = ui->action_zpravy_1->text().split(" ").back().toInt();  // get displayed messages number as int
-
-    ui->action_zpravy_1->setText(tr("Počet zobrazených: %1").arg(messagesNumber + 1));  // increment and set text back
-}
-
 void ChatWindow::disable_widgets(bool disable)
 {
     ui->pushButton->setDisabled(disable);
@@ -432,7 +423,6 @@ void ChatWindow::on_pushButton_3_clicked()
     if(nchd.prefix != ""){
         ChatWindow::prefix = nchd.prefix;
     }
-
 }
 
 

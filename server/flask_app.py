@@ -444,7 +444,7 @@ def get_messages():
     <AES-encrypted-data> = {'room_id': '<hex string (32)>', 'room_password_sha256': '<hashed password>', 'user_messages_count': '<int>'}
     
     response: {'data': '<encrypted-data> in hex'}
-    <encrypted-data> = {'status_code': '<error code>', 'server_messages_count': '<int>', 'messages': [<encrypted with room key>, ...]}
+    <encrypted-data> = {'status_code': '<error code>', 'server_messages_count': '<str(int)>', 'messages': [<encrypted with room key>, ...]}
     """
 
     try:
@@ -528,6 +528,67 @@ def get_messages():
 
             return flask.jsonify({"data": data}), 200
 
+        messages_count_user: str = decrypted_data["messages_count_user"]
+
+        if messages_count_user.isdecimal():
+            messages_count_user = int(messages_count_user)
+        
+        else:
+            messages_count_user = 0
+
+
+        messages_count_path = app_dir + "/rooms/" + room_id + "/messages_count"
+        
+        if os.path.exists(messages_count_path):
+            with open(messages_count_path, "r") as f:
+                messages_count_server = f.read()
+
+                if messages_count_server.isdecimal():
+                    messages_count_server = int(messages_count_server)
+                
+                else:
+                    # (should never happen)
+                    messages_count_server = 0
+        else:
+            messages_count_server = 0
+
+        
+        messages_to_send_count: int = messages_count_server - messages_count_user
+        messages_to_send: list = []
+
+        if messages_to_send_count == 0:
+            pass
+
+        else:
+
+            # load all messages
+            with open(app_dir + "/rooms/" + room_id + "/messages", "r") as f:
+                rows = f.readlines()
+
+            if messages_to_send_count > 100:
+                # max 100 messages
+                messages_to_send = rows
+                messages_to_send.insert(0, f"({messages_to_send_count-100} zpráv bylo přeskočeno) ...")
+
+            else:
+                rows = rows[::-1]
+
+                for i in range(messages_to_send_count):
+                    messages_to_send.append(rows[i])
+
+                messages_to_send = messages_to_send[::-1]
+
+
+        data = {
+            "status_code": "1",
+            "server_messages_count": messages_count_server,
+            "messages": messages_to_send
+        }
+
+        data = str(data).encode()
+        data = symetric_key.encrypt(data).hex()
+
+        return flask.jsonify({"data": data}), 200
 
 
     except Exception as e:

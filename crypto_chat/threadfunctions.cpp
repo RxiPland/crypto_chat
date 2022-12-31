@@ -3,6 +3,7 @@ Program for making threads
 */
 
 #include "threadfunctions.h"
+#include "ui_chatwindow.h"
 
 ThreadFunctions::ThreadFunctions()
 {
@@ -17,6 +18,32 @@ void ThreadFunctions::stopLoop()
 void ThreadFunctions::reload()
 {
     ThreadFunctions::i = ThreadFunctions::sleep_time;
+}
+
+void ThreadFunctions::appendMessage(QString messageHtml)
+{
+    // add message to text edit
+    ui->textEdit->append(messageHtml);
+
+    // load number of messages as int
+    int messagesNumber = ui->action_zpravy_1->text().split(" ").back().toInt();
+
+    // increment and set back
+    ui->action_zpravy_1->setText(tr("Počet zobrazených: %1").arg(messagesNumber + 1));
+}
+
+void ThreadFunctions::getMessages()
+{
+    // checking new messages
+
+
+
+    QStringList messages;
+
+    int j;
+    for(j=0; j<messages.size(); j++){
+        ThreadFunctions::appendMessage(messages[j]);
+    }
 }
 
 void ThreadFunctions::run()
@@ -43,14 +70,16 @@ void ThreadFunctions::run()
             // sleep
             for(i=sleep_time; i>=0.0 && continueLoop; i -= 0.1){
 
+                // sleep 1/10 of second
                 QThread::msleep(100);
-                actionObject->setText(tr("Aktualizace za %1s").arg((int)i));
+                ui->menuZpravy_2->menuAction()->setText(tr("Aktualizace za %1s").arg((int)i));
             }
 
-            // TODO: get messages info
+            // request for messages
+            ThreadFunctions::getMessages();
 
         } while(continueLoop);
 
-        actionObject->setText("Aktualizace za Nikdy");
+        ui->menuZpravy_2->menuAction()->setText("Aktualizace za Nikdy");
     }
 }
