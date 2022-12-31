@@ -56,6 +56,44 @@ ChatWindow::~ChatWindow()
     delete ui;
 }
 
+void ChatWindow::closeEvent(QCloseEvent *bar)
+{
+    // Before application close
+
+    if(restart){
+        ChatWindow::restart = false;
+        QProcess::startDetached(QApplication::applicationFilePath());
+    }
+
+    refreshChatLoop.stopLoop();
+
+    QString message = tr("%1 se odpojil/a").arg(ChatWindow::user_name);
+    ChatWindow::sendMessage("grey", QTime::currentTime().toString(), "", "Server", message);
+
+    QDir roomFolder(QDir::tempPath() + "/" + room_id);
+
+    if(roomFolder.exists() && room_id != ""){
+        roomFolder.removeRecursively();
+    }
+
+    this->close();
+
+    if(bar != nullptr){
+        bar->accept();
+    }
+
+    while(refreshChatLoop.isRunning()){
+        // wait for thread to finish
+        qApp->processEvents();
+    }
+
+
+    if(!restart){
+        QApplication::quit();
+    }
+}
+
+
 void ChatWindow::welcomeMessage()
 {
     QString message = tr("%1 se připojil/a").arg(ChatWindow::user_name);
@@ -335,39 +373,6 @@ void ChatWindow::roomNotExist()
     ui->action_zpravy_4->setDisabled(true);
 }
 
-void ChatWindow::closeEvent(QCloseEvent *bar)
-{
-    // Before application close
-
-    if(restart){
-        ChatWindow::restart = false;
-        QProcess::startDetached(QApplication::applicationFilePath());
-    }
-
-    refreshChatLoop.stopLoop();
-
-    QDir roomFolder(QDir::tempPath() + "/" + room_id);
-
-    if(roomFolder.exists() && room_id != ""){
-        roomFolder.removeRecursively();
-    }
-
-    this->close();
-
-    if(bar != nullptr){
-        bar->accept();
-    }
-
-    while(refreshChatLoop.isRunning()){
-        // wait for thread to finish
-        qApp->processEvents();
-    }
-
-
-    if(!restart){
-        QApplication::quit();
-    }
-}
 
 void ChatWindow::on_pushButton_4_clicked()
 {
