@@ -114,6 +114,7 @@ void RoomDialog::createRoomFunc()
         QMessageBox::critical(this, "Chyba", "Pole pro jméno nemůže být prázdné!");
 
         RoomDialog::disable_widgets(false);
+        ui->lineEdit_4->setFocus();
         return;
     }
 
@@ -250,18 +251,21 @@ void RoomDialog::joinRoomFunc()
         QMessageBox::critical(this, "Chyba", "Pole pro ID místnosti nemůže být prázdné!");
 
         RoomDialog::disable_widgets(false);
+        ui->lineEdit_3->setFocus();
         return;
 
     } else if (roomId.length() != 32){
         QMessageBox::critical(this, "Neplatné ID", "ID místnosti musí mít délku přesně 32 znaků!");
 
         RoomDialog::disable_widgets(false);
+        ui->lineEdit_3->setFocus();
         return;
 
     } else if (nickname == ""){
         QMessageBox::critical(this, "Chyba", "Pole pro jméno nemůže být prázdné!");
 
         RoomDialog::disable_widgets(false);
+        ui->lineEdit_4->setFocus();
         return;
     }
 
