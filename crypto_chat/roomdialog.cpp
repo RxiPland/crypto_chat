@@ -374,7 +374,13 @@ void RoomDialog::joinRoomFunc()
         return;
 
     } else if (responseData[0] == "3"){
-        QMessageBox::critical(this, "Chyba", "Špatné heslo!");
+
+        if (ui->checkBox->isChecked()){
+            QMessageBox::critical(this, "Chyba", "Špatné heslo!");
+
+        } else{
+            QMessageBox::critical(this, "Chyba", "Místnost je chráněna heslem!");
+        }
 
         ui->checkBox->setChecked(true);
         RoomDialog::on_checkBox_clicked();
