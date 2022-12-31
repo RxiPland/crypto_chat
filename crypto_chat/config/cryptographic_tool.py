@@ -144,10 +144,15 @@ def main():
             with open(room_id_folder + "\\symetric_key_server", "rb") as f:
                 symetric_key = Fernet(f.read())
 
-            message_plain = symetric_key.decrypt(message_crypt)
+            try:
+                message_plain = symetric_key.decrypt(message_crypt)
 
-            with open(room_id_folder + "\\decrypted_message", "wb") as f:
-                f.write(message_plain)
+                with open(room_id_folder + "\\decrypted_message", "wb") as f:
+                    f.write(message_plain)
+
+            except:
+                with open(room_id_folder + "\\decrypted_message", "wb") as f:
+                    f.write("")
         
         else:
             raise Exception("Room ID missing!")
@@ -196,10 +201,15 @@ def main():
             with open(room_id_folder + "\\symetric_key_room", "rb") as f:
                 symetric_key = Fernet(f.read())
 
-            message_plain = symetric_key.decrypt(message_crypt)
+            try:
+                message_plain = symetric_key.decrypt(message_crypt)
 
-            with open(room_id_folder + "\\decrypted_message", "wb") as f:
-                f.write(message_plain)
+                with open(room_id_folder + "\\decrypted_message", "wb") as f:
+                    f.write(message_plain)
+
+            except:
+                with open(room_id_folder + "\\decrypted_message", "wb") as f:
+                    f.write("")
         
         else:
             raise Exception("Room ID missing!")
