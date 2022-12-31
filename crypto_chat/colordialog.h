@@ -18,14 +18,20 @@ public:
     QString user_color;
     bool change_color = false;
 
+    QString convert_color(QString color);
     void set_color(QString color);
 
 private slots:
     void on_comboBox_textActivated(const QString &arg1);
     void on_pushButton_2_clicked();
     void on_pushButton_clicked();
-    QString convert_color(QString color);
 
+
+    void on_pushButton_3_clicked();
+
+    void on_lineEdit_textEdited(const QString &arg1);
+
+    void on_lineEdit_returnPressed();
 
 private:
     Ui::ColorDialog *ui;

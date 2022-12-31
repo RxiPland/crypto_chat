@@ -15,6 +15,7 @@
 #include <QtWidgets/QDialog>
 #include <QtWidgets/QHBoxLayout>
 #include <QtWidgets/QLabel>
+#include <QtWidgets/QLineEdit>
 #include <QtWidgets/QPushButton>
 #include <QtWidgets/QSpacerItem>
 #include <QtWidgets/QVBoxLayout>
@@ -33,6 +34,10 @@ public:
     QSpacerItem *horizontalSpacer;
     QLabel *label;
     QSpacerItem *verticalSpacer;
+    QHBoxLayout *horizontalLayout_4;
+    QLineEdit *lineEdit;
+    QPushButton *pushButton_3;
+    QSpacerItem *verticalSpacer_3;
     QHBoxLayout *horizontalLayout_2;
     QSpacerItem *horizontalSpacer_2;
     QPushButton *pushButton_2;
@@ -43,7 +48,7 @@ public:
     {
         if (ColorDialog->objectName().isEmpty())
             ColorDialog->setObjectName("ColorDialog");
-        ColorDialog->resize(349, 121);
+        ColorDialog->resize(349, 156);
         horizontalLayout_3 = new QHBoxLayout(ColorDialog);
         horizontalLayout_3->setObjectName("horizontalLayout_3");
         horizontalSpacer_3 = new QSpacerItem(5, 20, QSizePolicy::Fixed, QSizePolicy::Minimum);
@@ -59,6 +64,7 @@ public:
         horizontalLayout = new QHBoxLayout();
         horizontalLayout->setObjectName("horizontalLayout");
         comboBox = new QComboBox(ColorDialog);
+        comboBox->addItem(QString());
         comboBox->addItem(QString());
         comboBox->addItem(QString());
         comboBox->addItem(QString());
@@ -95,9 +101,35 @@ public:
 
         verticalLayout->addLayout(horizontalLayout);
 
-        verticalSpacer = new QSpacerItem(20, 10, QSizePolicy::Minimum, QSizePolicy::Fixed);
+        verticalSpacer = new QSpacerItem(20, 5, QSizePolicy::Minimum, QSizePolicy::Fixed);
 
         verticalLayout->addItem(verticalSpacer);
+
+        horizontalLayout_4 = new QHBoxLayout();
+        horizontalLayout_4->setObjectName("horizontalLayout_4");
+        horizontalLayout_4->setContentsMargins(-1, 0, -1, -1);
+        lineEdit = new QLineEdit(ColorDialog);
+        lineEdit->setObjectName("lineEdit");
+        lineEdit->setMaxLength(7);
+
+        horizontalLayout_4->addWidget(lineEdit);
+
+        pushButton_3 = new QPushButton(ColorDialog);
+        pushButton_3->setObjectName("pushButton_3");
+        QSizePolicy sizePolicy2(QSizePolicy::Minimum, QSizePolicy::Fixed);
+        sizePolicy2.setHorizontalStretch(0);
+        sizePolicy2.setVerticalStretch(0);
+        sizePolicy2.setHeightForWidth(pushButton_3->sizePolicy().hasHeightForWidth());
+        pushButton_3->setSizePolicy(sizePolicy2);
+
+        horizontalLayout_4->addWidget(pushButton_3);
+
+
+        verticalLayout->addLayout(horizontalLayout_4);
+
+        verticalSpacer_3 = new QSpacerItem(20, 40, QSizePolicy::Minimum, QSizePolicy::Expanding);
+
+        verticalLayout->addItem(verticalSpacer_3);
 
         horizontalLayout_2 = new QHBoxLayout();
         horizontalLayout_2->setObjectName("horizontalLayout_2");
@@ -142,8 +174,11 @@ public:
         comboBox->setItemText(5, QCoreApplication::translate("ColorDialog", "Oran\305\276ov\303\241", nullptr));
         comboBox->setItemText(6, QCoreApplication::translate("ColorDialog", "\305\275lut\303\241", nullptr));
         comboBox->setItemText(7, QCoreApplication::translate("ColorDialog", "Hn\304\233d\303\241", nullptr));
+        comboBox->setItemText(8, QCoreApplication::translate("ColorDialog", "Vlastn\303\255...", nullptr));
 
         label->setText(QString());
+        lineEdit->setPlaceholderText(QCoreApplication::translate("ColorDialog", "Zadejte HEX hodnotu", nullptr));
+        pushButton_3->setText(QCoreApplication::translate("ColorDialog", "Pomoc", nullptr));
         pushButton_2->setText(QCoreApplication::translate("ColorDialog", "Zru\305\241it", nullptr));
         pushButton->setText(QCoreApplication::translate("ColorDialog", "Ok", nullptr));
     } // retranslateUi
