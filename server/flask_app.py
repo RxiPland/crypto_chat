@@ -17,6 +17,9 @@ app_dir = os.path.dirname(__file__) + "/"
 # generate AES key for server
 server_aes_key = Fernet.generate_key()
 
+# load bytes as server's AES key
+symetric_key = Fernet(server_aes_key)
+
 version = "crypto-chat v1.0.0"
 
 """
@@ -113,9 +116,6 @@ def create_room():
         if not "data" in request_json.keys():
             return "Forbidden", 403
 
-        # load bytes as server's AES key
-        symetric_key = Fernet(server_aes_key)
-
         # decrypt data from request
         try:
             decrypted_data = symetric_key.decrypt(bytes.fromhex(request_json["data"]))
@@ -209,9 +209,6 @@ def join_room():
         # key 'data' must be in JSON
         if not "data" in request_json.keys():
             return "Forbidden", 403
-
-        # load bytes as server's AES key
-        symetric_key = Fernet(server_aes_key)
 
 
         # decrypt data from request
@@ -315,12 +312,10 @@ def send_message():
         if not "data" in request_json.keys():
             return "Forbidden", 403
 
-        # load bytes as server's AES key
-        symetric_key_server = Fernet(server_aes_key)
 
         # decrypt data from request
         try:
-            decrypted_data = symetric_key_server.decrypt(bytes.fromhex(request_json["data"]))
+            decrypted_data = symetric_key.decrypt(bytes.fromhex(request_json["data"]))
         
         except:
             
@@ -330,7 +325,7 @@ def send_message():
             }
 
             data = str(data).encode()
-            data = symetric_key_server.encrypt(data).hex()
+            data = symetric_key.encrypt(data).hex()
 
             return flask.jsonify({"data": data}), 200
 
@@ -352,7 +347,7 @@ def send_message():
             }
 
             data = str(data).encode()
-            data = symetric_key_server.encrypt(data).hex()
+            data = symetric_key.encrypt(data).hex()
 
             return flask.jsonify({"data": data}), 200
 
@@ -382,7 +377,7 @@ def send_message():
             }
 
             data = str(data).encode()
-            data = symetric_key_server.encrypt(data).hex()
+            data = symetric_key.encrypt(data).hex()
 
             return flask.jsonify({"data": data}), 200
 
@@ -418,7 +413,7 @@ def send_message():
         }
 
         data = str(data).encode()
-        data = symetric_key_server.encrypt(data).hex()
+        data = symetric_key.encrypt(data).hex()
 
         return flask.jsonify({"data": data}), 200
 
@@ -432,7 +427,7 @@ def send_message():
 def send_message():
     """
     params: {'data': '<AES-encrypted-data> in hex'}
-    <AES-encrypted-data> = {'room_id': '<hex string (32)>', 'room_password': '<hashed password>', 'user_messages_count': '<int>'}
+    <AES-encrypted-data> = {'room_id': '<hex string (32)>', 'room_password_sha256': '<hashed password>', 'user_messages_count': '<int>'}
     
     response: {'data': '<encrypted-data> in hex'}
     <encrypted-data> = {'status_code': '<error code>', 'server_messages_count': '<int>', 'messages': '[]'}
@@ -449,12 +444,10 @@ def send_message():
         if not "data" in request_json.keys():
             return "Forbidden", 403
 
-        # load bytes as server's AES key
-        symetric_key_server = Fernet(server_aes_key)
 
         # decrypt data from request
         try:
-            decrypted_data = symetric_key_server.decrypt(bytes.fromhex(request_json["data"]))
+            decrypted_data = symetric_key.decrypt(bytes.fromhex(request_json["data"]))
         
         except:
             
@@ -464,12 +457,68 @@ def send_message():
             }
 
             data = str(data).encode()
-            data = symetric_key_server.encrypt(data).hex()
+            data = symetric_key.encrypt(data).hex()
 
             return flask.jsonify({"data": data}), 200
 
 
         decrypted_data: dict = json.loads(decrypted_data)
+
+        # keys 'room_id', 'message' and 'room_password' must be in decrypted JSON
+        if not "room_id" in decrypted_data.keys() or not "room_password_sha256" in decrypted_data.keys() or not "user_messages_count" in decrypted_data.keys():
+            return "Forbidden", 403
+
+
+        room_id = decrypted_data["room_id"]
+
+        # room folder in server's directory must exist
+        if not os.path.exists(app_dir + "/rooms/" + room_id):
+            
+            # wrong room ID (room was deleted by someone else)
+            data = {
+                "status_code": "4"
+            }
+
+            data = str(data).encode()
+            data = symetric_key.encrypt(data).hex()
+
+            return flask.jsonify({"data": data}), 200
+
+
+        password_user_hash: str = decrypted_data["room_password_sha256"]
+        password_file_path = app_dir + "/rooms/" + room_id + "/password"
+
+
+        if os.path.exists(password_file_path):
+            with open(password_file_path, "r") as f:
+                password_file_hash = f.read()
+        
+        else:
+            # password file missing (should never happen)
+
+            with open(password_file_path, "w") as f:
+                f.write(password_user_hash)
+
+            password_file_hash = password_user_hash
+
+
+        if password_user_hash.strip() != password_file_hash.strip():
+                
+            # wrong password (should never happen)
+            data = {
+                "status_code": "3"
+            }
+
+            data = str(data).encode()
+            data = symetric_key.encrypt(data).hex()
+
+            return flask.jsonify({"data": data}), 200
+
+
+
+    except Exception as e:
+        print(e)
+        return str(e), 403
 
 
 if __name__ == "__main__":
