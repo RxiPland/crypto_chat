@@ -36,6 +36,7 @@ int main(int argc, char *argv[])
 
     QString server_url = ld.server_url;
 
+    // create OR login to existing room
     RoomDialog rd(nullptr, ld.create_room, server_url, ld.room_id);
     rd.app_version = app_version;
     rd.user_agent = user_agent;
@@ -53,7 +54,7 @@ int main(int argc, char *argv[])
         return 0;
     }
 
-
+    // open chat window
     ChatWindow chw(nullptr, server_url, rd.username);
     chw.app_version = app_version;
     chw.user_agent = user_agent;
