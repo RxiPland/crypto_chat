@@ -332,7 +332,7 @@ def send_message():
 
         decrypted_data: dict = json.loads(decrypted_data)
 
-        # keys 'room_id', 'message' and 'room_password' must be in decrypted JSON
+        # keys 'room_id', 'room_password' and 'message' must be in decrypted JSON
         if not "room_id" in decrypted_data.keys() or not "room_password" in decrypted_data.keys() or not "message" in decrypted_data.keys():
             return "Forbidden", 403
 
@@ -383,9 +383,23 @@ def send_message():
 
         message = decrypted_data["message"]
 
-        # write encrypted message with room's key into file
-        with open(app_dir + "/rooms/" + room_id + "/messages", "a") as f:
-            f.write(message + "\n")
+        # load all messages
+        with open(app_dir + "/rooms/" + room_id + "/messages", "r") as f:
+            rows = f.readlines()
+
+        # add new message
+        rows.append(message + "\n")
+        rows_count = len(rows)
+
+        # max 100 messages will be stored
+        while rows_count > 100:
+            rows.pop(0)
+            rows_count -= 1
+
+        # write encrypted messages back to file
+        with open(app_dir + "/rooms/" + room_id + "/messages", "w") as f:
+            f.writelines(rows)
+
 
         messages_count_path = app_dir + "/rooms/" + room_id + "/messages_count"
 
@@ -424,13 +438,13 @@ def send_message():
 
 
 @app.route('/get-messages', methods=["POST"])
-def send_message():
+def get_messages():
     """
     params: {'data': '<AES-encrypted-data> in hex'}
     <AES-encrypted-data> = {'room_id': '<hex string (32)>', 'room_password_sha256': '<hashed password>', 'user_messages_count': '<int>'}
     
     response: {'data': '<encrypted-data> in hex'}
-    <encrypted-data> = {'status_code': '<error code>', 'server_messages_count': '<int>', 'messages': '[]'}
+    <encrypted-data> = {'status_code': '<error code>', 'server_messages_count': '<int>', 'messages': [<encrypted with room key>, ...]}
     """
 
     try:
@@ -464,7 +478,7 @@ def send_message():
 
         decrypted_data: dict = json.loads(decrypted_data)
 
-        # keys 'room_id', 'message' and 'room_password' must be in decrypted JSON
+        # keys 'room_id', 'room_password_sha256' and 'user_messages_count' must be in decrypted JSON
         if not "room_id" in decrypted_data.keys() or not "room_password_sha256" in decrypted_data.keys() or not "user_messages_count" in decrypted_data.keys():
             return "Forbidden", 403
 
