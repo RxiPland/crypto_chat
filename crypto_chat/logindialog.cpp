@@ -169,6 +169,10 @@ void LoginDialog::on_pushButton_clicked()
 
     } else if (!url_address.contains("http") || !url_address.contains("://") || !url_address.contains(".")){
         QMessageBox::critical(this, "Chyba", "Zadejte kompletní URL adresu!\n\nPř. https://www.google.com");
+        LoginDialog::disable_widgets(false);
+
+        ui->lineEdit->setFocus();
+        return;
 
     } else{
         // validate version && exchange server's AES key
@@ -238,6 +242,11 @@ void LoginDialog::on_pushButton_clicked()
         } else if (reply_get->error() == QNetworkReply::HostNotFoundError){
             QMessageBox::critical(this, "Chyba", "Doména neexsistuje!");
 
+            LoginDialog::disable_widgets(false);
+
+            ui->lineEdit->setFocus();
+            return;
+
         } else if (reply_get->error() == QNetworkReply::AuthenticationRequiredError){
             // Authentication is required or credentials may be wrong
 
@@ -250,6 +259,10 @@ void LoginDialog::on_pushButton_clicked()
 
             ui->checkBox->setChecked(true);
 
+            LoginDialog::disable_widgets(false);
+
+            ui->lineEdit_2->setFocus();
+            return;
 
         } else if(reply_get->error() != QNetworkReply::NoError){
             // Any error

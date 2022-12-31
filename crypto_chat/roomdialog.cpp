@@ -372,13 +372,20 @@ void RoomDialog::joinRoomFunc()
     } else if (responseData[0] == "3"){
         QMessageBox::critical(this, "Chyba", "Špatné heslo!");
 
+        ui->checkBox->setChecked(true);
+        RoomDialog::on_checkBox_clicked();
+
         RoomDialog::disable_widgets(false);
+        ui->lineEdit->setFocus();
+
         return;
 
     } else if (responseData[0] == "4"){
         QMessageBox::critical(this, "Chyba", "Místnost s tímto ID neexistuje!");
 
         RoomDialog::disable_widgets(false);
+        ui->lineEdit_3->setFocus();
+
         return;
 
     } else if (responseData[0] != "1"){

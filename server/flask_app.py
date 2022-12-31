@@ -360,6 +360,7 @@ def send_message():
         password_user_hash: str = hashlib.sha256(decrypted_data["room_password"].encode()).hexdigest()
         password_file_path = app_dir + "/rooms/" + room_id + "/password"
 
+
         if os.path.exists(password_file_path):
             with open(password_file_path, "r") as f:
                 password_file_hash = f.read()

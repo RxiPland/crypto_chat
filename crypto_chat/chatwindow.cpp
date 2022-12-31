@@ -250,7 +250,13 @@ void ChatWindow::sendMessage(QString color, QString time, QString prefix, QStrin
 
     QByteArray response = reply_post->readAll();
 
-    if(reply_post->error() != QNetworkReply::NoError){
+    if(reply_post->error() == QNetworkReply::ConnectionRefusedError){
+        QMessageBox::critical(this, "Chyba", "Nelze se připojit k internetu nebo server není dostupný! (odesílání zrušeno)");
+
+        ChatWindow::disable_widgets(false);
+        return;
+
+    } else if(reply_post->error() != QNetworkReply::NoError){
         // Any error
 
         QMessageBox::critical(this, "Odpověd serveru (chyba)", tr("Nastala neznámá chyba!\nOznačení QNetworkReply chyby: %1\n\nOdpověd serveru: %2").arg(reply_post->error()).arg(response));
@@ -299,6 +305,7 @@ void ChatWindow::sendMessage(QString color, QString time, QString prefix, QStrin
 
     ui->lineEdit->clear();
     ChatWindow::disable_widgets(false);
+    ui->lineEdit->setFocus();
 }
 
 void ChatWindow::appendMessage(QString messageHtml)
@@ -362,66 +369,12 @@ void ChatWindow::closeEvent(QCloseEvent *bar)
     }
 }
 
-QString convert_color(QString color){
-
-    if(color == "black"){
-        return "Černá";
-
-    } else if(color == "red"){
-        return "Červená";
-
-    } else if(color == "green"){
-        return "Zelená";
-
-    } else if(color == "#00BFFF"){
-        return "Modrá";
-
-    } else if(color == "#800080"){
-        return "Fialová";
-
-    } else if(color == "#FF8C00"){
-        return "Oranžová";
-
-    } else if(color == "#FFD700"){
-        return "Žlutá";
-
-    } else if(color == "#8B4513"){
-        return "Hnědá";
-
-    } else if (color == "Černá"){
-        return "black";
-
-    } else if(color == "Červená"){
-        return "red";
-
-    } else if (color == "Zelená"){
-        return "green";
-
-    } else if(color == "Modrá"){
-        return "#00BFFF";
-
-    } else if(color == "Fialová"){
-        return "#800080";
-
-    } else if(color == "Oranžová"){
-        return "#FF8C00";
-
-    } else if(color == "Žlutá"){
-        return "#FFD700";
-
-    } else if(color == "Hnědá"){
-        return "#8B4513";
-    }
-
-    return "";
-}
-
 void ChatWindow::on_pushButton_4_clicked()
 {
     // change color
 
     ColorDialog cd;
-    cd.set_color(user_color);
+    cd.set_color(ChatWindow::user_color);
     cd.setModal(true);
     cd.exec();
 
@@ -456,7 +409,7 @@ void ChatWindow::on_pushButton_3_clicked()
 
 void ChatWindow::on_pushButton_2_clicked()
 {
-    QMessageBox::about(this, "Informace o místnosti", tr("Verze aplikace:  %1<br><br>URL:  %2<br>ID:  %3<br>Interval aktualizace chatu: %4s<br><br>Vaše přezdívka:  %5<br>Váš prefix: %6<br>Vaše barva:  %7").arg(app_version).arg(server_url).arg(room_id).arg(refreshInterval).arg(user_name).arg(prefix).arg(convert_color(user_color)));
+    QMessageBox::about(this, "Informace o místnosti", tr("Verze aplikace:  %1<br><br>URL:  %2<br>ID:  %3<br>Interval aktualizace chatu: %4s<br><br>Vaše přezdívka:  %5<br>Váš prefix: %6<br>Vaše barva:  %7").arg(app_version).arg(server_url).arg(room_id).arg(refreshInterval).arg(user_name).arg(prefix).arg(user_color));
 }
 
 
