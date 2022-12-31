@@ -282,8 +282,8 @@ void LoginDialog::on_pushButton_clicked()
                 rsaBits.replace(" (defaultní)", "");
 
 
-                //std::wstring command = QString("/C config/cryptography_tool.exe generate_rsa " + rsaBits).toStdWString();
-                std::wstring command = QString("/C python config/cryptography_tool.py generate_rsa " + rsaBits).toStdWString();
+                //std::wstring command = QString("/C config/cryptographic_tool.exe generate_rsa " + rsaBits).toStdWString();
+                std::wstring command = QString("/C python config/cryptographic_tool.py generate_rsa " + rsaBits).toStdWString();
 
                 // generate
                 ThreadFunctions shellThread;
@@ -402,8 +402,8 @@ void LoginDialog::on_pushButton_clicked()
                                         msgBox.setText(msgBox.text() + "<span style=\"color:orange;\"> [Probíhá]<br></span>");
 
 
-                                        //command = QString("/C config/cryptography_tool.exe decrypt_rsa \"" + room_id + "\"").toStdWString();
-                                        command = QString("/C python config/cryptography_tool.py decrypt_rsa \"" + room_id + "\"").toStdWString();
+                                        //command = QString("/C config/cryptographic_tool.exe decrypt_rsa \"" + room_id + "\"").toStdWString();
+                                        command = QString("/C python config/cryptographic_tool.py decrypt_rsa \"" + room_id + "\"").toStdWString();
 
                                         shellThread.ShExecInfo.lpParameters = command.c_str();
                                         shellThread.start();

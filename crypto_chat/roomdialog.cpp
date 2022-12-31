@@ -134,8 +134,8 @@ void RoomDialog::createRoomFunc()
     QJsonDocument docMessage(objMessage);
     QString message_data = docMessage.toJson().toHex();
 
-    //std::wstring command = QString("/C python config/cryptography_tool.exe encrypt_aes_server \"" + room_id + "\" \"" + message_data + "\"").toStdWString();
-    std::wstring command = QString("/C python config/cryptography_tool.py encrypt_aes_server \"" + room_id + "\" \"" + message_data + "\"").toStdWString();
+    //std::wstring command = QString("/C python config/cryptographic_tool.exe encrypt_aes_server \"" + room_id + "\" \"" + message_data + "\"").toStdWString();
+    std::wstring command = QString("/C python config/cryptographic_tool.py encrypt_aes_server \"" + room_id + "\" \"" + message_data + "\"").toStdWString();
 
     // encrypt
     ThreadFunctions shellThread;
@@ -281,8 +281,8 @@ void RoomDialog::joinRoomFunc()
     QJsonDocument docMessage(objMessage);
     QString message_data = docMessage.toJson().toHex();
 
-    //std::wstring command = QString("/C python config/cryptography_tool.exe encrypt_aes_server \"" + room_id + "\" \"" + message_data + "\"").toStdWString();
-    std::wstring command = QString("/C python config/cryptography_tool.py encrypt_aes_server \"" + room_id + "\" \"" + message_data + "\"").toStdWString();
+    //std::wstring command = QString("/C python config/cryptographic_tool.exe encrypt_aes_server \"" + room_id + "\" \"" + message_data + "\"").toStdWString();
+    std::wstring command = QString("/C python config/cryptographic_tool.py encrypt_aes_server \"" + room_id + "\" \"" + message_data + "\"").toStdWString();
 
     // encrypt
     ThreadFunctions shellThread;
@@ -452,8 +452,8 @@ QStringList RoomDialog::getJson(QStringList names, QByteArray data)
     RoomDialog::writeTempFile("encrypted_message", QByteArray::fromStdString(jsonData.toStdString()));
 
 
-    //std::wstring command = QString("/C python config/cryptography_tool.exe decrypt_aes_server \"" + room_id + "\"").toStdWString();
-    std::wstring command = QString("/C python config/cryptography_tool.py decrypt_aes_server \"" + room_id + "\"").toStdWString();
+    //std::wstring command = QString("/C python config/cryptographic_tool.exe decrypt_aes_server \"" + room_id + "\"").toStdWString();
+    std::wstring command = QString("/C python config/cryptographic_tool.py decrypt_aes_server \"" + room_id + "\"").toStdWString();
 
     // decrypt
     ThreadFunctions shellThread;

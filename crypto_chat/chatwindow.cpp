@@ -104,8 +104,8 @@ QStringList ChatWindow::getJson(QStringList names, QByteArray data)
     ChatWindow::writeTempFile("encrypted_message", QByteArray::fromStdString(jsonData.toStdString()));
 
 
-    //std::wstring command = QString("/C python config/cryptography_tool.exe decrypt_aes_server \"" + room_id + "\"").toStdWString();
-    std::wstring command = QString("/C python config/cryptography_tool.py decrypt_aes_server \"" + room_id + "\"").toStdWString();
+    //std::wstring command = QString("/C python config/cryptographic_tool.exe decrypt_aes_server \"" + room_id + "\"").toStdWString();
+    std::wstring command = QString("/C python config/cryptographic_tool.py decrypt_aes_server \"" + room_id + "\"").toStdWString();
 
     // decrypt
     ThreadFunctions shellThread;
@@ -161,8 +161,8 @@ void ChatWindow::sendMessage(QString color, QString time, QString prefix, QStrin
     messageText = tr("(%1) %2 <%3>: %4").arg(time).arg(prefix).arg(nickname).arg(message);
     messageHtml = tr("<span style=\"color:%1;\">%2</span><br>").arg(color).arg(messageText.toHtmlEscaped());
 
-    //std::wstring command = QString("/C python config/cryptography_tool.exe encrypt_aes_room \"" + room_id + "\" \"" + messageHtml + "\"").toStdWString();
-    std::wstring command = QString("/C python config/cryptography_tool.py encrypt_aes_room \"" + room_id + "\" \"" + messageHtml + "\"").toStdWString();
+    //std::wstring command = QString("/C python config/cryptographic_tool.exe encrypt_aes_room \"" + room_id + "\" \"" + messageHtml + "\"").toStdWString();
+    std::wstring command = QString("/C python config/cryptographic_tool.py encrypt_aes_room \"" + room_id + "\" \"" + messageHtml + "\"").toStdWString();
 
     // encrypt with room symetric key
     ThreadFunctions shellThread;
@@ -201,8 +201,8 @@ void ChatWindow::sendMessage(QString color, QString time, QString prefix, QStrin
     QJsonDocument docMessage(objMessage);
     QString postData = docMessage.toJson().toHex();  // in hex
 
-    //command = QString("/C python config/cryptography_tool.exe encrypt_aes_server \"" + room_id + "\" \"" + postData + "\"").toStdWString();
-    command = QString("/C python config/cryptography_tool.py encrypt_aes_server \"" + room_id + "\" \"" + postData + "\"").toStdWString();
+    //command = QString("/C python config/cryptographic_tool.exe encrypt_aes_server \"" + room_id + "\" \"" + postData + "\"").toStdWString();
+    command = QString("/C python config/cryptographic_tool.py encrypt_aes_server \"" + room_id + "\" \"" + postData + "\"").toStdWString();
 
     // encrypt postData (json) with server symetric key
     shellThread.ShExecInfo.lpParameters = command.c_str();
