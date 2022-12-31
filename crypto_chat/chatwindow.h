@@ -19,6 +19,7 @@ public:
     ~ChatWindow();
 
     void welcomeMessage();
+    void quitMessage();
 
     QString app_version;
     QByteArray user_agent;

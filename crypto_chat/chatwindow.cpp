@@ -67,8 +67,7 @@ void ChatWindow::closeEvent(QCloseEvent *bar)
 
     refreshChatLoop.stopLoop();
 
-    QString message = tr("%1 se odpojil/a").arg(ChatWindow::user_name);
-    ChatWindow::sendMessage("grey", QTime::currentTime().toString(), "", "Server", message);
+    ChatWindow::quitMessage();
 
     QDir roomFolder(QDir::tempPath() + "/" + room_id);
 
@@ -97,6 +96,12 @@ void ChatWindow::closeEvent(QCloseEvent *bar)
 void ChatWindow::welcomeMessage()
 {
     QString message = tr("%1 se připojil/a").arg(ChatWindow::user_name);
+    ChatWindow::sendMessage("grey", QTime::currentTime().toString(), "", "Server", message);
+}
+
+void ChatWindow::quitMessage()
+{
+    QString message = tr("%1 se odpojil/a").arg(ChatWindow::user_name);
     ChatWindow::sendMessage("grey", QTime::currentTime().toString(), "", "Server", message);
 }
 
