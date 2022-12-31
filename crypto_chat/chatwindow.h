@@ -67,7 +67,7 @@ private:
     QByteArray readTempFile(QString filename);
     void writeTempFile(QString filename, QByteArray content);
 
-    void sendMessage(QString color="black", QString time="", QString prefix="", QString nickname="", QString message="");
+    void sendMessage(QString color="black", QString time="", QString prefix="", QString nickname="", QString message="", bool silent=false);
     void appendMessage(QString messageHtml);
     void disable_widgets(bool disable=true);
 

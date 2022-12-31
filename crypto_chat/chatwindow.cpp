@@ -102,7 +102,7 @@ void ChatWindow::welcomeMessage()
 void ChatWindow::quitMessage()
 {
     QString message = tr("%1 se odpojil/a").arg(ChatWindow::user_name);
-    ChatWindow::sendMessage("grey", QTime::currentTime().toString(), "", "Server", message);
+    ChatWindow::sendMessage("grey", QTime::currentTime().toString(), "", "Server", message, true);
 }
 
 QByteArray ChatWindow::readTempFile(QString filename){
@@ -192,7 +192,7 @@ QStringList ChatWindow::getJson(QStringList names, QByteArray data)
 }
 
 
-void ChatWindow::sendMessage(QString color, QString time, QString prefix, QString nickname, QString message)
+void ChatWindow::sendMessage(QString color, QString time, QString prefix, QString nickname, QString message, bool silent)
 {
 
     ChatWindow::disable_widgets(true);
@@ -230,8 +230,11 @@ void ChatWindow::sendMessage(QString color, QString time, QString prefix, QStrin
     messageEncrypted = readTempFile("encrypted_message").toHex();
 
     if (messageEncrypted.isEmpty()){
-        QMessageBox::critical(this, "Upozornění", "Nepodařilo se zašifrovat zprávu! (odesílání zrušeno)");
-        ChatWindow::disable_widgets(false);
+
+        if(!silent){
+            QMessageBox::critical(this, "Upozornění", "Nepodařilo se zašifrovat zprávu! (odesílání zrušeno)");
+            ChatWindow::disable_widgets(false);
+        }
         return;
     }
 
@@ -243,6 +246,7 @@ void ChatWindow::sendMessage(QString color, QString time, QString prefix, QStrin
 
     QJsonDocument docMessage(objMessage);
     QString postData = docMessage.toJson().toHex();  // in hex
+
 
     //command = QString("/C python config/cryptographic_tool.exe encrypt_aes_server \"" + room_id + "\" \"" + postData + "\"").toStdWString();
     command = QString("/C python config/cryptographic_tool.py encrypt_aes_server \"" + room_id + "\" \"" + postData + "\"").toStdWString();
@@ -259,8 +263,11 @@ void ChatWindow::sendMessage(QString color, QString time, QString prefix, QStrin
     QByteArray content = readTempFile("encrypted_message");
 
     if (content.isEmpty()){
-        QMessageBox::critical(this, "Upozornění", "Nepodařilo se zašifrovat data! (odesílání zrušeno)");
-        ChatWindow::disable_widgets(false);
+
+        if(!silent){
+            QMessageBox::critical(this, "Upozornění", "Nepodařilo se zašifrovat data! (odesílání zrušeno)");
+            ChatWindow::disable_widgets(false);
+        }
         return;
     }
 
@@ -294,17 +301,20 @@ void ChatWindow::sendMessage(QString color, QString time, QString prefix, QStrin
     QByteArray response = reply_post->readAll();
 
     if(reply_post->error() == QNetworkReply::ConnectionRefusedError){
-        QMessageBox::critical(this, "Chyba", "Nelze se připojit k internetu nebo server není dostupný! (odesílání zrušeno)");
 
-        ChatWindow::disable_widgets(false);
+        if(!silent){
+            QMessageBox::critical(this, "Chyba", "Nelze se připojit k internetu nebo server není dostupný! (odesílání zrušeno)");
+            ChatWindow::disable_widgets(false);
+        }
         return;
 
     } else if(reply_post->error() != QNetworkReply::NoError){
         // Any error
 
-        QMessageBox::critical(this, "Odpověd serveru (chyba)", tr("Nastala neznámá chyba!\nOznačení QNetworkReply chyby: %1\n\nOdpověd serveru: %2").arg(reply_post->error()).arg(response));
-
-        ChatWindow::disable_widgets(false);
+        if(!silent){
+            QMessageBox::critical(this, "Odpověd serveru (chyba)", tr("Nastala neznámá chyba!\nOznačení QNetworkReply chyby: %1\n\nOdpověd serveru: %2").arg(reply_post->error()).arg(response));
+            ChatWindow::disable_widgets(false);
+        }
         return;
     }
 
@@ -315,40 +325,49 @@ void ChatWindow::sendMessage(QString color, QString time, QString prefix, QStrin
     QStringList responseData = getJson(names, response);
 
     if (responseData.isEmpty() || responseData[0] == "5"){
-        QMessageBox::critical(this, "Chyba - symetrický klíč", "Server byl pravděpodobně restartován a kvůli tomu máte starý symetrický klíč. Restartuje program pro získání aktuálního.");
 
-        ChatWindow::roomNotExist();
-        ChatWindow::disable_widgets(false);
+        if(!silent){
+            QMessageBox::critical(this, "Chyba - symetrický klíč", "Server byl pravděpodobně restartován a kvůli tomu máte starý symetrický klíč. Restartuje program pro získání aktuálního.");
 
+            ChatWindow::roomNotExist();
+            ChatWindow::disable_widgets(false);
+        }
         return;
 
     } else if (responseData[0] == "4"){
-        QMessageBox::critical(this, "Chyba - místnost byla smazána", "Místnost, ve které se nacházíte, již neexistuje! Odpojte se prosím.");
 
-        ChatWindow::roomNotExist();
-        ChatWindow::disable_widgets(false);
+        if(!silent){
+            QMessageBox::critical(this, "Chyba - místnost byla smazána", "Místnost, ve které se nacházíte, již neexistuje! Odpojte se prosím.");
 
+            ChatWindow::roomNotExist();
+            ChatWindow::disable_widgets(false);
+        }
         return;
 
     } else if (responseData[0] == "3"){
-        QMessageBox::critical(this, "Chyba - heslo", "Heslo místnosti bylo změněno! Odpojte se a připojte znovu.");
 
-        ChatWindow::roomNotExist();
-        ChatWindow::disable_widgets(false);
+        if(!silent){
+            QMessageBox::critical(this, "Chyba - heslo", "Heslo místnosti bylo změněno! Odpojte se a připojte znovu.");
 
+            ChatWindow::roomNotExist();
+            ChatWindow::disable_widgets(false);
+        }
         return;
 
     } else if (responseData[0] != "1"){
-        QMessageBox::critical(this, "Chyba", "Zprávu se nepodařilo odeslat! Server odpověděl {\"status_code\": " + responseData[0] + "}");
 
-        ChatWindow::disable_widgets(false);
+        if(!silent){
+            QMessageBox::critical(this, "Chyba", "Zprávu se nepodařilo odeslat! Server odpověděl {\"status_code\": " + responseData[0] + "}");
+            ChatWindow::disable_widgets(false);
+        }
         return;
     }
 
-
-    ui->lineEdit->clear();
-    ChatWindow::disable_widgets(false);
-    ui->lineEdit->setFocus();
+    if(!silent){
+        ui->lineEdit->clear();
+        ChatWindow::disable_widgets(false);
+        ui->lineEdit->setFocus();
+    }
 }
 
 void ChatWindow::appendMessage(QString messageHtml)
@@ -440,6 +459,7 @@ void ChatWindow::on_action_zpravy_3_triggered()
 void ChatWindow::on_action_room_3_triggered()
 {
     ChatWindow::restart = true;
+    this->hide();
     ChatWindow::closeEvent();
 }
 

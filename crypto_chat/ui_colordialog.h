@@ -178,7 +178,7 @@ public:
 
         label->setText(QString());
         lineEdit->setPlaceholderText(QCoreApplication::translate("ColorDialog", "Zadejte HEX hodnotu", nullptr));
-        pushButton_3->setText(QCoreApplication::translate("ColorDialog", "Pomoc", nullptr));
+        pushButton_3->setText(QCoreApplication::translate("ColorDialog", "N\303\241stroj", nullptr));
         pushButton_2->setText(QCoreApplication::translate("ColorDialog", "Zru\305\241it", nullptr));
         pushButton->setText(QCoreApplication::translate("ColorDialog", "Ok", nullptr));
     } // retranslateUi
