@@ -44,7 +44,7 @@ private:
 
     void appendMessage(QString messageHtml);
     void writeTempFile(QString filename, QByteArray content);
-    QList<QJsonValueRef> getJson(QStringList names, QByteArray data);
+    QList<QJsonValue> getJson(QStringList names, QByteArray data);
     QByteArray readTempFile(QString filename);
 
 

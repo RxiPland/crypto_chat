@@ -8,15 +8,14 @@ import os
 import os.path
 import tempfile
 import uuid
+import json
 
 import requests
 
 app_dir = os.path.dirname(__file__).replace("\\", "/") + "/"
-operations = "[generate_rsa, generate_aes, decrypt_rsa, encrypt_aes_server, decrypt_aes_server, sha256]"
+operations = "[generate_rsa, generate_aes, decrypt_rsa, encrypt_aes_server, decrypt_aes_server, get_messages]"
 
 def main():
-    # operations -> [generate_rsa, decrypt_rsa, encrypt_aes, decrypt_aes]
-    # arguments -> [key_size: int, b64_text: bytes, b64_text: bytes]
 
     argv = sys.argv[1:]
     length = len(argv)
@@ -223,14 +222,39 @@ def main():
             
             if length >= 3:
                 
-                pass
+                if length >= 4:
+                
+                    room_id = argv[1]
+                    room_id_folder = tempfile.gettempdir() + f"\\{room_id}"
+
+                    endpoint_url = argv[2]
+                    user_agent = argv[3]
+
+                    with open(room_id_folder + "\\encrypted_message", "r") as f:
+                        message_crypt = f.read()
+
+                    #try:
+                    res: requests.Response = requests.post(endpoint_url, headers={"user-agent": user_agent}, json={"data": message_crypt})
+
+                    with open(room_id_folder + "\\encrypted_message", "wb") as f:
+                        f.write(res.content)
+
+
+                    """
+                    except:
+
+                        with open(room_id_folder + "\\encrypted_message", "w") as f:
+                            f.write("")
+                    """
+
+                else:
+                    raise Exception("User-agent is missing!")
 
             else:
-                raise Exception("Room ID missing!")
-        
+                raise Exception("Url is missing!")
 
         else:
-            raise Exception("Room ID missing!")
+            raise Exception("Room ID is missing!")
 
     else:
         raise Exception(f"Invalid operation! {operations}")

@@ -532,8 +532,6 @@ def get_messages():
             return flask.jsonify({"data": data}), 200
 
         messages_count_user: int = decrypted_data["user_messages_count"]
-
-
         messages_count_path = app_dir + "/rooms/" + room_id + "/messages_count"
         
         if os.path.exists(messages_count_path):

@@ -55,6 +55,8 @@ void ChatWindow::closeEvent(QCloseEvent *bar)
 {
     // Before application close
 
+    this->hide();
+
     if(restart){
         ChatWindow::restart = false;
         QProcess::startDetached(QApplication::applicationFilePath());

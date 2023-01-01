@@ -194,7 +194,13 @@ void RoomDialog::createRoomFunc()
 
     QByteArray response = reply_post->readAll();
 
-    if(reply_post->error() != QNetworkReply::NoError){
+    if(reply_post->error() == QNetworkReply::ConnectionRefusedError){
+        QMessageBox::critical(this, "Chyba", "Nelze se připojit k internetu nebo server není dostupný!");
+
+        RoomDialog::disable_widgets(false);
+        return;
+
+    } else if(reply_post->error() != QNetworkReply::NoError){
         // Any error
 
         QMessageBox::critical(this, "Odpověd serveru (chyba)", tr("Nastala neznámá chyba!\nOznačení QNetworkReply chyby: %1\n\nOdpověd serveru: %2").arg(reply_post->error()).arg(response));
@@ -344,7 +350,13 @@ void RoomDialog::joinRoomFunc()
 
     QByteArray response = reply_post->readAll();
 
-    if(reply_post->error() != QNetworkReply::NoError){
+    if(reply_post->error() == QNetworkReply::ConnectionRefusedError){
+        QMessageBox::critical(this, "Chyba", "Nelze se připojit k internetu nebo server není dostupný!");
+
+        RoomDialog::disable_widgets(false);
+        return;
+
+    } else if (reply_post->error() != QNetworkReply::NoError){
         // Any error
 
         QMessageBox::critical(this, "Odpověd serveru (chyba)", tr("Nastala neznámá chyba!\nOznačení QNetworkReply chyby: %1\n\nOdpověd serveru: %2").arg(reply_post->error()).arg(response));

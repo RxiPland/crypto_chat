@@ -28,13 +28,14 @@ void ThreadFunctions::reload()
     ThreadFunctions::i = ThreadFunctions::sleep_time;
 }
 
-QList<QJsonValueRef> ThreadFunctions::getJson(QStringList names, QByteArray data)
+QList<QJsonValue> ThreadFunctions::getJson(QStringList names, QByteArray data)
 {
     QJsonDocument jsonResponse;
     QJsonObject jsonObject;
     QString jsonData;
 
 
+    data.replace("\'", "\"");
     jsonResponse = QJsonDocument::fromJson(data);
     jsonObject = jsonResponse.object();
     jsonData = jsonObject["data"].toString();
@@ -66,7 +67,7 @@ QList<QJsonValueRef> ThreadFunctions::getJson(QStringList names, QByteArray data
 
     QByteArray decrypted_data = ThreadFunctions::readTempFile("decrypted_message");
 
-    QList<QJsonValueRef> returnData;
+    QList<QJsonValue> returnData;
 
     if(decrypted_data.isEmpty()){
 
@@ -83,6 +84,12 @@ QList<QJsonValueRef> ThreadFunctions::getJson(QStringList names, QByteArray data
     for(i=0; i<names.length(); i++){
         returnData.append(jsonObject[names[i]]);
     }
+
+    /*
+    qInfo() << "------------------------\n";
+    qInfo() << returnData;
+    qInfo() << "------------------------\n";
+    */
 
     return returnData;
 }
@@ -142,7 +149,6 @@ void ThreadFunctions::getMessages()
     std::wstring command = QString("/C python config/cryptographic_tool.py encrypt_aes_server \"" + room_id + "\" \"" + postData + "\"").toStdWString();
 
 
-
     // encrypt postData (json) with server symetric key
     SHELLEXECUTEINFO ShExecInfo;
     ShExecInfo.cbSize = sizeof(SHELLEXECUTEINFO);
@@ -160,19 +166,6 @@ void ThreadFunctions::getMessages()
 
     CloseHandle(ShExecInfo.hProcess);
 
-
-    QByteArray content = readTempFile("encrypted_message");
-
-    if (content.isEmpty()){
-        qInfo() << "1";
-        return;
-    }
-
-    QJsonObject objData;
-    objData["data"] = (QString)content;
-    QJsonDocument docData(objData);
-    QByteArray SendMessageData = docData.toJson();
-
     //QNetworkRequest request;
     QUrl endpointUrl = QUrl(server_url + "/get-messages");
 
@@ -183,12 +176,56 @@ void ThreadFunctions::getMessages()
         endpointUrl.setPassword(authentication_password);
     }
 
-    endpointUrl.url();
 
-    //request.setHeader(QNetworkRequest::ContentTypeHeader, "application/json");
-    //request.setHeader(QNetworkRequest::UserAgentHeader, ThreadFunctions::user_agent);
+    //command = QString("/C python config/cryptographic_tool.exe get_messages \"" + room_id + "\" \"" + endpointUrl.url() + "\"").toStdWString();
+    command = QString("/C python config/cryptographic_tool.py get_messages \"" + room_id + "\" \"" + endpointUrl.url() + "\" \"" + QString::fromStdString(ThreadFunctions::user_agent.toStdString()) + "\"").toStdWString();
+
+    ShExecInfo.lpParameters = command.c_str();
+    //ShExecInfo.nShow = SW_HIDE;
+    ShellExecuteEx(&ShExecInfo);
+    WaitForSingleObject(ShExecInfo.hProcess, INFINITE);
+
+    CloseHandle(ShExecInfo.hProcess);
 
 
+    QByteArray response = ThreadFunctions::readTempFile("encrypted_message");
+
+    if (response.isEmpty()){
+        return;
+    }
+
+    QStringList names;
+    names.append("status_code");
+    names.append("server_messages_count");
+    names.append("messages");
+
+    QList<QJsonValue> responseData = getJson(names, response);
+
+    if (responseData.isEmpty()){
+        return;
+    }
+
+    QString statusCode = responseData[0].toString();
+
+    if (statusCode != "1"){
+        return;
+    }
+
+    int messagesCount = responseData[1].toInt();
+
+    if (messagesCount == 0){
+        return;
+    }
+
+    ThreadFunctions::recievedMessagesCount = messagesCount;
+
+    QStringList encryptedMessages = responseData[2].toVariant().toStringList();
+
+    int j;
+    for(j=0; j<encryptedMessages.size(); j++){
+
+        ThreadFunctions::appendMessage(encryptedMessages[j]);
+    }
 }
 
 void ThreadFunctions::run()
@@ -213,6 +250,9 @@ void ThreadFunctions::run()
         // get info about new messages
 
         do{
+            // request for messages
+            ThreadFunctions::getMessages();
+
             // sleep
             for(i=sleep_time; i>=0.0 && continueLoop; i -= 0.1){
 
@@ -220,9 +260,6 @@ void ThreadFunctions::run()
                 QThread::msleep(100);
                 ui->menuZpravy_2->menuAction()->setText(tr("Aktualizace za %1s").arg((int)i));
             }
-
-            // request for messages
-            ThreadFunctions::getMessages();
 
         } while(continueLoop);
 
