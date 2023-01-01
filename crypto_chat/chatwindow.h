@@ -58,6 +58,8 @@ private slots:
     void on_pushButton_clicked();
     void on_lineEdit_returnPressed();
 
+    void on_textEdit_textChanged();
+
 private:
     void closeEvent(QCloseEvent *bar = nullptr);
     Ui::ChatWindow *ui;

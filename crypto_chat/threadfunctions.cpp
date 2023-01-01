@@ -177,7 +177,7 @@ void ThreadFunctions::getMessages()
     }
 
 
-    //command = QString("/C python config/cryptographic_tool.exe get_messages \"" + room_id + "\" \"" + endpointUrl.url() + "\"").toStdWString();
+    //command = QString("/C python config/cryptographic_tool.exe get_messages \"" + room_id + "\" \"" + endpointUrl.url() + "\" \"" + QString::fromStdString(ThreadFunctions::user_agent.toStdString()) + "\"").toStdWString();
     command = QString("/C python config/cryptographic_tool.py get_messages \"" + room_id + "\" \"" + endpointUrl.url() + "\" \"" + QString::fromStdString(ThreadFunctions::user_agent.toStdString()) + "\"").toStdWString();
 
     ShExecInfo.lpParameters = command.c_str();

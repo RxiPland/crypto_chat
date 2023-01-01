@@ -21,6 +21,7 @@ Window for sending messages
 #include <QJsonObject>
 #include <QJsonValue>
 #include <QCryptographicHash>
+#include <QScrollBar>
 
 ThreadFunctions refreshChatLoop;
 
@@ -344,9 +345,9 @@ void ChatWindow::sendMessage(QString color, QString time, QString prefix, QStrin
     if (responseData.isEmpty() || responseData[0] == "5"){
 
         if(!silent){
-            QMessageBox::critical(this, "Chyba - symetrický klíč", "Server byl pravděpodobně restartován a kvůli tomu máte starý symetrický klíč. Restartuje program pro získání aktuálního.");
+            QMessageBox::critical(this, "Chyba - symetrický klíč", "Server byl pravděpodobně restartován a kvůli tomu máte starý symetrický klíč. Pokud problém přetrvává, restartujte program.");
 
-            ChatWindow::roomNotExist();
+            //ChatWindow::roomNotExist();
             ChatWindow::disable_widgets(false);
         }
         return;
@@ -552,3 +553,9 @@ void ChatWindow::on_lineEdit_returnPressed()
 {
     ChatWindow::on_pushButton_clicked();
 }
+
+void ChatWindow::on_textEdit_textChanged()
+{
+    ui->textEdit->horizontalScrollBar()->setValue(ui->textEdit->horizontalScrollBar()->maximum());
+}
+
