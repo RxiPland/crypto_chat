@@ -42,27 +42,9 @@ ChatWindow::ChatWindow(QWidget *parent, QString server_url, QString user_name)
 
     QApplication::setQuitOnLastWindowClosed(true);
 
-
-    refreshChatLoop.authentication_required = ChatWindow::authentication_required;
-    refreshChatLoop.authentication_username = ChatWindow::authentication_username;
-    refreshChatLoop.authentication_password = ChatWindow::authentication_password;
-    refreshChatLoop.room_id = ChatWindow::room_id;
-
-    QCryptographicHash hash(QCryptographicHash::Sha256);
-    hash.addData(ChatWindow::room_password.toStdString());
-
-    refreshChatLoop.room_password_sha256 = (QString)hash.result().toHex();
-    refreshChatLoop.server_url = ChatWindow::server_url;
-
-    refreshChatLoop.operation = 3;
-    refreshChatLoop.sleep_time = refreshInterval;
-    refreshChatLoop.ui = this->ui;
-    refreshChatLoop.continueLoop = true;
-    refreshChatLoop.start();
-
-
     this->show();
 }
+
 
 ChatWindow::~ChatWindow()
 {
@@ -105,7 +87,6 @@ void ChatWindow::closeEvent(QCloseEvent *bar)
     }
 }
 
-
 void ChatWindow::welcomeMessage()
 {
     QString message = tr("%1 se připojil/a").arg(ChatWindow::user_name);
@@ -116,6 +97,27 @@ void ChatWindow::quitMessage()
 {
     QString message = tr("%1 se odpojil/a").arg(ChatWindow::user_name);
     ChatWindow::sendMessage("grey", QTime::currentTime().toString(), "", "Server", message, true);
+}
+
+void ChatWindow::startRefreshLoop()
+{
+    refreshChatLoop.authentication_required = ChatWindow::authentication_required;
+    refreshChatLoop.authentication_username = ChatWindow::authentication_username;
+    refreshChatLoop.authentication_password = ChatWindow::authentication_password;
+    refreshChatLoop.room_id = ChatWindow::room_id;
+
+    QCryptographicHash hash(QCryptographicHash::Sha256);
+    hash.addData(ChatWindow::room_password.toStdString());
+
+    refreshChatLoop.room_password_sha256 = (QString)hash.result().toHex();
+    refreshChatLoop.server_url = ChatWindow::server_url;
+    refreshChatLoop.user_agent = ChatWindow::user_agent;
+
+    refreshChatLoop.operation = 3;
+    refreshChatLoop.sleep_time = ChatWindow::refreshInterval;
+    refreshChatLoop.ui = this->ui;
+    refreshChatLoop.continueLoop = true;
+    refreshChatLoop.start();
 }
 
 QByteArray ChatWindow::readTempFile(QString filename){
@@ -325,7 +327,7 @@ void ChatWindow::sendMessage(QString color, QString time, QString prefix, QStrin
         // Any error
 
         if(!silent){
-            QMessageBox::critical(this, "Odpověd serveru (chyba)", tr("Nastala neznámá chyba!\nOznačení QNetworkReply chyby: %1\n\nOdpověd serveru: %2").arg(reply_post->error()).arg(response));
+            QMessageBox::critical(this, "Odpověd serveru (chyba)", tr("Nastala neznámá chyba!\n\n%1").arg(reply_post->errorString()));
             ChatWindow::disable_widgets(false);
         }
         return;

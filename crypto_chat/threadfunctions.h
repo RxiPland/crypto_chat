@@ -2,13 +2,17 @@
 #define THREADFUNCTIONS_H
 
 #include <QThread>
-#include <QAction>
-#include <windows.h>
-
 #include "chatwindow.h"
+
+#include <QNetworkAccessManager>
+#include <windows.h>
+#include <QJsonValueRef>
+
 
 class ThreadFunctions : public QThread
 {
+    Q_OBJECT
+
 public:
     ThreadFunctions();
     void run();
@@ -25,18 +29,26 @@ public:
     //QAction *actionObject;
     Ui::ChatWindow *ui;
 
+    int recievedMessagesCount = 0;
 
     // for comunicating with server
     bool authentication_required = false;
     QString authentication_username = "";
     QString authentication_password = "";
+    QByteArray user_agent;
     QString server_url;
     QString room_id;
     QString room_password_sha256;
 
 private:
     void getMessages();
+    QNetworkAccessManager manager;
+
     void appendMessage(QString messageHtml);
+    void writeTempFile(QString filename, QByteArray content);
+    QList<QJsonValueRef> getJson(QStringList names, QByteArray data);
+    QByteArray readTempFile(QString filename);
+
 
 
 

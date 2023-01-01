@@ -64,6 +64,7 @@ int main(int argc, char *argv[])
     chw.authentication_username = rd.authentication_username;
     chw.authentication_password = rd.authentication_password;
     chw.welcomeMessage();
+    chw.startRefreshLoop();
     chw.show();
 
     return a.exec();

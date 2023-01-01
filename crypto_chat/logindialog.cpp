@@ -267,7 +267,7 @@ void LoginDialog::on_pushButton_clicked()
         } else if(reply_get->error() != QNetworkReply::NoError){
             // Any error
 
-            QMessageBox::critical(this, "Odpověd serveru (chyba)", tr("Nastala neznámá chyba!\nOznačení QNetworkReply chyby: %1\n\nOdpověd serveru: %2").arg(reply_get->error()).arg(response));
+            QMessageBox::critical(this, "Odpověd serveru (chyba)", tr("Nastala neznámá chyba!\n\n%1").arg(reply_get->errorString()));
 
         } else{
             // No error

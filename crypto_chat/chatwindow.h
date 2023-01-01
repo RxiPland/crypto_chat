@@ -15,11 +15,14 @@ class ChatWindow : public QMainWindow
     Q_OBJECT
 
 public:
+    QNetworkAccessManager manager;
+
     ChatWindow(QWidget *parent = nullptr, QString server_url = "", QString user_name = "");
     ~ChatWindow();
 
     void welcomeMessage();
     void quitMessage();
+    void startRefreshLoop();
 
     QString app_version;
     QByteArray user_agent;
@@ -58,7 +61,6 @@ private slots:
 private:
     void closeEvent(QCloseEvent *bar = nullptr);
     Ui::ChatWindow *ui;
-    QNetworkAccessManager manager;
 
     bool restart = false;
 
