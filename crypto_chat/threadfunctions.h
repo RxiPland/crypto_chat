@@ -4,21 +4,20 @@
 #include <QThread>
 #include "chatwindow.h"
 
+
 #include <QNetworkAccessManager>
 #include <windows.h>
 #include <QJsonValueRef>
-
+#include <QNetworkReply>
 
 class ThreadFunctions : public QThread
 {
-    Q_OBJECT
 
 public:
     ThreadFunctions();
     void run();
     void stopLoop();
     void reload();
-
 
     float i;
     bool continueLoop = false;
@@ -42,14 +41,11 @@ public:
 
 private:
     void getMessages();
-    QNetworkAccessManager manager;
 
     void appendMessage(QString messageHtml);
     void writeTempFile(QString filename, QByteArray content);
     QList<QJsonValueRef> getJson(QStringList names, QByteArray data);
     QByteArray readTempFile(QString filename);
-
-
 
 
 };

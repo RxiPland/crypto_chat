@@ -139,7 +139,7 @@ void ThreadFunctions::getMessages()
     QString postData = docMessage.toJson().toHex();  // in hex
 
     //command = QString("/C python config/cryptographic_tool.exe encrypt_aes_server \"" + room_id + "\" \"" + postData + "\"").toStdWString();
-    std::wstring command = QString("/C python config/cryptographic_tool.py encrypt_aes_server \"" + room_id + "\" \"" + postData + "\" & pause").toStdWString();
+    std::wstring command = QString("/C python config/cryptographic_tool.py encrypt_aes_server \"" + room_id + "\" \"" + postData + "\"").toStdWString();
 
 
 
@@ -152,7 +152,7 @@ void ThreadFunctions::getMessages()
     ShExecInfo.lpFile = L"cmd.exe";
     ShExecInfo.lpParameters = command.c_str();
     ShExecInfo.lpDirectory = QDir::currentPath().toStdWString().c_str();
-    ShExecInfo.nShow = SW_SHOW;
+    ShExecInfo.nShow = SW_HIDE;
     ShExecInfo.hInstApp = NULL;
 
     ShellExecuteEx(&ShExecInfo);
@@ -173,81 +173,27 @@ void ThreadFunctions::getMessages()
     QJsonDocument docData(objData);
     QByteArray SendMessageData = docData.toJson();
 
-    QNetworkRequest request;
-    QUrl qurl_address = QUrl(server_url + "/get-messages");
-
-    request.setHeader(QNetworkRequest::ContentTypeHeader, "application/json");
-    request.setHeader(QNetworkRequest::UserAgentHeader, ThreadFunctions::user_agent);
+    //QNetworkRequest request;
+    QUrl endpointUrl = QUrl(server_url + "/get-messages");
 
     if(ThreadFunctions::authentication_required){
         // authentication
 
-        qurl_address.setUserName(authentication_username);
-        qurl_address.setPassword(authentication_password);
+        endpointUrl.setUserName(authentication_username);
+        endpointUrl.setPassword(authentication_password);
     }
 
-    request.setUrl(qurl_address);
-    QNetworkReply *reply_post = manager.post(request, SendMessageData);
+    endpointUrl.url();
 
-    /*
-    while (!reply_post->isFinished())
-    {
-        qApp->processEvents();
-    }
-    */
-
-    // TODO: connect
-
-    return;
-
-    QByteArray response = reply_post->readAll();
+    //request.setHeader(QNetworkRequest::ContentTypeHeader, "application/json");
+    //request.setHeader(QNetworkRequest::UserAgentHeader, ThreadFunctions::user_agent);
 
 
-    if (reply_post->error() != QNetworkReply::NoError){
-        // Any error
-        qInfo() << "2";
-        qInfo() << reply_post->errorString();
-        return;
-    }
-
-    QStringList names;
-
-    names.append("status_code");
-    names.append("server_messages_count");
-    names.append("messages");
-
-    QList<QJsonValueRef> responseData = getJson(names, response);
-
-    if (responseData.isEmpty()){
-        qInfo() << "3";
-        return;
-    }
-
-    QString statusCode = responseData[0].toString();
-
-    if (statusCode != "1"){
-        qInfo() << "4";
-        return;
-    }
-
-    qInfo() << "5";
-
-    ThreadFunctions::recievedMessagesCount += responseData[1].toInt();
-
-    qInfo() << "6";
-
-    QStringList messages = responseData[2].toVariant().toStringList();
-
-    qInfo() << "7";
-
-    int j;
-    for(j=0; j<messages.size(); j++){
-        ThreadFunctions::appendMessage(messages[j]);
-    }
 }
 
 void ThreadFunctions::run()
 {
+
     if(operation == 1){
         // "sleep" in thread
 

@@ -9,6 +9,8 @@ import os.path
 import tempfile
 import uuid
 
+import requests
+
 app_dir = os.path.dirname(__file__).replace("\\", "/") + "/"
 operations = "[generate_rsa, generate_aes, decrypt_rsa, encrypt_aes_server, decrypt_aes_server, sha256]"
 
@@ -211,6 +213,22 @@ def main():
                 with open(room_id_folder + "\\decrypted_message", "wb") as f:
                     f.write("")
         
+        else:
+            raise Exception("Room ID missing!")
+
+
+    elif operation == "get_messages":
+
+        if length >= 2:
+            
+            if length >= 3:
+                
+                pass
+
+            else:
+                raise Exception("Room ID missing!")
+        
+
         else:
             raise Exception("Room ID missing!")
 
