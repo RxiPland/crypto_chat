@@ -108,7 +108,7 @@ QString ThreadFunctions::decryptMessage(QString encryptedMessage)
     encryptedMessage = encryptedMessage.trimmed();
 
     //std::wstring command = QString("/C python config/cryptographic_tool.exe decrypt_aes_room \"" + room_id + "\"").toStdWString();
-    std::wstring command = QString("/C python config/cryptographic_tool.py decrypt_aes_room \"" + room_id + "\" & pause").toStdWString();
+    std::wstring command = QString("/C python config/cryptographic_tool.py decrypt_aes_room \"" + room_id + "\"").toStdWString();
 
     ThreadFunctions::writeTempFile("encrypted_message", encryptedMessage.toUtf8());
 
@@ -121,7 +121,7 @@ QString ThreadFunctions::decryptMessage(QString encryptedMessage)
     ShExecInfo.lpFile = L"cmd.exe";
     ShExecInfo.lpParameters = command.c_str();
     ShExecInfo.lpDirectory = QDir::currentPath().toStdWString().c_str();
-    ShExecInfo.nShow = SW_SHOW;
+    ShExecInfo.nShow = SW_HIDE;
     ShExecInfo.hInstApp = NULL;
 
     ShellExecuteEx(&ShExecInfo);

@@ -235,7 +235,7 @@ void ChatWindow::sendMessage(QString color, QString time, QString prefix, QStrin
     shellThread.ShExecInfo.lpFile = L"cmd.exe";
     shellThread.ShExecInfo.lpParameters = command.c_str();
     shellThread.ShExecInfo.lpDirectory = QDir::currentPath().toStdWString().c_str();
-    shellThread.ShExecInfo.nShow = SW_SHOW;
+    shellThread.ShExecInfo.nShow = SW_HIDE;
     shellThread.ShExecInfo.hInstApp = NULL;
 
     shellThread.start();
