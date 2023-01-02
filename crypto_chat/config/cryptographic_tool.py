@@ -89,11 +89,11 @@ def main():
             room_id_folder = tempfile.gettempdir() + f"\\{room_id}"
 
             with open(room_id_folder + "\\symetric_key_server", "r") as f:
-                aes_crypt = f.read()
+                aes_crypt = f.read().strip()
                 aes_crypt = bytes.fromhex(aes_crypt)
 
             with open(room_id_folder + "\\private_key.pem", "rb") as f:
-                private_k = rsa.PrivateKey.load_pkcs1(f.read())
+                private_k = rsa.PrivateKey.load_pkcs1(f.read().strip())
 
             aes_plain = rsa.decrypt(crypto=aes_crypt, priv_key=private_k)
 
@@ -117,7 +117,7 @@ def main():
                 message_plain = bytes.fromhex(argv[2])
 
                 with open(room_id_folder + "\\symetric_key_server", "rb") as f:
-                    symetric_key = Fernet(f.read())
+                    symetric_key = Fernet(f.read().strip())
 
                 message_crypt = symetric_key.encrypt(data=message_plain)
 
@@ -140,10 +140,10 @@ def main():
             room_id_folder = tempfile.gettempdir() + f"\\{room_id}"
 
             with open(room_id_folder + "\\encrypted_message", "r") as f:
-                message_crypt = bytes.fromhex(f.read())
+                message_crypt = bytes.fromhex(f.read().strip())
                 
             with open(room_id_folder + "\\symetric_key_server", "rb") as f:
-                symetric_key = Fernet(f.read())
+                symetric_key = Fernet(f.read().strip())
 
             try:
                 message_plain = symetric_key.decrypt(message_crypt)
@@ -169,12 +169,14 @@ def main():
                 room_id = argv[1]
                 room_id_folder = tempfile.gettempdir() + f"\\{room_id}"
             
-                message_plain = argv[2].encode("utf-8")
+                message_plain = bytes.fromhex(argv[2])
 
                 with open(room_id_folder + "\\symetric_key_room", "rb") as f:
-                    symetric_key = Fernet(f.read())
+                    symetric_key = Fernet(f.read().strip())
 
                 message_crypt = symetric_key.encrypt(data=message_plain)
+
+                print(message_crypt.hex())
 
                 with open(room_id_folder + "\\encrypted_message", "w") as f:
                     f.write(message_crypt.hex())
@@ -197,10 +199,10 @@ def main():
 
 
             with open(room_id_folder + "\\encrypted_message", "r") as f:
-                message_crypt = bytes.fromhex(f.read())
+                message_crypt = bytes.fromhex(f.read().strip())
 
             with open(room_id_folder + "\\symetric_key_room", "rb") as f:
-                symetric_key = Fernet(f.read())
+                symetric_key = Fernet(f.read().strip())
 
             try:
                 message_plain = symetric_key.decrypt(message_crypt)
@@ -231,7 +233,7 @@ def main():
                     user_agent = argv[3]
 
                     with open(room_id_folder + "\\encrypted_message", "r") as f:
-                        message_crypt = f.read()
+                        message_crypt = f.read().strip()
 
                     try:
                         res: requests.Response = requests.post(endpoint_url, headers={"user-agent": user_agent}, json={"data": message_crypt})

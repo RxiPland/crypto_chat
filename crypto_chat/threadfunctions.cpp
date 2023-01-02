@@ -130,7 +130,7 @@ QString ThreadFunctions::decryptMessage(QString encryptedMessage)
     CloseHandle(ShExecInfo.hProcess);
 
 
-    decryptedMessage = QString::fromUtf8(ThreadFunctions::readTempFile("decrypted_message"));
+    decryptedMessage = ThreadFunctions::readTempFile("decrypted_message");
 
     return decryptedMessage;
 }

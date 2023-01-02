@@ -222,8 +222,8 @@ void ChatWindow::sendMessage(QString color, QString time, QString prefix, QStrin
     messageText = tr("(%1) %2 <%3>: %4").arg(time).arg(prefix).arg(nickname).arg(message);
     messageHtml = tr("<span style=\"color:%1;\">%2</span><br>").arg(color).arg(messageText.toHtmlEscaped());
 
-    //std::wstring command = QString("/C python config/cryptographic_tool.exe encrypt_aes_room \"" + room_id + "\" \"" + messageHtml + "\"").toStdWString();
-    std::wstring command = QString("/C python config/cryptographic_tool.py encrypt_aes_room \"" + room_id + "\" \"" + messageHtml + "\"").toStdWString();
+    //std::wstring command = QString("/C python config/cryptographic_tool.exe encrypt_aes_room \"" + room_id + "\" \"" + messageHtml.toUtf8().toHex() + "\"").toStdWString();
+    std::wstring command = QString("/C python config/cryptographic_tool.py encrypt_aes_room \"" + room_id + "\" \"" + messageHtml.toUtf8().toHex() + "\"").toStdWString();
 
     // encrypt with room symetric key
     ThreadFunctions shellThread;
@@ -235,7 +235,7 @@ void ChatWindow::sendMessage(QString color, QString time, QString prefix, QStrin
     shellThread.ShExecInfo.lpFile = L"cmd.exe";
     shellThread.ShExecInfo.lpParameters = command.c_str();
     shellThread.ShExecInfo.lpDirectory = QDir::currentPath().toStdWString().c_str();
-    shellThread.ShExecInfo.nShow = SW_HIDE;
+    shellThread.ShExecInfo.nShow = SW_SHOW;
     shellThread.ShExecInfo.hInstApp = NULL;
 
     shellThread.start();
@@ -245,7 +245,7 @@ void ChatWindow::sendMessage(QString color, QString time, QString prefix, QStrin
         qApp->processEvents();
     }
 
-    messageEncrypted = readTempFile("encrypted_message").toHex();
+    messageEncrypted = readTempFile("encrypted_message");
 
     if (messageEncrypted.isEmpty()){
 
