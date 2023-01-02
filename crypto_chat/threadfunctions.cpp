@@ -85,12 +85,6 @@ QList<QJsonValue> ThreadFunctions::getJson(QStringList names, QByteArray data)
         returnData.append(jsonObject[names[i]]);
     }
 
-    /*
-    qInfo() << "------------------------\n";
-    qInfo() << returnData;
-    qInfo() << "------------------------\n";
-    */
-
     return returnData;
 }
 
@@ -104,6 +98,41 @@ void ThreadFunctions::appendMessage(QString messageHtml)
 
     // increment and set back
     ui->action_zpravy_1->setText(tr("Počet zobrazených: %1").arg(messagesNumber + 1));
+}
+
+
+QString ThreadFunctions::decryptMessage(QString encryptedMessage)
+{
+    QString decryptedMessage;
+
+    encryptedMessage = encryptedMessage.trimmed();
+
+    //std::wstring command = QString("/C python config/cryptographic_tool.exe decrypt_aes_room \"" + room_id + "\"").toStdWString();
+    std::wstring command = QString("/C python config/cryptographic_tool.py decrypt_aes_room \"" + room_id + "\" & pause").toStdWString();
+
+    ThreadFunctions::writeTempFile("encrypted_message", encryptedMessage.toUtf8());
+
+    // decrypt single message with room symetric key
+    SHELLEXECUTEINFO ShExecInfo;
+    ShExecInfo.cbSize = sizeof(SHELLEXECUTEINFO);
+    ShExecInfo.fMask = SEE_MASK_NOCLOSEPROCESS;
+    ShExecInfo.hwnd = NULL;
+    ShExecInfo.lpVerb = L"open";
+    ShExecInfo.lpFile = L"cmd.exe";
+    ShExecInfo.lpParameters = command.c_str();
+    ShExecInfo.lpDirectory = QDir::currentPath().toStdWString().c_str();
+    ShExecInfo.nShow = SW_SHOW;
+    ShExecInfo.hInstApp = NULL;
+
+    ShellExecuteEx(&ShExecInfo);
+    WaitForSingleObject(ShExecInfo.hProcess, INFINITE);
+
+    CloseHandle(ShExecInfo.hProcess);
+
+
+    decryptedMessage = QString::fromUtf8(ThreadFunctions::readTempFile("decrypted_message"));
+
+    return decryptedMessage;
 }
 
 
@@ -191,6 +220,7 @@ void ThreadFunctions::getMessages()
     QByteArray response = ThreadFunctions::readTempFile("encrypted_message");
 
     if (response.isEmpty()){
+        // decryption error
         return;
     }
 
@@ -202,29 +232,40 @@ void ThreadFunctions::getMessages()
     QList<QJsonValue> responseData = getJson(names, response);
 
     if (responseData.isEmpty()){
+        // decryption error
         return;
     }
 
     QString statusCode = responseData[0].toString();
 
     if (statusCode != "1"){
+        // server error
         return;
     }
 
-    int messagesCount = responseData[1].toInt();
+    int messagesCountServer = responseData[1].toInt();
 
-    if (messagesCount == 0){
+    if (messagesCountServer == ThreadFunctions::recievedMessagesCount){
+        // no new messages
         return;
     }
 
-    ThreadFunctions::recievedMessagesCount = messagesCount;
+    ThreadFunctions::recievedMessagesCount = messagesCountServer;
 
     QStringList encryptedMessages = responseData[2].toVariant().toStringList();
 
+    QString decryptedMessage;
     int j;
     for(j=0; j<encryptedMessages.size(); j++){
 
-        ThreadFunctions::appendMessage(encryptedMessages[j]);
+        decryptedMessage = ThreadFunctions::decryptMessage(encryptedMessages[j]);
+
+        if (decryptedMessage.isEmpty()){
+            ThreadFunctions::appendMessage("Zprávu se nepodařilo dešifrovat<br>");
+
+        } else{
+            ThreadFunctions::appendMessage(decryptedMessage);
+        }
     }
 }
 

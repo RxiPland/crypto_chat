@@ -228,7 +228,7 @@ void RoomDialog::createRoomFunc()
         return;
     }
 
-    QByteArray roomAesKey = QByteArray::fromHex(QByteArray::fromStdString(responseData[1].toStdString()));
+    QByteArray roomAesKey = QByteArray::fromHex(responseData[1].toUtf8());
 
 
     // write decrypted room's AES key to new file
@@ -417,7 +417,7 @@ void RoomDialog::joinRoomFunc()
         return;
     }
 
-    QByteArray roomAesKey = QByteArray::fromHex(QByteArray::fromStdString(responseData[1].toStdString()));
+    QByteArray roomAesKey = QByteArray::fromHex(responseData[1].toUtf8());
 
 
     // write decrypted room's AES key to new file
@@ -431,7 +431,14 @@ void RoomDialog::joinRoomFunc()
     RoomDialog::successful = true;
     RoomDialog::username = nickname;
 
-    QDir roomFolder("");
+    // folder with new id
+    QDir roomFolder(QDir::tempPath() + "/" + roomId);
+
+    if (roomFolder.exists()){
+        // delete folder with files
+        roomFolder.removeRecursively();
+    }
+
     roomFolder.rename(QDir::tempPath() + "/" + RoomDialog::room_id, QDir::tempPath() + "/" + roomId);
 
     RoomDialog::room_id = roomId;
@@ -478,7 +485,7 @@ QStringList RoomDialog::getJson(QStringList names, QByteArray data)
     jsonData = jsonObject["data"].toString();
 
     // write encrypted JSON to file for python
-    RoomDialog::writeTempFile("encrypted_message", QByteArray::fromStdString(jsonData.toStdString()));
+    RoomDialog::writeTempFile("encrypted_message", jsonData.toUtf8());
 
 
     //std::wstring command = QString("/C python config/cryptographic_tool.exe decrypt_aes_server \"" + room_id + "\"").toStdWString();

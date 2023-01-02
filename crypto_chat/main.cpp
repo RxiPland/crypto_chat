@@ -11,7 +11,7 @@ Main file for handling other windows
 
 
 QString app_version = "v1.0.0";
-QByteArray user_agent = "crypto-chat " + QByteArray::fromStdString(app_version.toStdString());
+QByteArray user_agent = "crypto-chat " + app_version.toUtf8();
 
 
 int main(int argc, char *argv[])

@@ -152,7 +152,7 @@ def main():
                     f.write(message_plain)
 
             except:
-                with open(room_id_folder + "\\decrypted_message", "wb") as f:
+                with open(room_id_folder + "\\decrypted_message", "w") as f:
                     f.write("")
         
         else:
@@ -209,7 +209,7 @@ def main():
                     f.write(message_plain)
 
             except:
-                with open(room_id_folder + "\\decrypted_message", "wb") as f:
+                with open(room_id_folder + "\\decrypted_message", "w") as f:
                     f.write("")
         
         else:
@@ -233,19 +233,17 @@ def main():
                     with open(room_id_folder + "\\encrypted_message", "r") as f:
                         message_crypt = f.read()
 
-                    #try:
-                    res: requests.Response = requests.post(endpoint_url, headers={"user-agent": user_agent}, json={"data": message_crypt})
+                    try:
+                        res: requests.Response = requests.post(endpoint_url, headers={"user-agent": user_agent}, json={"data": message_crypt})
 
-                    with open(room_id_folder + "\\encrypted_message", "wb") as f:
-                        f.write(res.content)
+                        with open(room_id_folder + "\\encrypted_message", "wb") as f:
+                            f.write(res.content)
 
 
-                    """
                     except:
 
                         with open(room_id_folder + "\\encrypted_message", "w") as f:
                             f.write("")
-                    """
 
                 else:
                     raise Exception("User-agent is missing!")

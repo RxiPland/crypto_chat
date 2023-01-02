@@ -162,7 +162,7 @@ QStringList ChatWindow::getJson(QStringList names, QByteArray data)
     jsonData = jsonObject["data"].toString();
 
     // write encrypted JSON to file for python
-    ChatWindow::writeTempFile("encrypted_message", QByteArray::fromStdString(jsonData.toStdString()));
+    ChatWindow::writeTempFile("encrypted_message", jsonData.toUtf8());
 
 
     //std::wstring command = QString("/C python config/cryptographic_tool.exe decrypt_aes_server \"" + room_id + "\"").toStdWString();

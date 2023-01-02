@@ -47,6 +47,8 @@ private:
     QList<QJsonValue> getJson(QStringList names, QByteArray data);
     QByteArray readTempFile(QString filename);
 
+    QString decryptMessage(QString encryptedMessage);
+
 
 };
 
