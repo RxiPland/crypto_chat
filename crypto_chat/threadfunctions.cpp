@@ -20,12 +20,14 @@ ThreadFunctions::ThreadFunctions()
 
 void ThreadFunctions::stopLoop()
 {
+    ThreadFunctions::i = -1;
     ThreadFunctions::continueLoop = false;
 }
 
 void ThreadFunctions::reload()
 {
     ThreadFunctions::i = ThreadFunctions::sleep_time;
+    ThreadFunctions::continueLoop = true;
 }
 
 QList<QJsonValue> ThreadFunctions::getJson(QStringList names, QByteArray data)

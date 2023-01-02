@@ -212,6 +212,16 @@ QStringList ChatWindow::getJson(QStringList names, QByteArray data)
 
 void ChatWindow::sendMessage(QString color, QString time, QString prefix, QString nickname, QString message, bool silent)
 {
+    refreshChatLoop.stopLoop();
+
+    while(refreshChatLoop.isRunning()){
+        // wait for thread to finish
+        qApp->processEvents();
+    }
+
+    // prepare for start
+    refreshChatLoop.continueLoop = true;
+
 
     ChatWindow::disable_widgets(true);
 
@@ -220,7 +230,7 @@ void ChatWindow::sendMessage(QString color, QString time, QString prefix, QStrin
     QString messageEncrypted;  // encrypted messageHtml with room symetric key (in hex)
 
     messageText = tr("(%1) %2 <%3>: %4").arg(time).arg(prefix).arg(nickname).arg(message);
-    messageHtml = tr("<span style=\"color:%1;\">%2</span><br>").arg(color).arg(messageText.toHtmlEscaped());
+    messageHtml = tr("<span style=\"color:%1;\">%2</span>").arg(color).arg(messageText.toHtmlEscaped());
 
     //std::wstring command = QString("/C python config/cryptographic_tool.exe encrypt_aes_room \"" + room_id + "\" \"" + messageHtml.toUtf8().toHex() + "\"").toStdWString();
     std::wstring command = QString("/C python config/cryptographic_tool.py encrypt_aes_room \"" + room_id + "\" \"" + messageHtml.toUtf8().toHex() + "\"").toStdWString();
@@ -253,6 +263,7 @@ void ChatWindow::sendMessage(QString color, QString time, QString prefix, QStrin
             QMessageBox::critical(this, "Upozornění", "Nepodařilo se zašifrovat zprávu! (odesílání zrušeno)");
             ChatWindow::disable_widgets(false);
         }
+        refreshChatLoop.start();
         return;
     }
 
@@ -286,6 +297,7 @@ void ChatWindow::sendMessage(QString color, QString time, QString prefix, QStrin
             QMessageBox::critical(this, "Upozornění", "Nepodařilo se zašifrovat data! (odesílání zrušeno)");
             ChatWindow::disable_widgets(false);
         }
+        refreshChatLoop.start();
         return;
     }
 
@@ -324,6 +336,7 @@ void ChatWindow::sendMessage(QString color, QString time, QString prefix, QStrin
             QMessageBox::critical(this, "Chyba", "Nelze se připojit k internetu nebo server není dostupný! (odesílání zrušeno)");
             ChatWindow::disable_widgets(false);
         }
+        refreshChatLoop.start();
         return;
 
     } else if(reply_post->error() != QNetworkReply::NoError){
@@ -333,6 +346,7 @@ void ChatWindow::sendMessage(QString color, QString time, QString prefix, QStrin
             QMessageBox::critical(this, "Odpověd serveru (chyba)", tr("Nastala neznámá chyba!\n\n%1").arg(reply_post->errorString()));
             ChatWindow::disable_widgets(false);
         }
+        refreshChatLoop.start();
         return;
     }
 
@@ -350,6 +364,7 @@ void ChatWindow::sendMessage(QString color, QString time, QString prefix, QStrin
             //ChatWindow::roomNotExist();
             ChatWindow::disable_widgets(false);
         }
+        refreshChatLoop.start();
         return;
 
     } else if (responseData[0] == "4"){
@@ -360,6 +375,7 @@ void ChatWindow::sendMessage(QString color, QString time, QString prefix, QStrin
             ChatWindow::roomNotExist();
             ChatWindow::disable_widgets(false);
         }
+        refreshChatLoop.start();
         return;
 
     } else if (responseData[0] == "3"){
@@ -370,6 +386,7 @@ void ChatWindow::sendMessage(QString color, QString time, QString prefix, QStrin
             ChatWindow::roomNotExist();
             ChatWindow::disable_widgets(false);
         }
+        refreshChatLoop.start();
         return;
 
     } else if (responseData[0] != "1"){
@@ -378,6 +395,7 @@ void ChatWindow::sendMessage(QString color, QString time, QString prefix, QStrin
             QMessageBox::critical(this, "Chyba", "Zprávu se nepodařilo odeslat! Server odpověděl {\"status_code\": " + responseData[0] + "}");
             ChatWindow::disable_widgets(false);
         }
+        refreshChatLoop.start();
         return;
     }
 
@@ -386,6 +404,8 @@ void ChatWindow::sendMessage(QString color, QString time, QString prefix, QStrin
         ChatWindow::disable_widgets(false);
         ui->lineEdit->setFocus();
     }
+
+    refreshChatLoop.start();
 }
 
 void ChatWindow::disable_widgets(bool disable)

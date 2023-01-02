@@ -33,7 +33,7 @@ public:
     QString prefix;
     QString room_password;
 
-    float refreshInterval = 5.9;
+    float refreshInterval = 1.9;
 
     // server
     bool authentication_required = false;
