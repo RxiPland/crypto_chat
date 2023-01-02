@@ -124,7 +124,7 @@ li.checked::marker { content: &quot;\2612&quot;; }
              <number>-1</number>
             </property>
             <property name="maxLength">
-             <number>200</number>
+             <number>1000</number>
             </property>
             <property name="placeholderText">
              <string>Napsat zprávu</string>

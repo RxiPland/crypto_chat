@@ -32,11 +32,12 @@ Status codes:
 """
 
 # max:
-# délka jména: 25
-# délka prefixu: 25
-# délka hesla: 100
-# délka zprávy: 
-# počet zpráv: 100
+
+# username length: 25
+# prefix length: 25
+# password length: 100
+# message length: 1000
+# number of stored messages (server): 100
 
 if not os.path.exists(app_dir + "/rooms"):
     os.system(f"cd {app_dir} & mkdir rooms")
