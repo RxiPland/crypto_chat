@@ -41,7 +41,7 @@ ChatWindow::ChatWindow(QWidget *parent, QString server_url, QString user_name)
     ui->label->setStyleSheet(tr("QLabel { background-color : %1 }").arg(user_color));
     ui->lineEdit->setFocus();
 
-    QApplication::setQuitOnLastWindowClosed(true);
+    QApplication::setQuitOnLastWindowClosed(false);
 
     this->show();
 }
@@ -219,8 +219,10 @@ void ChatWindow::sendMessage(QString color, QString time, QString prefix, QStrin
         qApp->processEvents();
     }
 
-    // prepare for start
-    refreshChatLoop.continueLoop = true;
+    if(!silent){
+        // prepare for start
+        refreshChatLoop.continueLoop = true;
+    }
 
 
     ChatWindow::disable_widgets(true);

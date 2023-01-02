@@ -39,6 +39,7 @@ public:
     QString room_id;
     QString room_password_sha256;
 
+
 private:
     void getMessages();
 
