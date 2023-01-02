@@ -42,7 +42,7 @@ public:
     {
         if (IntervalDialog->objectName().isEmpty())
             IntervalDialog->setObjectName("IntervalDialog");
-        IntervalDialog->resize(311, 130);
+        IntervalDialog->resize(312, 130);
         horizontalLayout_3 = new QHBoxLayout(IntervalDialog);
         horizontalLayout_3->setObjectName("horizontalLayout_3");
         horizontalSpacer_3 = new QSpacerItem(10, 20, QSizePolicy::Fixed, QSizePolicy::Minimum);
@@ -69,7 +69,7 @@ public:
         doubleSpinBox->setSizePolicy(sizePolicy);
         doubleSpinBox->setMinimumSize(QSize(64, 0));
         doubleSpinBox->setDecimals(1);
-        doubleSpinBox->setMinimum(0.100000000000000);
+        doubleSpinBox->setMinimum(0.500000000000000);
         doubleSpinBox->setMaximum(999.000000000000000);
         doubleSpinBox->setSingleStep(0.100000000000000);
 

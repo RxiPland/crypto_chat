@@ -21,7 +21,7 @@ Window for sending messages
 #include <QJsonObject>
 #include <QJsonValue>
 #include <QCryptographicHash>
-#include <QScrollBar>
+
 
 ThreadFunctions refreshChatLoop;
 
@@ -41,7 +41,7 @@ ChatWindow::ChatWindow(QWidget *parent, QString server_url, QString user_name)
     ui->label->setStyleSheet(tr("QLabel { background-color : %1 }").arg(user_color));
     ui->lineEdit->setFocus();
 
-    QApplication::setQuitOnLastWindowClosed(false);
+    QApplication::setQuitOnLastWindowClosed(true);
 
     this->show();
 }
@@ -481,7 +481,7 @@ void ChatWindow::on_action_zpravy_4_triggered()
 void ChatWindow::on_action_zpravy_3_triggered()
 {
     ui->textEdit->clear();
-    ui->textEdit->append("<span style=\"color:grey;\">Chat byl vyčištěn ...<br></span>");
+    ui->textEdit->insertHtml("<span style=\"color:grey;\">Chat byl vyčištěn ...</span><br></br>");
     ui->action_zpravy_1->setText("Počet zobrazených: 1");
 }
 
@@ -575,9 +575,3 @@ void ChatWindow::on_lineEdit_returnPressed()
 {
     ChatWindow::on_pushButton_clicked();
 }
-
-void ChatWindow::on_textEdit_textChanged()
-{
-    ui->textEdit->horizontalScrollBar()->setValue(ui->textEdit->horizontalScrollBar()->maximum());
-}
-

@@ -11,6 +11,7 @@ Program for making threads
 #include <QJsonObject>
 #include <QJsonValue>
 #include <QDir>
+#include <QScrollBar>
 
 
 ThreadFunctions::ThreadFunctions()
@@ -93,13 +94,20 @@ QList<QJsonValue> ThreadFunctions::getJson(QStringList names, QByteArray data)
 void ThreadFunctions::appendMessage(QString messageHtml)
 {
     // add message to text edit
-    ui->textEdit->append(messageHtml);
+    ui->textEdit->insertHtml(messageHtml + "<br></br>");
+
 
     // load number of messages as int
     int messagesNumber = ui->action_zpravy_1->text().split(" ").back().toInt();
 
     // increment and set back
     ui->action_zpravy_1->setText(tr("Počet zobrazených: %1").arg(messagesNumber + 1));
+
+    // move scrollbar to end
+    QTextCursor c = ui->textEdit->textCursor();
+    c.movePosition(QTextCursor::End);
+    ui->textEdit->setTextCursor(c);
+
 }
 
 
@@ -258,12 +266,13 @@ void ThreadFunctions::getMessages()
 
     QString decryptedMessage;
     int j;
-    for(j=0; j<encryptedMessages.size(); j++){
+    for(j=0; j<encryptedMessages.size() && continueLoop; j++){
 
         decryptedMessage = ThreadFunctions::decryptMessage(encryptedMessages[j]);
 
         if (decryptedMessage.isEmpty()){
-            ThreadFunctions::appendMessage("Zprávu se nepodařilo dešifrovat<br>");
+            int messagesNumber = ui->action_zpravy_1->text().split(" ").back().toInt();
+            ThreadFunctions::appendMessage(tr("Zprávu &#35;%1 se nepodařilo dešifrovat<br></br>").arg(messagesNumber+1));
 
         } else{
             ThreadFunctions::appendMessage(decryptedMessage);
