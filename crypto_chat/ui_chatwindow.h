@@ -154,9 +154,12 @@ public:
         QFont font;
         font.setPointSize(9);
         textEdit->setFont(font);
-        textEdit->setFocusPolicy(Qt::NoFocus);
+        textEdit->setFocusPolicy(Qt::ClickFocus);
         textEdit->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
         textEdit->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+        textEdit->setUndoRedoEnabled(false);
+        textEdit->setReadOnly(true);
+        textEdit->setTextInteractionFlags(Qt::LinksAccessibleByKeyboard|Qt::LinksAccessibleByMouse|Qt::TextBrowserInteraction|Qt::TextSelectableByKeyboard|Qt::TextSelectableByMouse);
 
         verticalLayout->addWidget(textEdit);
 
@@ -176,7 +179,7 @@ public:
         lineEdit->setMinimumSize(QSize(0, 30));
         lineEdit->setFocusPolicy(Qt::ClickFocus);
         lineEdit->setToolTipDuration(-1);
-        lineEdit->setMaxLength(200);
+        lineEdit->setMaxLength(1000);
         lineEdit->setClearButtonEnabled(true);
 
         horizontalLayout_2->addWidget(lineEdit);

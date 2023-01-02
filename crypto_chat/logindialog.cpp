@@ -162,7 +162,7 @@ void LoginDialog::on_pushButton_clicked()
     pButtonJoin->setHidden(true);
 
 
-    QString url_address = ui->lineEdit->text();
+    QString url_address = ui->lineEdit->text().trimmed();
 
     if(url_address == ""){
         QMessageBox::critical(this, "Chyba", "Pole pro URL adresu nemůže být prázdné!");

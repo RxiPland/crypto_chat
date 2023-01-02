@@ -118,6 +118,8 @@ void RoomDialog::createRoomFunc()
         return;
     }
 
+    RoomDialog::room_password = ui->lineEdit->text();
+
     QCryptographicHash hash(QCryptographicHash::Sha256);
 
     // data for POST
@@ -176,7 +178,7 @@ void RoomDialog::createRoomFunc()
     request.setHeader(QNetworkRequest::ContentTypeHeader, "application/json");
     request.setHeader(QNetworkRequest::UserAgentHeader, RoomDialog::user_agent);
 
-    if(ui->checkBox->isChecked()){
+    if(RoomDialog::authentication_required){
         // authentication
 
         qurl_address.setUserName(authentication_username);
@@ -277,7 +279,6 @@ void RoomDialog::joinRoomFunc()
 
     QJsonObject objMessage;
     objMessage["room_id"] = roomId;
-    objMessage["room_password"] = ui->lineEdit_4->text().trimmed();
 
     if(ui->checkBox->isChecked()){
         RoomDialog::room_password = ui->lineEdit->text();
@@ -332,7 +333,7 @@ void RoomDialog::joinRoomFunc()
     request.setHeader(QNetworkRequest::ContentTypeHeader, "application/json");
     request.setHeader(QNetworkRequest::UserAgentHeader, RoomDialog::user_agent);
 
-    if(ui->checkBox->isChecked()){
+    if(RoomDialog::authentication_required){
         // authentication
 
         qurl_address.setUserName(authentication_username);

@@ -12,7 +12,7 @@ import hashlib
 
 
 app = flask.Flask(__name__)
-app_dir = os.path.dirname(__file__) + "/"
+working_dir = os.path.dirname(__file__).replace("\\", "/") + "/"
 
 # generate AES key for server
 server_aes_key = Fernet.generate_key()
@@ -39,8 +39,8 @@ Status codes:
 # message length: 1000
 # number of stored messages (server): 100
 
-if not os.path.exists(app_dir + "/rooms"):
-    os.system(f"cd {app_dir} & mkdir rooms")
+if not os.path.exists(working_dir + "rooms"):
+    os.system(f"mkdir {working_dir}rooms")
 
 @app.route('/')
 def hello_world():
@@ -53,7 +53,7 @@ def check_version():
     # specific user-agent is required
     if not "crypto-chat" in flask.request.user_agent.string:
         return "Forbidden", 403
-    
+
     # desktop client will compare versions
     return version
 
@@ -79,7 +79,7 @@ def get_key():
 
         # load RSA public key from PEM
         rsa_public_key = rsa.PublicKey.load_pkcs1(unquote(request_json["rsa_pem"]))
-        
+
 
         # encrypt server's AES key
         encrypted_aes = rsa.encrypt(server_aes_key, rsa_public_key)
@@ -90,7 +90,7 @@ def get_key():
         }
 
         return flask.jsonify(data)
-    
+
     except Exception as e:
         print(e)
         return str(e), 403
@@ -101,7 +101,7 @@ def create_room():
     """
     params: {'data': '<AES-encrypted-data> in hex'}
     <AES-encrypted-data> = {'room_id': '<random hex string (32)>', 'room_password_sha256': '<hashed password from user>'}
-    
+
     response: {'data': '<encrypted-data> in hex'}
     <encrypted-data> = {'status_code': '<error code>', 'room_aes_key': '<symetric key of room> in hex'}
     """
@@ -109,20 +109,23 @@ def create_room():
     try:
         # specific user-agent is required
         if not "crypto-chat" in flask.request.user_agent.string:
+            print("Wrong header")
             return "Forbidden", 403
 
         request_json: dict = flask.request.get_json()
 
         # key 'data' must be in JSON
         if not "data" in request_json.keys():
+            print("'Data' key not in json")
             return "Forbidden", 403
 
         # decrypt data from request
         try:
             decrypted_data = symetric_key.decrypt(bytes.fromhex(request_json["data"]))
-        
+
         except:
-            
+            print("Wrong symetric key")
+
             # wrong symetric key
             data = {
                 "status_code": "5",
@@ -138,19 +141,20 @@ def create_room():
 
         # keys 'room_id' and 'room_password_sha256' must be in decrypted JSON
         if not "room_id" in decrypted_data.keys() or not "room_password_sha256" in decrypted_data.keys():
+            print("<room_id> or <room_password_sha256> not in decrypted json")
             return "Forbidden", 403
 
         # rooms folder in server's directory
-        if not os.path.exists(app_dir + "/rooms"):
-            os.system(f"cd {app_dir} & mkdir rooms")
-        
-        rooms_path = app_dir + "rooms" + "/"
+        if not os.path.exists(working_dir + "rooms"):
+            os.system(f"mkdir {working_dir}rooms")
+
+        rooms_path = working_dir + "rooms" + "/"
 
         room_id: str = decrypted_data["room_id"]
         password: str = decrypted_data["room_password_sha256"]
 
         # create folder with random HEX string (room_id)
-        os.system(f"cd {rooms_path} & mkdir " + room_id)
+        os.system("mkdir " + rooms_path + room_id)
 
         # save password to file (already sha256 hash)
         with open(rooms_path + room_id + "/password", "w") as f:
@@ -163,7 +167,7 @@ def create_room():
         # create txt for storing count of recieved messages (not only 100)
         with open(rooms_path + room_id + "/messages_count", "w") as f:
             f.write("0")
-            
+
 
         # generate AES key for room
         key = Fernet.generate_key()
@@ -195,7 +199,7 @@ def join_room():
     """
     params: {'data': '<AES-encrypted-data> in hex'}
     <AES-encrypted-data> = {'room_id': '<random hex string (32)>', 'room_password': '<plaintext password from user>'}
-    
+
     response: {'data': '<encrypted-data> in hex'}
     <encrypted-data> = {'status_code': '<error code>', 'room_aes_key': '<symetric key of room> in hex'}
     """
@@ -215,9 +219,9 @@ def join_room():
         # decrypt data from request
         try:
             decrypted_data = symetric_key.decrypt(bytes.fromhex(request_json["data"]))
-        
+
         except:
-            
+
             # wrong symetric key
             data = {
                 "status_code": "5"
@@ -238,8 +242,8 @@ def join_room():
         room_id_user: str = decrypted_data["room_id"]
 
         # room folder in server's directory must exist
-        if not os.path.exists(app_dir + "/rooms/" + room_id_user):
-            
+        if not os.path.exists(working_dir + "/rooms/" + room_id_user):
+
             # wrong room ID
             data = {
                 "status_code": "4"
@@ -248,24 +252,24 @@ def join_room():
         else:
             password_user_hash: str = hashlib.sha256(decrypted_data["room_password"].encode()).hexdigest()
 
-            with open(app_dir + "/rooms/" + room_id_user + "/password", "r") as f:
+            with open(working_dir + "/rooms/" + room_id_user + "/password", "r") as f:
                 password_file = f.read()
 
             if password_user_hash.strip() != password_file.strip():
-                
+
                 # wrong password
                 data = {
                     "status_code": "3"
                 }
 
             else:
-                key_path = app_dir + "/rooms/" + room_id_user + "/symetric_key"
+                key_path = working_dir + "/rooms/" + room_id_user + "/symetric_key"
 
                 # AES key file must exist
                 if not os.path.exists(key_path):
 
                     # symetric key file not found
-                    data = {    
+                    data = {
                         "status_code": "2"
                     }
 
@@ -297,7 +301,7 @@ def send_message():
     """
     params: {'data': '<AES-encrypted-data> in hex'}
     <AES-encrypted-data> = {'room_id': '<hex string (32)>', 'room_password': '<plain text password>', 'message': '<encrypted-message> with room symetric key in hex'}
-    
+
     response: {'data': '<encrypted-data> in hex'}
     <encrypted-data> = {'status_code': '<error code>'}
     """
@@ -317,9 +321,9 @@ def send_message():
         # decrypt data from request
         try:
             decrypted_data = symetric_key.decrypt(bytes.fromhex(request_json["data"]))
-        
+
         except:
-            
+
             # wrong symetric key
             data = {
                 "status_code": "5"
@@ -340,8 +344,8 @@ def send_message():
         room_id = decrypted_data["room_id"]
 
         # room folder in server's directory must exist
-        if not os.path.exists(app_dir + "/rooms/" + room_id):
-            
+        if not os.path.exists(working_dir + "/rooms/" + room_id):
+
             # wrong room ID (room was deleted by someone else)
             data = {
                 "status_code": "4"
@@ -354,13 +358,13 @@ def send_message():
 
 
         password_user_hash: str = hashlib.sha256(decrypted_data["room_password"].encode()).hexdigest()
-        password_file_path = app_dir + "/rooms/" + room_id + "/password"
+        password_file_path = working_dir + "/rooms/" + room_id + "/password"
 
 
         if os.path.exists(password_file_path):
             with open(password_file_path, "r") as f:
                 password_file_hash = f.read()
-        
+
         else:
             # password file missing (should never happen)
 
@@ -371,7 +375,7 @@ def send_message():
 
 
         if password_user_hash.strip() != password_file_hash.strip():
-                
+
             # wrong password (should never happen)
             data = {
                 "status_code": "3"
@@ -385,7 +389,7 @@ def send_message():
         message = decrypted_data["message"]
 
         # load all messages
-        with open(app_dir + "/rooms/" + room_id + "/messages", "r") as f:
+        with open(working_dir + "/rooms/" + room_id + "/messages", "r") as f:
             rows = f.readlines()
 
         # add new message
@@ -398,11 +402,11 @@ def send_message():
             rows_count -= 1
 
         # write encrypted messages back to file
-        with open(app_dir + "/rooms/" + room_id + "/messages", "w") as f:
+        with open(working_dir + "/rooms/" + room_id + "/messages", "w") as f:
             f.writelines(rows)
 
 
-        messages_count_path = app_dir + "/rooms/" + room_id + "/messages_count"
+        messages_count_path = working_dir + "/rooms/" + room_id + "/messages_count"
 
         # read value
         if os.path.exists(messages_count_path):
@@ -411,13 +415,13 @@ def send_message():
 
                 if messages_count.isdecimal():
                     messages_count = int(messages_count)
-                
+
                 else:
                     # (should never happen)
                     messages_count = 0
         else:
             messages_count = 0
-        
+
         # increment value
         with open(messages_count_path, "w") as f:
             f.write(str(messages_count + 1))
@@ -443,7 +447,7 @@ def get_messages():
     """
     params: {'data': '<AES-encrypted-data> in hex'}
     <AES-encrypted-data> = {'room_id': '<hex string (32)>', 'room_password_sha256': '<hashed password>', 'user_messages_count': <int>}
-    
+
     response: {'data': '<encrypted-data> in hex'}
     <encrypted-data> = {'status_code': '<error code>', 'server_messages_count': <int>, 'messages': [<encrypted with room key>, ...]}
     """
@@ -463,9 +467,9 @@ def get_messages():
         # decrypt data from request
         try:
             decrypted_data = symetric_key.decrypt(bytes.fromhex(request_json["data"]))
-        
+
         except:
-            
+
             # wrong symetric key
             data = {
                 "status_code": "5"
@@ -487,8 +491,8 @@ def get_messages():
         room_id = decrypted_data["room_id"]
 
         # room folder in server's directory must exist
-        if not os.path.exists(app_dir + "/rooms/" + room_id):
-            
+        if not os.path.exists(working_dir + "/rooms/" + room_id):
+
             # wrong room ID (room was deleted by someone else)
             data = {
                 "status_code": "4"
@@ -501,13 +505,13 @@ def get_messages():
 
 
         password_user_hash: str = decrypted_data["room_password_sha256"]
-        password_file_path = app_dir + "/rooms/" + room_id + "/password"
+        password_file_path = working_dir + "/rooms/" + room_id + "/password"
 
 
         if os.path.exists(password_file_path):
             with open(password_file_path, "r") as f:
                 password_file_hash = f.read()
-        
+
         else:
             # password file missing (should never happen)
 
@@ -518,7 +522,7 @@ def get_messages():
 
 
         if password_user_hash.strip() != password_file_hash.strip():
-                
+
             # wrong password (should never happen)
             data = {
                 "status_code": "3"
@@ -530,27 +534,27 @@ def get_messages():
             return flask.jsonify({"data": data}), 200
 
         messages_count_user: int = decrypted_data["user_messages_count"]
-        messages_count_path = app_dir + "/rooms/" + room_id + "/messages_count"
-        
+        messages_count_path = working_dir + "/rooms/" + room_id + "/messages_count"
+
         if os.path.exists(messages_count_path):
             with open(messages_count_path, "r") as f:
                 messages_count_server = f.read()
 
                 if messages_count_server.isdecimal():
                     messages_count_server = int(messages_count_server)
-                
+
                 else:
                     # (should never happen)
                     messages_count_server = 0
         else:
             messages_count_server = 0
 
-        
+
         if messages_count_user == 0:
             messages_to_send_count = 1
         else:
             messages_to_send_count: int = messages_count_server - messages_count_user
-        
+
         messages_to_send: list = []
 
         if messages_to_send_count == 0:
@@ -559,7 +563,7 @@ def get_messages():
         else:
 
             # load all messages
-            with open(app_dir + "/rooms/" + room_id + "/messages", "r") as f:
+            with open(working_dir + "/rooms/" + room_id + "/messages", "r") as f:
                 rows = f.readlines()
 
             if messages_to_send_count > 100:
