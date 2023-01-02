@@ -450,14 +450,12 @@ def get_messages():
     try:
         # specific user-agent is required
         if not "crypto-chat" in flask.request.user_agent.string:
-            print("1")
             return "Forbidden", 403
 
         request_json: dict = flask.request.get_json()
 
         # key 'data' must be in JSON
         if not "data" in request_json.keys():
-            print(2)
             return "Forbidden", 403
 
 
@@ -482,7 +480,6 @@ def get_messages():
 
         # keys 'room_id', 'room_password_sha256' and 'user_messages_count' must be in decrypted JSON
         if not "room_id" in decrypted_data.keys() or not "room_password_sha256" in decrypted_data.keys() or not "user_messages_count" in decrypted_data.keys():
-            print("3")
             return "Forbidden", 403
 
 
@@ -548,7 +545,11 @@ def get_messages():
             messages_count_server = 0
 
         
-        messages_to_send_count: int = messages_count_server - messages_count_user
+        if messages_count_user == 0:
+            messages_to_send_count = 1
+        else:
+            messages_to_send_count: int = messages_count_server - messages_count_user
+        
         messages_to_send: list = []
 
         if messages_to_send_count == 0:
