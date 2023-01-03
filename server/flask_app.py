@@ -39,7 +39,7 @@ number of stored messages (server): 100
 """
 
 if not os.path.exists(working_dir + "rooms"):
-    os.system(f"mkdir {working_dir}rooms")
+    os.mkdir(f"{working_dir}rooms")
 
 @app.route('/')
 def hello_world():
@@ -145,7 +145,7 @@ def create_room():
 
         # rooms folder in server's directory
         if not os.path.exists(working_dir + "rooms"):
-            os.system(f"mkdir {working_dir}rooms")
+            os.mkdir(f"{working_dir}rooms")
 
         rooms_path = working_dir + "rooms" + "/"
 
@@ -153,7 +153,7 @@ def create_room():
         password: str = decrypted_data["room_password_sha256"]
 
         # create folder with random HEX string (room_id)
-        os.system("mkdir " + rooms_path + room_id)
+        os.mkdir(rooms_path + room_id)
 
         # save password to file (already sha256 hash)
         with open(rooms_path + room_id + "/password", "w") as f:
