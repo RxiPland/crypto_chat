@@ -23,21 +23,20 @@ symetric_key = Fernet(server_aes_key)
 version = "crypto-chat v1.0.0"
 
 """
-Status codes:
+- Status codes:
 1 = ok
 2 = file with symetric key not found
 3 = wrong password
 4 = wrong room ID
 5 = wrong symetric key
+
+- Maximums:
+username length: 25
+prefix length: 25
+password length: 100
+message length: 10000
+number of stored messages (server): 100
 """
-
-# max:
-
-# username length: 25
-# prefix length: 25
-# password length: 100
-# message length: 1000
-# number of stored messages (server): 100
 
 if not os.path.exists(working_dir + "rooms"):
     os.system(f"mkdir {working_dir}rooms")
