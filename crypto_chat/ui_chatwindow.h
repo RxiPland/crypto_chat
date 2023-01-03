@@ -179,7 +179,7 @@ public:
         lineEdit->setMinimumSize(QSize(0, 30));
         lineEdit->setFocusPolicy(Qt::ClickFocus);
         lineEdit->setToolTipDuration(-1);
-        lineEdit->setMaxLength(1000);
+        lineEdit->setMaxLength(10000);
         lineEdit->setClearButtonEnabled(true);
 
         horizontalLayout_2->addWidget(lineEdit);
