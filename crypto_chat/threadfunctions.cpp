@@ -94,7 +94,7 @@ QList<QJsonValue> ThreadFunctions::getJson(QStringList names, QByteArray data)
 void ThreadFunctions::appendMessage(QString messageHtml)
 {
     // add message to text edit
-    ui->textEdit->insertHtml(messageHtml + "<br></br>");
+    ui->textEdit->insertHtml("<br></br>" + messageHtml);
 
 
     // load number of messages as int
