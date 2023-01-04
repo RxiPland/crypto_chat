@@ -32,18 +32,6 @@ void NameChangeDialog::set_name(QString name){
     NameChangeDialog::original_name = name;
 
     ui->lineEdit->setPlaceholderText(original_name);
-    ui->pushButton->setDisabled(true);
-}
-
-void NameChangeDialog::on_lineEdit_textChanged(const QString &arg1)
-{
-    if(arg1 == original_name || arg1.trimmed() == ""){
-        ui->pushButton->setDisabled(true);
-
-    } else{
-        ui->pushButton->setDisabled(false);
-    }
-
 }
 
 void NameChangeDialog::on_pushButton_clicked()
@@ -80,19 +68,12 @@ void NameChangeDialog::on_lineEdit_returnPressed()
 
     QString lineEdit_text = ui->lineEdit->text();
 
-    if(lineEdit_text == NameChangeDialog::original_name){
-        QMessageBox::critical(this, "Chyba", "Jméno se shoduje s předchozím!");
-
-    } else if (lineEdit_text.trimmed() == ""){
-        ui->lineEdit->clear();
-        QMessageBox::critical(this, "Chyba", "Pole pro jméno nemůže být prázdné!");
-
-    } else{
-        NameChangeDialog::on_pushButton_clicked();
+    if (lineEdit_text.trimmed() == ""){
+        ui->lineEdit->setText(ui->lineEdit->placeholderText());
     }
 
+    NameChangeDialog::on_pushButton_clicked();
 }
-
 
 void NameChangeDialog::on_lineEdit_textEdited(const QString &arg1)
 {
