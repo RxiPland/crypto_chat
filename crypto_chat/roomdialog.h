@@ -24,6 +24,7 @@ public:
     QString room_id;
     QString room_password;
     QString username;
+    int serverMessagesCount=0;
 
     bool authentication_required = false;
     QString authentication_username;

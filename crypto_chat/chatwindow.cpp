@@ -115,6 +115,7 @@ void ChatWindow::startRefreshLoop()
     refreshChatLoop.room_password_sha256 = (QString)hash.result().toHex();
     refreshChatLoop.server_url = ChatWindow::server_url;
     refreshChatLoop.user_agent = ChatWindow::user_agent;
+    refreshChatLoop.recievedMessagesCount = ChatWindow::serverMessagesCount;
 
     refreshChatLoop.operation = 3;
     refreshChatLoop.sleep_time = ChatWindow::refreshInterval;
@@ -474,7 +475,14 @@ void ChatWindow::on_pushButton_2_clicked()
 
 void ChatWindow::on_action_zpravy_4_triggered()
 {
+    refreshChatLoop.stopLoop();
+
+    while(refreshChatLoop.isRunning()){
+        qApp->processEvents();
+    }
+
     refreshChatLoop.reload();
+    refreshChatLoop.start();
 }
 
 

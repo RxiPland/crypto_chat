@@ -200,7 +200,7 @@ def join_room():
     <AES-encrypted-data> = {'room_id': '<random hex string (32)>', 'room_password': '<plaintext password from user>'}
 
     response: {'data': '<encrypted-data> in hex'}
-    <encrypted-data> = {'status_code': '<error code>', 'room_aes_key': '<symetric key of room> in hex'}
+    <encrypted-data> = {'status_code': '<error code>', 'room_aes_key': '<symetric key of room> in hex', 'messages_count': <int>}
     """
 
     try:
@@ -277,10 +277,20 @@ def join_room():
                     with open(key_path, "rb") as f:
                         aes_key = f.read()
 
+
+                    messages_count_path = working_dir + "/rooms/" + room_id_user + "/messages_count"
+                    if os.path.exists(messages_count_path):
+                        with open(messages_count_path, "r") as f:
+                            messages_count_server = f.read()
+                    
+                    else:
+                        messages_count_server = "0"
+
                     # success
                     data = {
                         "status_code": "1",
-                        "room_aes_key": aes_key.hex()
+                        "room_aes_key": aes_key.hex(),
+                        "messages_count": messages_count_server
                     }
 
 

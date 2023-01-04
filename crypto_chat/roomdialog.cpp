@@ -370,6 +370,7 @@ void RoomDialog::joinRoomFunc()
     QStringList names;
     names.append("status_code");
     names.append("room_aes_key");
+    names.append("messages_count");
 
     QStringList responseData = getJson(names, response);
 
@@ -442,7 +443,16 @@ void RoomDialog::joinRoomFunc()
 
     roomFolder.rename(QDir::tempPath() + "/" + RoomDialog::room_id, QDir::tempPath() + "/" + roomId);
 
+
     RoomDialog::room_id = roomId;
+
+
+    QString number = responseData[2];
+
+    if(!number.isEmpty()){
+        RoomDialog::serverMessagesCount = number.toInt();
+    }
+
 
     this->close();
 }

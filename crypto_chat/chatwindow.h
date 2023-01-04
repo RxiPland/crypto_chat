@@ -41,6 +41,7 @@ public:
     QString authentication_password = "";
     QString server_url;
     QString room_id;
+    int serverMessagesCount = 0;
 
 private slots:
     void on_pushButton_2_clicked();
@@ -73,8 +74,6 @@ private:
     void disable_widgets(bool disable=true);
 
     void roomNotExist();
-
-    int serverMessagesCount;
 
 };
 #endif // CHATWINDOW_H

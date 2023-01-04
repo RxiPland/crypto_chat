@@ -27,8 +27,8 @@ void ThreadFunctions::stopLoop()
 
 void ThreadFunctions::reload()
 {
-    ThreadFunctions::i = ThreadFunctions::sleep_time;
     ThreadFunctions::continueLoop = true;
+    ThreadFunctions::i = ThreadFunctions::sleep_time;
 }
 
 QList<QJsonValue> ThreadFunctions::getJson(QStringList names, QByteArray data)
@@ -93,21 +93,29 @@ QList<QJsonValue> ThreadFunctions::getJson(QStringList names, QByteArray data)
 
 void ThreadFunctions::appendMessage(QString messageHtml)
 {
-    // add message to text edit
-    ui->textEdit->insertHtml("<br></br>" + messageHtml);
-
-
     // load number of messages as int
     int messagesNumber = ui->action_zpravy_1->text().split(" ").back().toInt();
 
+
+    if (messagesNumber == 0){
+        ui->textEdit->insertHtml(messageHtml);
+
+    } else {
+        // add message to text edit
+        ui->textEdit->insertHtml("<br></br>" + messageHtml);
+    }
+
+
     // increment and set back
     ui->action_zpravy_1->setText(tr("Počet zobrazených: %1").arg(messagesNumber + 1));
+
 
     // move scrollbar to end
     QTextCursor c = ui->textEdit->textCursor();
     c.movePosition(QTextCursor::End);
     ui->textEdit->setTextCursor(c);
 
+    ThreadFunctions::recievedMessagesCount += 1;
 }
 
 
@@ -260,7 +268,7 @@ void ThreadFunctions::getMessages()
         return;
     }
 
-    ThreadFunctions::recievedMessagesCount = messagesCountServer;
+    //ThreadFunctions::recievedMessagesCount = messagesCountServer;
 
     QStringList encryptedMessages = responseData[2].toVariant().toStringList();
 

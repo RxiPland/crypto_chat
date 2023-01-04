@@ -63,6 +63,7 @@ int main(int argc, char *argv[])
     chw.authentication_required = rd.authentication_required;
     chw.authentication_username = rd.authentication_username;
     chw.authentication_password = rd.authentication_password;
+    chw.serverMessagesCount = rd.serverMessagesCount;
     chw.welcomeMessage();
     chw.startRefreshLoop();
     chw.show();
