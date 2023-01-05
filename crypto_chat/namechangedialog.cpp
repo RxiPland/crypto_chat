@@ -27,7 +27,8 @@ NameChangeDialog::~NameChangeDialog()
     delete ui;
 }
 
-void NameChangeDialog::set_name(QString name){
+void NameChangeDialog::set_name(QString name)
+{
 
     NameChangeDialog::original_name = name;
 
@@ -84,7 +85,6 @@ void NameChangeDialog::on_lineEdit_textEdited(const QString &arg1)
         ui->lineEdit->setText(text);
 
         QMessageBox::critical(this, "Upozornění", "Délka jména nemůže přesáhnout 25 znaků!");
-
     }
 }
 
@@ -109,7 +109,6 @@ void NameChangeDialog::on_lineEdit_2_textEdited(const QString &arg1)
         ui->lineEdit_2->setText(text);
 
         QMessageBox::critical(this, "Upozornění", "Délka prefixu nemůže přesáhnout 25 znaků!");
-
     }
 }
 
