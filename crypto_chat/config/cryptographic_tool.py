@@ -8,7 +8,6 @@ import os
 import os.path
 import tempfile
 import uuid
-import json
 
 import requests
 
@@ -60,9 +59,11 @@ def main():
                 if not os.path.exists(room_id_folder):
                     os.system("mkdir " + room_id_folder)
 
-                # save id to file
-                with open(app_dir + "temp/hex_id", "w") as f:
-                    f.write(room_id)
+                #with open(app_dir + "temp/hex_id", "w") as f:
+                #    f.write(room_id)
+                
+                # print id in hex
+                print(room_id.encode().hex())
 
                 # generate keys
                 public_k, private_k = rsa.newkeys(int(argv[1]))
@@ -121,8 +122,10 @@ def main():
 
                 message_crypt = symetric_key.encrypt(data=message_plain)
 
-                with open(room_id_folder + "\\encrypted_message", "w") as f:
-                    f.write(message_crypt.hex())
+                print(message_crypt.hex())
+
+                #with open(room_id_folder + "\\encrypted_message", "w") as f:
+                #    f.write(message_crypt.hex())
 
             else:
                 raise Exception("Plain text missing!")
@@ -139,8 +142,10 @@ def main():
             room_id = argv[1]
             room_id_folder = tempfile.gettempdir() + f"\\{room_id}"
 
-            with open(room_id_folder + "\\encrypted_message", "r") as f:
-                message_crypt = bytes.fromhex(f.read().strip())
+            message_crypt = bytes.fromhex(argv[2])
+
+            #with open(room_id_folder + "\\encrypted_message", "r") as f:
+            #    message_crypt = bytes.fromhex(f.read().strip())
                 
             with open(room_id_folder + "\\symetric_key_server", "rb") as f:
                 symetric_key = Fernet(f.read().strip())
@@ -148,12 +153,15 @@ def main():
             try:
                 message_plain = symetric_key.decrypt(message_crypt)
 
-                with open(room_id_folder + "\\decrypted_message", "wb") as f:
-                    f.write(message_plain)
+                print(message_plain.hex())
+                #with open(room_id_folder + "\\decrypted_message", "wb") as f:
+                #    f.write(message_plain)
 
             except:
-                with open(room_id_folder + "\\decrypted_message", "w") as f:
-                    f.write("")
+                #with open(room_id_folder + "\\decrypted_message", "w") as f:
+                #    f.write("")
+
+                print(b'error'.hex())
         
         else:
             raise Exception("Room ID missing!")
@@ -178,8 +186,8 @@ def main():
 
                 print(message_crypt.hex())
 
-                with open(room_id_folder + "\\encrypted_message", "w") as f:
-                    f.write(message_crypt.hex())
+                #with open(room_id_folder + "\\encrypted_message", "w") as f:
+                #    f.write(message_crypt.hex())
 
             else:
                 raise Exception("Plain text missing!")
@@ -197,9 +205,10 @@ def main():
             room_id = argv[1]
             room_id_folder = tempfile.gettempdir() + f"\\{room_id}"
 
+            message_crypt = bytes.fromhex(argv[2])
 
-            with open(room_id_folder + "\\encrypted_message", "r") as f:
-                message_crypt = bytes.fromhex(f.read().strip())
+            #with open(room_id_folder + "\\encrypted_message", "r") as f:
+            #    message_crypt = bytes.fromhex(f.read().strip())
 
             with open(room_id_folder + "\\symetric_key_room", "rb") as f:
                 symetric_key = Fernet(f.read().strip())
@@ -207,12 +216,16 @@ def main():
             try:
                 message_plain = symetric_key.decrypt(message_crypt)
 
-                with open(room_id_folder + "\\decrypted_message", "wb") as f:
-                    f.write(message_plain)
+                print(message_plain.hex())
+
+                #with open(room_id_folder + "\\decrypted_message", "wb") as f:
+                #    f.write(message_plain)
 
             except:
-                with open(room_id_folder + "\\decrypted_message", "w") as f:
-                    f.write("")
+                
+                print(b'error'.hex())
+                #with open(room_id_folder + "\\decrypted_message", "w") as f:
+                #    f.write("")
         
         else:
             raise Exception("Room ID missing!")
