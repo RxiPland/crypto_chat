@@ -10,7 +10,7 @@ Main file for handling other windows
 #include <QFile>
 
 
-QString app_version = "v1.0.0";
+QString app_version = "v1.1.0";
 QByteArray user_agent = "crypto-chat " + app_version.toUtf8();
 
 
