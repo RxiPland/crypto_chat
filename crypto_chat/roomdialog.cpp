@@ -14,6 +14,8 @@ Window for creating new room OR joining existing room
 #include <QJsonValue>
 #include <QNetworkReply>
 #include <QCryptographicHash>
+#include <QProcess>
+
 
 RoomDialog::RoomDialog(QWidget *parent, bool createRoom, QString server_url, QString room_id) :
     QDialog(parent),
@@ -137,38 +139,24 @@ void RoomDialog::createRoomFunc()
     QJsonDocument docMessage(objMessage);
     QString message_data = docMessage.toJson().toHex();
 
-    //std::wstring command = QString("/C python config/cryptographic_tool.exe encrypt_aes_server \"" + room_id + "\" \"" + message_data + "\"").toStdWString();
-    std::wstring command = QString("/C python config/cryptographic_tool.py encrypt_aes_server \"" + room_id + "\" \"" + message_data + "\"").toStdWString();
+    //QString command = "/C python config/cryptographic_tool.exe encrypt_aes_server \"" + room_id + "\" \"" + message_data + "\"";
+    QString command = "/C python config/cryptographic_tool.py encrypt_aes_server \"" + room_id + "\" \"" + message_data + "\"";
 
     // encrypt
-    ThreadFunctions shellThread;
-    shellThread.operation = 2;  // Thread func
-    shellThread.ShExecInfo.cbSize = sizeof(SHELLEXECUTEINFO);
-    shellThread.ShExecInfo.fMask = SEE_MASK_NOCLOSEPROCESS;
-    shellThread.ShExecInfo.hwnd = NULL;
-    shellThread.ShExecInfo.lpVerb = L"open";
-    shellThread.ShExecInfo.lpFile = L"cmd.exe";
-    shellThread.ShExecInfo.lpParameters = command.c_str();
-    shellThread.ShExecInfo.lpDirectory = QDir::currentPath().toStdWString().c_str();
-    shellThread.ShExecInfo.nShow = SW_HIDE;
-    shellThread.ShExecInfo.hInstApp = NULL;
+    QProcess process;
+    process.start("cmd", QStringList(command));
+    process.waitForFinished(-1); // will wait forever until finished
 
-    shellThread.start();
+    // generate room id
+    QString encryptedData = process.readAllStandardOutput();
 
-    // wait for thread to complete
-    while(shellThread.isRunning()){
-        qApp->processEvents();
-    }
-
-    QByteArray content = readTempFile("encrypted_message");
-
-    if (content.isEmpty()){
+    if (encryptedData.isEmpty()){
         RoomDialog::disable_widgets(false);
         return;
     }
 
     QJsonObject objData;
-    objData["data"] = (QString)content;
+    objData["data"] = encryptedData;
     QJsonDocument docData(objData);
     QByteArray CreateRoomData = docData.toJson();
 
@@ -292,38 +280,25 @@ void RoomDialog::joinRoomFunc()
     QJsonDocument docMessage(objMessage);
     QString message_data = docMessage.toJson().toHex();
 
-    //std::wstring command = QString("/C python config/cryptographic_tool.exe encrypt_aes_server \"" + room_id + "\" \"" + message_data + "\"").toStdWString();
-    std::wstring command = QString("/C python config/cryptographic_tool.py encrypt_aes_server \"" + room_id + "\" \"" + message_data + "\"").toStdWString();
+    //QString command = "/C python config/cryptographic_tool.exe encrypt_aes_server \"" + room_id + "\" \"" + message_data + "\"";
+    QString command = "/C python config/cryptographic_tool.py encrypt_aes_server \"" + room_id + "\" \"" + message_data + "\"";
 
     // encrypt
-    ThreadFunctions shellThread;
-    shellThread.operation = 2;  // Thread func
-    shellThread.ShExecInfo.cbSize = sizeof(SHELLEXECUTEINFO);
-    shellThread.ShExecInfo.fMask = SEE_MASK_NOCLOSEPROCESS;
-    shellThread.ShExecInfo.hwnd = NULL;
-    shellThread.ShExecInfo.lpVerb = L"open";
-    shellThread.ShExecInfo.lpFile = L"cmd.exe";
-    shellThread.ShExecInfo.lpParameters = command.c_str();
-    shellThread.ShExecInfo.lpDirectory = QDir::currentPath().toStdWString().c_str();
-    shellThread.ShExecInfo.nShow = SW_HIDE;
-    shellThread.ShExecInfo.hInstApp = NULL;
+    QProcess process;
+    process.start("cmd", QStringList(command));
+    process.waitForFinished(-1); // will wait forever until finished
 
-    shellThread.start();
+    // generate room id
+    QString encryptedData = process.readAllStandardOutput();
 
-    // wait for thread to complete
-    while(shellThread.isRunning()){
-        qApp->processEvents();
-    }
 
-    QByteArray content = readTempFile("encrypted_message");
-
-    if (content.isEmpty()){
+    if (encryptedData.isEmpty()){
         RoomDialog::disable_widgets(false);
         return;
     }
 
     QJsonObject objData;
-    objData["data"] = (QString)content;
+    objData["data"] = encryptedData;
     QJsonDocument docData(objData);
     QByteArray JoinRoomData = docData.toJson();
 
@@ -499,38 +474,24 @@ QStringList RoomDialog::getJson(QStringList names, QByteArray data)
     RoomDialog::writeTempFile("encrypted_message", jsonData.toUtf8());
 
 
-    //std::wstring command = QString("/C python config/cryptographic_tool.exe decrypt_aes_server \"" + room_id + "\"").toStdWString();
-    std::wstring command = QString("/C python config/cryptographic_tool.py decrypt_aes_server \"" + room_id + "\"").toStdWString();
+    //QString command = "/C python config/cryptographic_tool.exe decrypt_aes_server \"" + room_id + "\"";
+    QString command = "/C python config/cryptographic_tool.py decrypt_aes_server \"" + room_id + "\"";
 
     // decrypt
-    ThreadFunctions shellThread;
-    shellThread.operation = 2;  // Thread func
-    shellThread.ShExecInfo.cbSize = sizeof(SHELLEXECUTEINFO);
-    shellThread.ShExecInfo.fMask = SEE_MASK_NOCLOSEPROCESS;
-    shellThread.ShExecInfo.hwnd = NULL;
-    shellThread.ShExecInfo.lpVerb = L"open";
-    shellThread.ShExecInfo.lpFile = L"cmd.exe";
-    shellThread.ShExecInfo.lpParameters = command.c_str();
-    shellThread.ShExecInfo.lpDirectory = QDir::currentPath().toStdWString().c_str();
-    shellThread.ShExecInfo.nShow = SW_HIDE;
-    shellThread.ShExecInfo.hInstApp = NULL;
+    QProcess process;
+    process.start("cmd", QStringList(command));
+    process.waitForFinished(-1); // will wait forever until finished
 
-    shellThread.start();
+    // generate room id
+    QByteArray decryptedData = QByteArray::fromHex(process.readAllStandardOutput());
 
-    // wait for thread to complete
-    while(shellThread.isRunning()){
-        qApp->processEvents();
-    }
-
-    QByteArray decrypted_data = RoomDialog::readTempFile("decrypted_message");
-
-    if(decrypted_data.isEmpty()){
+    if(decryptedData.isEmpty()){
         return QStringList();
     }
 
-    decrypted_data.replace("\'", "\"");
+    decryptedData.replace("\'", "\"");
 
-    jsonResponse = QJsonDocument::fromJson(decrypted_data);
+    jsonResponse = QJsonDocument::fromJson(decryptedData);
     jsonObject = jsonResponse.object();
 
     QStringList returnData;
