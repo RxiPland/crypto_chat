@@ -147,7 +147,6 @@ void RoomDialog::createRoomFunc()
     process.start("cmd", QStringList(command));
     process.waitForFinished(-1); // will wait forever until finished
 
-    // generate room id
     QString encryptedData = process.readAllStandardOutput();
 
     if (encryptedData.isEmpty()){
@@ -205,7 +204,15 @@ void RoomDialog::createRoomFunc()
 
     QStringList responseData = getJson(names, response);
 
-    if (responseData.isEmpty() || responseData[0] == "5"){
+    if (responseData.isEmpty()){
+        QMessageBox::critical(this, "Chyba - symetrický klíč", "Server byl pravděpodobně restartován a kvůli tomu máte starý symetrický klíč. Restartuje program pro získání aktuálního.");
+
+        RoomDialog::disable_widgets(false);
+        return;
+    }
+
+
+    if (responseData[0] == "5"){
         QMessageBox::critical(this, "Chyba - symetrický klíč", "Server byl pravděpodobně restartován a kvůli tomu máte starý symetrický klíč. Restartuje program pro získání aktuálního.");
 
         RoomDialog::disable_widgets(false);
@@ -288,7 +295,6 @@ void RoomDialog::joinRoomFunc()
     process.start("cmd", QStringList(command));
     process.waitForFinished(-1); // will wait forever until finished
 
-    // generate room id
     QString encryptedData = process.readAllStandardOutput();
 
 
@@ -349,14 +355,21 @@ void RoomDialog::joinRoomFunc()
 
     QStringList responseData = getJson(names, response);
 
-    if(responseData.isEmpty() || responseData[0] == "5"){
+    if(responseData.isEmpty()){
         QMessageBox::critical(this, "Chyba", "Server byl pravděpodobně restartován a kvůli tomu máte starý symetrický klíč. Restartuje program pro získání nového.");
 
         RoomDialog::disable_widgets(false);
         return;
     }
 
-    if (responseData[0] == "2"){
+
+    if (responseData[0] == "5"){
+        QMessageBox::critical(this, "Chyba", "Server byl pravděpodobně restartován a kvůli tomu máte starý symetrický klíč. Restartuje program pro získání nového.");
+
+        RoomDialog::disable_widgets(false);
+        return;
+
+    } else if (responseData[0] == "2"){
         QMessageBox::critical(this, "Chyba", "Na serveru neexistuje soubor se symetrickým klíčem místnosti!");
 
         RoomDialog::disable_widgets(false);
@@ -485,7 +498,7 @@ QStringList RoomDialog::getJson(QStringList names, QByteArray data)
     // generate room id
     QByteArray decryptedData = QByteArray::fromHex(process.readAllStandardOutput());
 
-    if(decryptedData.isEmpty()){
+    if(decryptedData.isEmpty() || decryptedData.contains("error")){
         return QStringList();
     }
 
