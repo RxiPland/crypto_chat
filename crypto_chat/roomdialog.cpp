@@ -4,7 +4,6 @@ Window for creating new room OR joining existing room
 
 #include "roomdialog.h"
 #include "ui_roomdialog.h"
-#include "threadfunctions.h"
 
 #include <QDir>
 #include <QCloseEvent>
