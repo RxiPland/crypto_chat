@@ -297,7 +297,9 @@ public:
         checkBox->setText(QCoreApplication::translate("LoginDialog", "Server vy\305\276aduje autentizaci", nullptr));
         toolButton_2->setText(QCoreApplication::translate("LoginDialog", "?", nullptr));
         label->setText(QCoreApplication::translate("LoginDialog", "Jm\303\251no:", nullptr));
+        lineEdit_2->setPlaceholderText(QCoreApplication::translate("LoginDialog", "\305\275\303\241dn\303\251 jm\303\251no", nullptr));
         label_2->setText(QCoreApplication::translate("LoginDialog", "Heslo:", nullptr));
+        lineEdit_3->setPlaceholderText(QCoreApplication::translate("LoginDialog", "\305\275\303\241dn\303\251 heslo", nullptr));
         toolButton_3->setText(QCoreApplication::translate("LoginDialog", "Uk\303\241zat", nullptr));
         pushButton->setText(QCoreApplication::translate("LoginDialog", "P\305\231ipojit k serveru", nullptr));
     } // retranslateUi
