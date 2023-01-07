@@ -28,9 +28,6 @@ def main():
     
     operation = argv[0].lower()
 
-
-    if not os.path.exists(app_dir + "temp"):
-        os.system(f"cd {app_dir} & mkdir temp")
     
     if operation == "generate_rsa":
         # generate RSA key pairs (public & private)
@@ -114,7 +111,7 @@ def main():
 
                 room_id = argv[1]
                 room_id_folder = tempfile.gettempdir() + f"\\{room_id}"
-            
+
                 message_plain = bytes.fromhex(argv[2])
 
                 with open(room_id_folder + "\\symetric_key_server", "rb") as f:
@@ -154,13 +151,8 @@ def main():
                 message_plain = symetric_key.decrypt(message_crypt)
 
                 print(message_plain.hex())
-                #with open(room_id_folder + "\\decrypted_message", "wb") as f:
-                #    f.write(message_plain)
 
             except:
-                #with open(room_id_folder + "\\decrypted_message", "w") as f:
-                #    f.write("")
-
                 print(b'error'.hex())
         
         else:
@@ -185,9 +177,6 @@ def main():
                 message_crypt = symetric_key.encrypt(data=message_plain)
 
                 print(message_crypt.hex())
-
-                #with open(room_id_folder + "\\encrypted_message", "w") as f:
-                #    f.write(message_crypt.hex())
 
             else:
                 raise Exception("Plain text missing!")
@@ -218,14 +207,9 @@ def main():
 
                 print(message_plain.hex())
 
-                #with open(room_id_folder + "\\decrypted_message", "wb") as f:
-                #    f.write(message_plain)
-
             except:
                 
                 print(b'error'.hex())
-                #with open(room_id_folder + "\\decrypted_message", "w") as f:
-                #    f.write("")
         
         else:
             raise Exception("Room ID missing!")
