@@ -162,42 +162,28 @@ QStringList ChatWindow::getJson(QStringList names, QByteArray data)
     jsonObject = jsonResponse.object();
     jsonData = jsonObject["data"].toString();
 
-    // write encrypted JSON to file for python
-    ChatWindow::writeTempFile("encrypted_message", jsonData.toUtf8());
 
-
-    //std::wstring command = QString("/C python config/cryptographic_tool.exe decrypt_aes_server \"" + room_id + "\"").toStdWString();
-    std::wstring command = QString("/C python config/cryptographic_tool.py decrypt_aes_server \"" + room_id + "\"").toStdWString();
+    //QString command = "/C config/cryptographic_tool.exe decrypt_aes_server " + room_id + " " + jsonData;
+    QString command = "/C python config/cryptographic_tool.py decrypt_aes_server " + room_id + " " + jsonData;
 
     // decrypt
-    ThreadFunctions shellThread;
-    shellThread.operation = 2;  // Thread func
-    shellThread.ShExecInfo.cbSize = sizeof(SHELLEXECUTEINFO);
-    shellThread.ShExecInfo.fMask = SEE_MASK_NOCLOSEPROCESS;
-    shellThread.ShExecInfo.hwnd = NULL;
-    shellThread.ShExecInfo.lpVerb = L"open";
-    shellThread.ShExecInfo.lpFile = L"cmd.exe";
-    shellThread.ShExecInfo.lpParameters = command.c_str();
-    shellThread.ShExecInfo.lpDirectory = QDir::currentPath().toStdWString().c_str();
-    shellThread.ShExecInfo.nShow = SW_HIDE;
-    shellThread.ShExecInfo.hInstApp = NULL;
+    QProcess process;
+    process.start("cmd", QStringList(command));
 
-    shellThread.start();
-
-    // wait for thread to complete
-    while(shellThread.isRunning()){
+    while(process.state() == QProcess::Running){
         qApp->processEvents();
     }
 
-    QByteArray decrypted_data = ChatWindow::readTempFile("decrypted_message");
+    QByteArray decryptedData = QByteArray::fromHex(process.readAllStandardOutput().trimmed());
 
-    if(decrypted_data.isEmpty()){
+
+    if(decryptedData.isEmpty() || decryptedData.contains("error")){
         return QStringList();
     }
 
-    decrypted_data.replace("\'", "\"");
+    decryptedData.replace("\'", "\"");
 
-    jsonResponse = QJsonDocument::fromJson(decrypted_data);
+    jsonResponse = QJsonDocument::fromJson(decryptedData);
     jsonObject = jsonResponse.object();
 
     QStringList returnData;
@@ -232,33 +218,21 @@ void ChatWindow::sendMessage(QString color, QString time, QString prefix, QStrin
     QString messageHtml;  // message in html format with color
     QString messageEncrypted;  // encrypted messageHtml with room symetric key (in hex)
 
-    messageText = tr("(%1) %2 <%3>: %4").arg(time).arg(prefix).arg(nickname).arg(message);
+    messageText = tr("(%1) %2 <%3>: %4").arg(time).arg(prefix).arg(nickname).arg(message.trimmed());
     messageHtml = tr("<span style=\"color:%1;\">%2</span>").arg(color).arg(messageText.toHtmlEscaped());
 
-    //std::wstring command = QString("/C python config/cryptographic_tool.exe encrypt_aes_room \"" + room_id + "\" \"" + messageHtml.toUtf8().toHex() + "\"").toStdWString();
-    std::wstring command = QString("/C python config/cryptographic_tool.py encrypt_aes_room \"" + room_id + "\" \"" + messageHtml.toUtf8().toHex() + "\"").toStdWString();
+    //QString command = "/C config/cryptographic_tool.exe encrypt_aes_room " + room_id + " " + messageHtml.toUtf8().toHex();
+    QString command = "/C python config/cryptographic_tool.py encrypt_aes_room " + room_id + " " + messageHtml.toUtf8().toHex();
 
     // encrypt with room symetric key
-    ThreadFunctions shellThread;
-    shellThread.operation = 2;  // Thread func
-    shellThread.ShExecInfo.cbSize = sizeof(SHELLEXECUTEINFO);
-    shellThread.ShExecInfo.fMask = SEE_MASK_NOCLOSEPROCESS;
-    shellThread.ShExecInfo.hwnd = NULL;
-    shellThread.ShExecInfo.lpVerb = L"open";
-    shellThread.ShExecInfo.lpFile = L"cmd.exe";
-    shellThread.ShExecInfo.lpParameters = command.c_str();
-    shellThread.ShExecInfo.lpDirectory = QDir::currentPath().toStdWString().c_str();
-    shellThread.ShExecInfo.nShow = SW_HIDE;
-    shellThread.ShExecInfo.hInstApp = NULL;
+    QProcess process;
+    process.start("cmd", QStringList(command));
 
-    shellThread.start();
-
-    // wait for thread to complete
-    while(shellThread.isRunning()){
+    while(process.state() == QProcess::Running){
         qApp->processEvents();
     }
 
-    messageEncrypted = readTempFile("encrypted_message");
+    messageEncrypted = process.readAllStandardOutput().trimmed();
 
     if (messageEncrypted.isEmpty()){
 
@@ -280,21 +254,19 @@ void ChatWindow::sendMessage(QString color, QString time, QString prefix, QStrin
     QString postData = docMessage.toJson().toHex();  // in hex
 
 
-    //command = QString("/C python config/cryptographic_tool.exe encrypt_aes_server \"" + room_id + "\" \"" + postData + "\"").toStdWString();
-    command = QString("/C python config/cryptographic_tool.py encrypt_aes_server \"" + room_id + "\" \"" + postData + "\"").toStdWString();
+    //command = "/C config/cryptographic_tool.exe encrypt_aes_server " + room_id + " " + postData;
+    command = "/C python config/cryptographic_tool.py encrypt_aes_server " + room_id + " " + postData;
 
     // encrypt postData (json) with server symetric key
-    shellThread.ShExecInfo.lpParameters = command.c_str();
-    shellThread.start();
+    process.start("cmd", QStringList(command));
 
-    // wait for thread to complete
-    while(shellThread.isRunning()){
+    while(process.state() == QProcess::Running){
         qApp->processEvents();
     }
 
-    QByteArray content = readTempFile("encrypted_message");
+    QString encryptedData = process.readAllStandardOutput().trimmed();
 
-    if (content.isEmpty()){
+    if (encryptedData.isEmpty()){
 
         if(!silent){
             QMessageBox::critical(this, "Upozornění", "Nepodařilo se zašifrovat data! (odesílání zrušeno)");
@@ -305,7 +277,7 @@ void ChatWindow::sendMessage(QString color, QString time, QString prefix, QStrin
     }
 
     QJsonObject objData;
-    objData["data"] = (QString)content;
+    objData["data"] = encryptedData;
     QJsonDocument docData(objData);
     QByteArray SendMessageData = docData.toJson();
 
