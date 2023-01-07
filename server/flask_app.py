@@ -20,7 +20,7 @@ server_aes_key = Fernet.generate_key()
 # load bytes as server's AES key
 symetric_key = Fernet(server_aes_key)
 
-version = "crypto-chat v1.0.0"
+version = "crypto-chat v1.1.0"
 
 """
 - Status codes:
