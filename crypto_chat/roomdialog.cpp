@@ -138,17 +138,24 @@ void RoomDialog::createRoomFunc()
     QJsonDocument docMessage(objMessage);
     QString message_data = docMessage.toJson().toHex();
 
-    //QString command = "/C python config/cryptographic_tool.exe encrypt_aes_server \"" + room_id + "\" \"" + message_data + "\"";
-    QString command = "/C python config/cryptographic_tool.py encrypt_aes_server \"" + room_id + "\" \"" + message_data + "\"";
+    //QString command = "/C config/cryptographic_tool.exe encrypt_aes_server " + room_id + " " + message_data;
+    QString command = "/C python config/cryptographic_tool.py encrypt_aes_server " + room_id + " " + message_data;
+
 
     // encrypt
     QProcess process;
     process.start("cmd", QStringList(command));
-    process.waitForFinished(-1); // will wait forever until finished
 
-    QString encryptedData = process.readAllStandardOutput();
+    while(process.state() == QProcess::Running){
+        qApp->processEvents();
+    }
+
+    QString encryptedData = process.readAllStandardOutput().trimmed();
+
 
     if (encryptedData.isEmpty()){
+        QMessageBox::critical(this, "Chyba", "Nastala chyba při šiforvání!");
+
         RoomDialog::disable_widgets(false);
         return;
     }
@@ -212,7 +219,7 @@ void RoomDialog::createRoomFunc()
 
 
     if (responseData[0] == "5"){
-        QMessageBox::critical(this, "Chyba - symetrický klíč", "Server byl pravděpodobně restartován a kvůli tomu máte starý symetrický klíč. Restartuje program pro získání aktuálního.");
+        QMessageBox::critical(this, "Chyba (Server: 5) - symetrický klíč", "Server byl pravděpodobně restartován a kvůli tomu máte starý symetrický klíč. Restartuje program pro získání aktuálního.");
 
         RoomDialog::disable_widgets(false);
         return;
@@ -286,15 +293,18 @@ void RoomDialog::joinRoomFunc()
     QJsonDocument docMessage(objMessage);
     QString message_data = docMessage.toJson().toHex();
 
-    //QString command = "/C python config/cryptographic_tool.exe encrypt_aes_server \"" + room_id + "\" \"" + message_data + "\"";
-    QString command = "/C python config/cryptographic_tool.py encrypt_aes_server \"" + room_id + "\" \"" + message_data + "\"";
+    //QString command = "/C config/cryptographic_tool.exe encrypt_aes_server " + room_id + " " + message_data;
+    QString command = "/C python config/cryptographic_tool.py encrypt_aes_server " + room_id + " " + message_data;
 
     // encrypt
     QProcess process;
     process.start("cmd", QStringList(command));
-    process.waitForFinished(-1); // will wait forever until finished
 
-    QString encryptedData = process.readAllStandardOutput();
+    while(process.state() == QProcess::Running){
+        qApp->processEvents();
+    }
+
+    QString encryptedData = process.readAllStandardOutput().trimmed();
 
 
     if (encryptedData.isEmpty()){
@@ -482,20 +492,19 @@ QStringList RoomDialog::getJson(QStringList names, QByteArray data)
     jsonObject = jsonResponse.object();
     jsonData = jsonObject["data"].toString();
 
-    // write encrypted JSON to file for python
-    RoomDialog::writeTempFile("encrypted_message", jsonData.toUtf8());
-
-
-    //QString command = "/C python config/cryptographic_tool.exe decrypt_aes_server \"" + room_id + "\"";
-    QString command = "/C python config/cryptographic_tool.py decrypt_aes_server \"" + room_id + "\"";
+    //QString command = "/C config/cryptographic_tool.exe decrypt_aes_server " + room_id + " " + jsonData;
+    QString command = "/C python config/cryptographic_tool.py decrypt_aes_server " + room_id + " " + jsonData;
 
     // decrypt
     QProcess process;
     process.start("cmd", QStringList(command));
-    process.waitForFinished(-1); // will wait forever until finished
+
+    while(process.state() == QProcess::Running){
+        qApp->processEvents();
+    }
 
     // generate room id
-    QByteArray decryptedData = QByteArray::fromHex(process.readAllStandardOutput());
+    QByteArray decryptedData = QByteArray::fromHex(process.readAllStandardOutput().trimmed());
 
     if(decryptedData.isEmpty() || decryptedData.contains("error")){
         return QStringList();
@@ -505,6 +514,7 @@ QStringList RoomDialog::getJson(QStringList names, QByteArray data)
 
     jsonResponse = QJsonDocument::fromJson(decryptedData);
     jsonObject = jsonResponse.object();
+
 
     QStringList returnData;
     int i;
