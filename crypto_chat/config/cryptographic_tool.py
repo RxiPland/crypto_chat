@@ -251,14 +251,12 @@ def main():
                     try:
                         res: requests.Response = requests.post(endpoint_url, headers={"user-agent": user_agent}, json={"data": message_crypt})
 
-                        with open(room_id_folder + "\\encrypted_message", "wb") as f:
-                            f.write(res.content)
+                        print(res.content.hex())
 
 
                     except:
 
-                        with open(room_id_folder + "\\encrypted_message", "w") as f:
-                            f.write("")
+                        print(b'error'.hex())
 
                 else:
                     raise Exception("User-agent is missing!")
