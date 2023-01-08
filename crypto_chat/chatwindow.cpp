@@ -104,6 +104,8 @@ void ChatWindow::quitMessage()
 
 void ChatWindow::startRefreshLoop()
 {
+    // start thread for getting new messages
+
     refreshChatLoop.authentication_required = ChatWindow::authentication_required;
     refreshChatLoop.authentication_username = ChatWindow::authentication_username;
     refreshChatLoop.authentication_password = ChatWindow::authentication_password;
@@ -153,6 +155,8 @@ void ChatWindow::writeTempFile(QString filename, QByteArray content){
 
 QStringList ChatWindow::getJson(QStringList names, QByteArray data)
 {
+    // decrypt encrypted json
+
     QJsonDocument jsonResponse;
     QJsonObject jsonObject;
     QString jsonData;
@@ -199,6 +203,8 @@ QStringList ChatWindow::getJson(QStringList names, QByteArray data)
 
 void ChatWindow::sendMessage(QString color, QString time, QString prefix, QString nickname, QString message, bool silent)
 {
+    // send message to server
+
     refreshChatLoop.stopLoop();
 
     while(refreshChatLoop.isRunning()){
@@ -237,7 +243,7 @@ void ChatWindow::sendMessage(QString color, QString time, QString prefix, QStrin
     if (messageEncrypted.isEmpty()){
 
         if(!silent){
-            QMessageBox::critical(this, "Upozornění", "Nepodařilo se zašifrovat zprávu! (odesílání zrušeno)");
+            QMessageBox::critical(this, "Upozornění", "Nepodařilo se zašifrovat zprávu! (odesílání zrušeno)\n\nChyba: " + process.readAllStandardError().trimmed());
             ChatWindow::disable_widgets(false);
         }
         refreshChatLoop.start();
@@ -266,10 +272,11 @@ void ChatWindow::sendMessage(QString color, QString time, QString prefix, QStrin
 
     QString encryptedData = process.readAllStandardOutput().trimmed();
 
+
     if (encryptedData.isEmpty()){
 
         if(!silent){
-            QMessageBox::critical(this, "Upozornění", "Nepodařilo se zašifrovat data! (odesílání zrušeno)");
+            QMessageBox::critical(this, "Upozornění", "Nepodařilo se zašifrovat data! (odesílání zrušeno)\n\nChyba: " + process.readAllStandardError().trimmed());
             ChatWindow::disable_widgets(false);
         }
         refreshChatLoop.start();
@@ -396,6 +403,8 @@ void ChatWindow::disable_widgets(bool disable)
 
 void ChatWindow::roomNotExist()
 {
+    // func to disable chatting
+
     refreshChatLoop.stopLoop();
     ui->action_zpravy_2_1->setDisabled(true);
     ui->action_zpravy_4->setDisabled(true);
@@ -416,6 +425,8 @@ void ChatWindow::on_pushButton_4_clicked()
     }
 
     ui->label->setStyleSheet(tr("QLabel { background-color : %1 }").arg(user_color));
+
+    ui->lineEdit->setFocus();
 }
 
 
@@ -436,17 +447,25 @@ void ChatWindow::on_pushButton_3_clicked()
     if(nchd.prefix != ""){
         ChatWindow::prefix = nchd.prefix;
     }
+
+    ui->lineEdit->setFocus();
 }
 
 
 void ChatWindow::on_pushButton_2_clicked()
 {
+    // room info
+
     QMessageBox::about(this, "Informace o místnosti", tr("Verze aplikace:  %1<br><br>URL:  %2<br>ID:  %3<br>Interval aktualizace chatu: %4s<br><br>Vaše přezdívka:  %5<br>Váš prefix: %6<br>Vaše barva:  %7").arg(app_version).arg(server_url).arg(room_id).arg(refreshInterval).arg(user_name).arg(prefix).arg(user_color));
+
+    ui->lineEdit->setFocus();
 }
 
 
 void ChatWindow::on_action_zpravy_4_triggered()
 {
+    // refresh chat
+
     refreshChatLoop.stopLoop();
 
     while(refreshChatLoop.isRunning()){
@@ -455,19 +474,27 @@ void ChatWindow::on_action_zpravy_4_triggered()
 
     refreshChatLoop.reload();
     refreshChatLoop.start();
+
+    ui->lineEdit->setFocus();
 }
 
 
 void ChatWindow::on_action_zpravy_3_triggered()
 {
+    // clear chat
+
     ui->textEdit->clear();
     ui->textEdit->insertHtml("<span style=\"color:grey;\">Chat byl vyčištěn ...</span><br></br>");
     ui->action_zpravy_1->setText("Počet zobrazených: 1");
+
+    ui->lineEdit->setFocus();
 }
 
 
 void ChatWindow::on_action_room_3_triggered()
 {
+    // disconnect room
+
     ChatWindow::restart = true;
     this->hide();
     ChatWindow::closeEvent();
@@ -476,6 +503,8 @@ void ChatWindow::on_action_room_3_triggered()
 
 void ChatWindow::on_action_zpravy_3_1_triggered()
 {
+    // change font - increase
+
     QFont fontInfo = ui->textEdit->font();
     int pointSize = fontInfo.pointSize();
 
@@ -488,6 +517,8 @@ void ChatWindow::on_action_zpravy_3_1_triggered()
 
 void ChatWindow::on_action_zpravy_3_2_triggered()
 {
+    // change font - decrease
+
     QFont fontInfo = ui->textEdit->font();
     int pointSize = fontInfo.pointSize();
 
@@ -500,6 +531,8 @@ void ChatWindow::on_action_zpravy_3_2_triggered()
 
 void ChatWindow::on_action_zpravy_3_3_triggered()
 {
+    // reset font - default size 9
+
     QFont fontInfo = ui->textEdit->font();
     fontInfo.setPointSize(9);
     ui->textEdit->setFont(fontInfo);
@@ -508,6 +541,8 @@ void ChatWindow::on_action_zpravy_3_3_triggered()
 
 void ChatWindow::on_action_zpravy_2_1_triggered()
 {
+    // change chat refresh interval
+
     IntervalDialog ind;
     ind.interval = ChatWindow::refreshInterval;
     ind.set_interval(ChatWindow::refreshInterval);
@@ -520,26 +555,37 @@ void ChatWindow::on_action_zpravy_2_1_triggered()
         refreshChatLoop.sleep_time = ChatWindow::refreshInterval;
         refreshChatLoop.reload();
     }
+
+    ui->lineEdit->setFocus();
 }
 
 
 void ChatWindow::on_action_room_2_triggered()
 {
+    // copy room ID to clipboard
+
     QClipboard* clipboard = QApplication::clipboard();
     clipboard->setText(ChatWindow::room_id);
 
     QMessageBox::information(this, "Oznámení", "Zkopírováno do schránky");
+
+    ui->lineEdit->setFocus();
 }
 
 
 void ChatWindow::on_action_advanced_1_triggered()
 {
+    // open source code of app
+
     ShellExecute(0, 0, L"https://github.com/RxiPland/crypto_chat", 0, 0, SW_HIDE);
+
+    ui->lineEdit->setFocus();
 }
 
 
 void ChatWindow::on_pushButton_clicked()
 {
+    // send message
 
     QString message = ui->lineEdit->text().trimmed();
 
@@ -548,6 +594,8 @@ void ChatWindow::on_pushButton_clicked()
     }
 
     ChatWindow::sendMessage(ChatWindow::user_color, QTime::currentTime().toString(), ChatWindow::prefix, ChatWindow::user_name, message);
+
+    ui->lineEdit->setFocus();
 }
 
 
