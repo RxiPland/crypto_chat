@@ -130,6 +130,7 @@ public:
         action_advanced_1->setIcon(icon8);
         action_advanced_2 = new QAction(ChatWindow);
         action_advanced_2->setObjectName("action_advanced_2");
+        action_advanced_2->setEnabled(false);
         QIcon icon9;
         icon9.addFile(QString::fromUtf8(":/images/settings.ico"), QSize(), QIcon::Normal, QIcon::Off);
         action_advanced_2->setIcon(icon9);
