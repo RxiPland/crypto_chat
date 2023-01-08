@@ -605,6 +605,8 @@ void RoomDialog::on_pushButton_2_clicked()
         ui->lineEdit_3->setReadOnly(false);
         ui->lineEdit_3->clear();
 
+        ui->lineEdit_3->setFocus();
+
         ui->pushButton->setText("Připojit se do místnosti");
 
         RoomDialog::createRoom = false;
@@ -618,6 +620,8 @@ void RoomDialog::on_pushButton_2_clicked()
         ui->lineEdit_3->setReadOnly(true);
         ui->lineEdit_3->setText(room_id);
 
+        ui->lineEdit_2->setFocus();
+
         ui->pushButton->setText("Vytvořit místnost");
 
         RoomDialog::createRoom = true;
@@ -630,6 +634,7 @@ void RoomDialog::on_checkBox_clicked()
 {
     if(ui->checkBox->isChecked()){
         ui->lineEdit->setHidden(false);
+        ui->lineEdit->setFocus();
 
     } else{
         ui->lineEdit->setHidden(true);
