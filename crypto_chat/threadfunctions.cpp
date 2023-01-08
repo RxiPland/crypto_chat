@@ -13,6 +13,7 @@ Program for making threads
 #include <QJsonValue>
 #include <QDir>
 #include <QScrollBar>
+#include <QTime>
 
 
 ThreadFunctions::ThreadFunctions()
@@ -53,10 +54,14 @@ QList<QJsonValue> ThreadFunctions::getJson(QStringList keys, QByteArray data)
     process.start("cmd", QStringList(command));
     process.waitForFinished(-1); // will wait forever until finished
 
-    QByteArray decryptedData = QByteArray::fromHex(process.readAllStandardOutput().trimmed());
-
-
     QList<QJsonValue> returnData;
+    QByteArray decryptedData = process.readAllStandardOutput().trimmed();
+
+    if (decryptedData.isEmpty()){
+        return returnData;
+    }
+
+    decryptedData = QByteArray::fromHex(decryptedData);
 
     if(decryptedData.isEmpty() || decryptedData.contains("error")){
         return returnData;
@@ -81,6 +86,10 @@ void ThreadFunctions::appendMessage(QString messageHtml)
     // load number of messages as int
     int messagesNumber = ui->action_zpravy_1->text().split(" ").back().toInt();
 
+    // move scrollbar to end
+    QTextCursor c = ui->textEdit->textCursor();
+    c.movePosition(QTextCursor::End);
+    ui->textEdit->setTextCursor(c);
 
     if (messagesNumber == 0){
         // add first message without new line at front
@@ -97,7 +106,6 @@ void ThreadFunctions::appendMessage(QString messageHtml)
 
 
     // move scrollbar to end
-    QTextCursor c = ui->textEdit->textCursor();
     c.movePosition(QTextCursor::End);
     ui->textEdit->setTextCursor(c);
 
@@ -124,9 +132,19 @@ QString ThreadFunctions::decryptMessage(QString encryptedMessage)
     if(decryptedMessage.isEmpty()){
         return decryptedMessage;
 
-    } else{
-        return QByteArray::fromHex(decryptedMessage);
     }
+
+    decryptedMessage = QByteArray::fromHex(decryptedMessage);
+
+    if (decryptedMessage.contains("error")){
+
+        return QString();
+
+    } else{
+
+        return decryptedMessage;
+    }
+
 }
 
 void ThreadFunctions::getMessages()
@@ -204,7 +222,8 @@ void ThreadFunctions::getMessages()
     QList<QJsonValue> responseData = getJson(keys, response);
 
     if (responseData.isEmpty()){
-        // decryption error
+
+        ThreadFunctions::appendMessage(tr("<span style=\"background-color: #ff0000;\">%1</span>").arg(QString("(%1) Nepodařilo se dešifrovat data! (zpráva byla pravděpodobně moc dlouhá)").arg(QTime::currentTime().toString()).toHtmlEscaped()));
         return;
     }
 
@@ -212,8 +231,9 @@ void ThreadFunctions::getMessages()
 
     if (statusCode == "4"){
         ThreadFunctions::stopLoop();
-        ThreadFunctions::appendMessage("<span style=\"background-color:red;\"></br></br>Místnost byla smazána! Nebude možné již odesílat další zprávy.</span>");
+        ThreadFunctions::appendMessage(tr("<span style=\"background-color: #ff0000;\"><br></br>%1</span>").arg(QString("(%1) Místnost byla smazána! Nebude možné již odesílat další zprávy.").arg(QTime::currentTime().toString()).toHtmlEscaped()));
 
+        ui->action_room_1->setDisabled(true);
         return;
 
     } else if (statusCode != "1"){
@@ -240,7 +260,10 @@ void ThreadFunctions::getMessages()
 
         if (decryptedMessage.isEmpty()){
             int messagesNumber = ui->action_zpravy_1->text().split(" ").back().toInt();
-            ThreadFunctions::appendMessage(tr("Zprávu &#35;%1 se nepodařilo dešifrovat<br></br>").arg(messagesNumber+1));
+
+            QString messageHtmlEscaped = (tr("(%1) Zprávu #%2 se nepodařilo dešifrovat!").arg(QTime::currentTime().toString()).arg(messagesNumber+1)).toHtmlEscaped();
+
+            ThreadFunctions::appendMessage(tr("<span style=\"background-color: #ff0000;\">%1</span>").arg(messageHtmlEscaped));
 
         } else{
             ThreadFunctions::appendMessage(decryptedMessage);
