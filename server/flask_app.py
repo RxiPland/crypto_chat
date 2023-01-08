@@ -28,8 +28,9 @@ version = "crypto-chat v1.1.0"
 1 = ok
 2 = file with symetric key not found
 3 = wrong password
-4 = wrong room ID
+4 = wrong room ID / successfull deletetion
 5 = wrong symetric key
+6 = other error
 
 - Maximums:
 username length: 25
@@ -607,7 +608,7 @@ def get_messages():
         return str(e), 403
 
 
-@app.route('/delete-room', methods=["DELETE"])
+@app.route('/delete-room', methods=["POST"])
 def delete_room():
     """
     params: {'data': '<AES-encrypted-data> in hex'}
@@ -677,14 +678,16 @@ def delete_room():
         try:
             shutil.rmtree(working_dir + "/rooms/" + room_id)
 
+            data = {
+                "status_code": "4"
+            }
+
         except:
-            pass
+            data = {
+                "status_code": "6"
+            }
 
             
-        data = {
-            "status_code": "1"
-        }
-
         data = str(data).encode()
         data = symetric_key.encrypt(data).hex()
 

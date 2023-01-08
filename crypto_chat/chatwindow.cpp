@@ -355,6 +355,8 @@ void ChatWindow::roomNotExist()
 {
     // func to disable chatting
 
+    ChatWindow::disable_widgets(true);
+
     refreshChatLoop.stopLoop();
     ui->action_zpravy_2_1->setDisabled(true);
     ui->action_zpravy_4->setDisabled(true);
@@ -552,4 +554,101 @@ void ChatWindow::on_pushButton_clicked()
 void ChatWindow::on_lineEdit_returnPressed()
 {
     ChatWindow::on_pushButton_clicked();
+}
+
+void ChatWindow::on_action_room_1_triggered()
+{
+
+    QJsonObject objMessage;
+    objMessage["room_id"] = ChatWindow::room_id;
+    objMessage["room_password"] = ChatWindow::room_password;
+
+    QJsonDocument docMessage(objMessage);
+    QString postData = docMessage.toJson().toHex();  // in hex
+
+
+    //QString command = "/C config/cryptographic_tool.exe encrypt_aes_server " + room_id + " " + postData;
+    QString command = "/C python config/cryptographic_tool.py encrypt_aes_server " + room_id + " " + postData;
+
+    // encrypt postData (json) with server symetric key
+    QProcess process;
+    process.start("cmd", QStringList(command));
+
+    while(process.state() == QProcess::Running){
+        qApp->processEvents();
+    }
+
+    QString encryptedData = process.readAllStandardOutput().trimmed();
+
+
+    if (encryptedData.isEmpty()){
+        QMessageBox::critical(this, "Upozornění", "Nepodařilo se zašifrovat data! (odesílání požadavku zrušeno)\n\nChyba: " + process.readAllStandardError().trimmed());
+        ChatWindow::disable_widgets(false);
+
+        return;
+    }
+
+    QJsonObject objData;
+    objData["data"] = encryptedData;
+    QJsonDocument docData(objData);
+    QByteArray deleteRoomData = docData.toJson();
+
+    QNetworkRequest request;
+    QUrl qurl_address = QUrl(server_url + "/delete-room");
+
+    request.setHeader(QNetworkRequest::ContentTypeHeader, "application/json");
+    request.setHeader(QNetworkRequest::UserAgentHeader, ChatWindow::user_agent);
+
+    if(ChatWindow::authentication_required){
+        // authentication
+
+        qurl_address.setUserName(authentication_username);
+        qurl_address.setPassword(authentication_password);
+    }
+
+    request.setUrl(qurl_address);
+    QNetworkReply *reply_post = manager.post(request, deleteRoomData);
+
+
+    while (!reply_post->isFinished())
+    {
+        qApp->processEvents();
+    }
+
+    QByteArray response = reply_post->readAll();
+
+    if(reply_post->error() == QNetworkReply::ConnectionRefusedError){
+
+
+        QMessageBox::critical(this, "Chyba", "Nelze se připojit k internetu nebo server není dostupný! (odesílání požadavku zrušeno)");
+        ChatWindow::disable_widgets(false);
+
+        return;
+
+    } else if(reply_post->error() != QNetworkReply::NoError){
+        // Any error
+
+        QMessageBox::critical(this, "Odpověd serveru (chyba)", tr("Nastala neznámá chyba!\n\n%1").arg(reply_post->errorString()));
+        ChatWindow::disable_widgets(false);
+
+        return;
+    }
+
+
+    QStringList names;
+    names.append("status_code");
+
+    QStringList responseData = getJson(names, response);
+
+    if(responseData[0] != "4"){
+        QMessageBox::critical(this, "Odpověd serveru (chyba)", tr("Nastala neznámá chyba!\n\n%1").arg(reply_post->readAll()));
+        ChatWindow::disable_widgets(false);
+
+        return;
+
+    } else{
+
+        QMessageBox::information(this, "Smazání místnosti", "Místnost byla úspěšně smazána, ostatním uživatelům se zobrazí tato informace, jakmile se pokusí získat nové zprávy.");
+        ChatWindow::on_action_room_3_triggered();
+    }
 }

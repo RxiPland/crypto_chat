@@ -58,6 +58,7 @@ private slots:
     void on_action_advanced_1_triggered();
     void on_pushButton_clicked();
     void on_lineEdit_returnPressed();
+    void on_action_room_1_triggered();
 
 private:
     void closeEvent(QCloseEvent *bar = nullptr);
