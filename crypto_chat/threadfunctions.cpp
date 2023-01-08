@@ -129,41 +129,13 @@ QString ThreadFunctions::decryptMessage(QString encryptedMessage)
     }
 }
 
-
-QByteArray ThreadFunctions::readTempFile(QString filename){
-
-    QFile file(QDir::tempPath() + "/" + room_id + "/" + filename);
-    QByteArray content;
-
-    if(!file.exists()){
-        // python did not create the file
-        return content;
-
-    } else{
-        file.open(QIODevice::ReadOnly);
-        content = file.readAll();
-        file.close();
-    }
-
-    return content;
-}
-
-void ThreadFunctions::writeTempFile(QString filename, QByteArray content){
-
-    QFile file(QDir::tempPath() + "/" + room_id + "/" + filename);
-
-    file.open(QIODevice::WriteOnly);
-    file.write(content);
-    file.close();
-}
-
 void ThreadFunctions::getMessages()
 {
     // checking new messages
 
     QJsonObject objMessage;
     objMessage["room_id"] = ThreadFunctions::room_id;
-    objMessage["room_password_sha256"] = ThreadFunctions::room_password_sha256;
+    objMessage["room_password"] = ThreadFunctions::room_password;
     objMessage["user_messages_count"] = ThreadFunctions::recievedMessagesCount;
     QJsonDocument docMessage(objMessage);
     QString postData = docMessage.toJson().toHex();  // in hex
