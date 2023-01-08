@@ -358,6 +358,7 @@ void ChatWindow::roomNotExist()
     ChatWindow::disable_widgets(true);
 
     refreshChatLoop.stopLoop();
+    ui->action_room_1->setDisabled(true);
     ui->action_zpravy_2_1->setDisabled(true);
     ui->action_zpravy_4->setDisabled(true);
 }
@@ -647,8 +648,7 @@ void ChatWindow::on_action_room_1_triggered()
         return;
 
     } else{
-
         QMessageBox::information(this, "Smazání místnosti", "Místnost byla úspěšně smazána, ostatním uživatelům se zobrazí tato informace, jakmile se pokusí získat nové zprávy.");
-        ChatWindow::on_action_room_3_triggered();
+        ChatWindow::roomNotExist();
     }
 }
