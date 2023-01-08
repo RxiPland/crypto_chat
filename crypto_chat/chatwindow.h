@@ -67,9 +67,6 @@ private:
 
     QStringList getJson(QStringList names, QByteArray data);
 
-    QByteArray readTempFile(QString filename);
-    void writeTempFile(QString filename, QByteArray content);
-
     void sendMessage(QString color="black", QString time="", QString prefix="", QString nickname="", QString message="", bool silent=false);
     void disable_widgets(bool disable=true);
 

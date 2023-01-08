@@ -58,6 +58,7 @@ void ChatWindow::closeEvent(QCloseEvent *bar)
 
     this->hide();
 
+    // open app as new process
     if(restart){
         ChatWindow::restart = false;
         QProcess::startDetached(QApplication::applicationFilePath());
@@ -124,33 +125,6 @@ void ChatWindow::startRefreshLoop()
     refreshChatLoop.ui = this->ui;
     refreshChatLoop.continueLoop = true;
     refreshChatLoop.start();
-}
-
-QByteArray ChatWindow::readTempFile(QString filename){
-
-    QFile file(QDir::tempPath() + "/" + room_id + "/" + filename);
-    QByteArray content;
-
-    if(!file.exists()){
-        // python did not create the file
-        return content;
-
-    } else{
-        file.open(QIODevice::ReadOnly);
-        content = file.readAll();
-        file.close();
-    }
-
-    return content;
-}
-
-void ChatWindow::writeTempFile(QString filename, QByteArray content){
-
-    QFile file(QDir::tempPath() + "/" + room_id + "/" + filename);
-
-    file.open(QIODevice::WriteOnly);
-    file.write(content);
-    file.close();
 }
 
 QStringList ChatWindow::getJson(QStringList names, QByteArray data)
