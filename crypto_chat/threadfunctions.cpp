@@ -107,7 +107,7 @@ void ThreadFunctions::appendMessage(QString messageHtml)
 
 QString ThreadFunctions::decryptMessage(QString encryptedMessage)
 {
-    QString decryptedMessage;
+    QByteArray decryptedMessage;
 
     encryptedMessage = encryptedMessage.trimmed();
 
@@ -119,9 +119,14 @@ QString ThreadFunctions::decryptMessage(QString encryptedMessage)
     process.waitForFinished(-1); // will wait forever until finished
 
 
-    decryptedMessage = QByteArray::fromHex(process.readAllStandardOutput().trimmed());
+    decryptedMessage = process.readAllStandardOutput().trimmed();
 
-    return decryptedMessage;
+    if(decryptedMessage.isEmpty()){
+        return decryptedMessage;
+
+    } else{
+        return QByteArray::fromHex(decryptedMessage);
+    }
 }
 
 
@@ -175,7 +180,10 @@ void ThreadFunctions::getMessages()
     QByteArray encryptedData = process.readAllStandardOutput().trimmed();
 
 
-    ThreadFunctions::writeTempFile("encrypted_message", encryptedData);  //replace to QNetwork
+    QJsonObject objData;
+    objData["data"] = (QString)encryptedData;
+    QJsonDocument docData(objData);
+    QByteArray getMessageData = docData.toJson();
 
     // create url;
     QUrl endpointUrl = QUrl(server_url + "/get-messages");
@@ -187,17 +195,31 @@ void ThreadFunctions::getMessages()
         endpointUrl.setPassword(authentication_password);
     }
 
+    QNetworkRequest request;
+    request.setHeader(QNetworkRequest::ContentTypeHeader, "application/json");
+    request.setHeader(QNetworkRequest::UserAgentHeader, ThreadFunctions::user_agent);
 
-    //command = "/C config/cryptographic_tool.exe get_messages " + room_id + " " + endpointUrl.url() + " " + QString::fromStdString(ThreadFunctions::user_agent.toStdString());
-    command = "/C python config/cryptographic_tool.py get_messages " + room_id + " " + endpointUrl.url() + " " + QString::fromStdString(ThreadFunctions::user_agent.toStdString());
+    if(ThreadFunctions::authentication_required){
+        // authentication
 
-    process.start("cmd", QStringList(command));
-    process.waitForFinished(-1); // will wait forever until finished
+        endpointUrl.setUserName(authentication_username);
+        endpointUrl.setPassword(authentication_password);
+    }
+
+    request.setUrl(endpointUrl);
+
+    QNetworkAccessManager manager;
+    QNetworkReply *reply_post = manager.post(request, getMessageData);
 
 
-    QByteArray response = QByteArray::fromHex(process.readAllStandardOutput().trimmed());
+    while (!reply_post->isFinished())
+    {
+        qApp->processEvents();
+    }
 
-    if (response.isEmpty() || response.contains("error")){
+    QByteArray response = reply_post->readAll();
+
+    if (reply_post->error() != QNetworkReply::NoError || response.isEmpty()){
         // network error
         return;
     }
