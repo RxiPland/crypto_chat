@@ -37,7 +37,7 @@ public:
     QByteArray user_agent;
     QString server_url;
     QString room_id;
-    QString room_password_sha256;
+    QString room_password;
 
 
 private:
