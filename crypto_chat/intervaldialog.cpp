@@ -55,7 +55,7 @@ void IntervalDialog::on_doubleSpinBox_valueChanged(double arg1)
 
 void IntervalDialog::on_pushButton_3_clicked()
 {
-    ui->doubleSpinBox->setValue(3.9);
+    ui->doubleSpinBox->setValue(2.9);
     QMessageBox::information(this, "Oznámení", "Byl nastaven výchozí interval");
 
 }
