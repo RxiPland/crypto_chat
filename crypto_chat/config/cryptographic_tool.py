@@ -188,6 +188,10 @@ def main():
         # open encrypted_message file and decrypt it's content with room symetric key
         # save decrypted content to decrypted_message file
 
+        """
+        add HMAC
+        """
+
         if length >= 2:
 
             if length >= 3:
