@@ -404,6 +404,8 @@ void LoginDialog::on_pushButton_clicked()
                                 pButtonCreate->setDisabled(false);
                                 pButtonJoin->setDisabled(false);
 
+                                pButtonJoin->setFocus();
+
                                 // wait for user input
                                 while(!msgBox.isHidden()){
                                     qApp->processEvents();
