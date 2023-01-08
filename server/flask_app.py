@@ -149,7 +149,7 @@ def create_room():
 
         rooms_path = working_dir + "rooms" + "/"
 
-        room_id: str = decrypted_data["room_id"]
+        room_id: str = decrypted_data["room_id"][0:32]
         password: str = decrypted_data["room_password_sha256"]
 
         # create folder with random HEX string (room_id)
