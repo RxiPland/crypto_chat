@@ -191,65 +191,30 @@ def main():
 
         if length >= 2:
 
-            room_id = argv[1]
-            room_id_folder = tempfile.gettempdir() + f"\\{room_id}"
+            if length >= 3:
 
-            message_crypt = bytes.fromhex(argv[2])
+                room_id = argv[1]
+                room_id_folder = tempfile.gettempdir() + f"\\{room_id}"
 
-            #with open(room_id_folder + "\\encrypted_message", "r") as f:
-            #    message_crypt = bytes.fromhex(f.read().strip())
+                message_crypt = bytes.fromhex(argv[2])
 
-            with open(room_id_folder + "\\symetric_key_room", "rb") as f:
-                symetric_key = Fernet(f.read().strip())
+                with open(room_id_folder + "\\symetric_key_room", "rb") as f:
+                    symetric_key = Fernet(f.read().strip())
 
-            try:
-                message_plain = symetric_key.decrypt(message_crypt)
+                try:
+                    message_plain = symetric_key.decrypt(message_crypt)
 
-                print(message_plain.hex())
+                    print(message_plain.hex())
 
-            except:
-                
-                print(b'error'.hex())
+                except:
+                    
+                    print(b'error'.hex())
+
+            else:
+                raise Exception("Encrypted message missing!")
         
         else:
             raise Exception("Room ID missing!")
-
-
-    elif operation == "get_messages":
-
-        if length >= 2:
-            
-            if length >= 3:
-                
-                if length >= 4:
-                
-                    room_id = argv[1]
-                    room_id_folder = tempfile.gettempdir() + f"\\{room_id}"
-
-                    endpoint_url = argv[2]
-                    user_agent = argv[3]
-
-                    with open(room_id_folder + "\\encrypted_message", "r") as f:
-                        message_crypt = f.read().strip()
-
-                    try:
-                        res: requests.Response = requests.post(endpoint_url, headers={"user-agent": user_agent}, json={"data": message_crypt})
-
-                        print(res.content.hex())
-
-
-                    except:
-
-                        print(b'error'.hex())
-
-                else:
-                    raise Exception("User-agent is missing!")
-
-            else:
-                raise Exception("Url is missing!")
-
-        else:
-            raise Exception("Room ID is missing!")
 
     else:
         raise Exception(f"Invalid operation! {operations}")
