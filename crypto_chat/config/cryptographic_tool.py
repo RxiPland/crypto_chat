@@ -9,7 +9,6 @@ import os.path
 import tempfile
 import uuid
 
-import requests
 
 app_dir = os.path.dirname(__file__).replace("\\", "/") + "/"
 operations = "[generate_rsa, generate_aes, decrypt_rsa, encrypt_aes_server, decrypt_aes_server, get_messages]"
