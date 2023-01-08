@@ -210,7 +210,13 @@ void ThreadFunctions::getMessages()
 
     QString statusCode = responseData[0].toString();
 
-    if (statusCode != "1"){
+    if (statusCode == "4"){
+        ThreadFunctions::stopLoop();
+        ThreadFunctions::appendMessage("<span style=\"background-color:red;\"></br></br>Místnost byla smazána! Nebude možné již odesílat další zprávy.</span>");
+
+        return;
+
+    } else if (statusCode != "1"){
         // server error
         return;
     }
