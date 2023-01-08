@@ -70,9 +70,6 @@ QString ColorDialog::convert_color(QString color){
     } else if(color == "#FF8C00"){
         return "Oranžová";
 
-    } else if(color == "#FFD700"){
-        return "Žlutá";
-
     } else if(color == "#8B4513"){
         return "Hnědá";
 
@@ -93,9 +90,6 @@ QString ColorDialog::convert_color(QString color){
 
     } else if(color == "Oranžová"){
         return "#FF8C00";
-
-    } else if(color == "Žlutá"){
-        return "#FFD700";
 
     } else if(color == "Hnědá"){
         return "#8B4513";

@@ -72,7 +72,6 @@ public:
         comboBox->addItem(QString());
         comboBox->addItem(QString());
         comboBox->addItem(QString());
-        comboBox->addItem(QString());
         comboBox->setObjectName("comboBox");
         QSizePolicy sizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
         sizePolicy.setHorizontalStretch(0);
@@ -172,9 +171,8 @@ public:
         comboBox->setItemText(3, QCoreApplication::translate("ColorDialog", "Modr\303\241", nullptr));
         comboBox->setItemText(4, QCoreApplication::translate("ColorDialog", "Fialov\303\241", nullptr));
         comboBox->setItemText(5, QCoreApplication::translate("ColorDialog", "Oran\305\276ov\303\241", nullptr));
-        comboBox->setItemText(6, QCoreApplication::translate("ColorDialog", "\305\275lut\303\241", nullptr));
-        comboBox->setItemText(7, QCoreApplication::translate("ColorDialog", "Hn\304\233d\303\241", nullptr));
-        comboBox->setItemText(8, QCoreApplication::translate("ColorDialog", "Vlastn\303\255...", nullptr));
+        comboBox->setItemText(6, QCoreApplication::translate("ColorDialog", "Hn\304\233d\303\241", nullptr));
+        comboBox->setItemText(7, QCoreApplication::translate("ColorDialog", "Vlastn\303\255...", nullptr));
 
         label->setText(QString());
         lineEdit->setPlaceholderText(QCoreApplication::translate("ColorDialog", "Zadejte HEX hodnotu", nullptr));

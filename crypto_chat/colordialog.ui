@@ -96,11 +96,6 @@
          </item>
          <item>
           <property name="text">
-           <string>Žlutá</string>
-          </property>
-         </item>
-         <item>
-          <property name="text">
            <string>Hnědá</string>
           </property>
          </item>
