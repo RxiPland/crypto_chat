@@ -201,7 +201,7 @@ QStringList ChatWindow::getJson(QStringList names, QByteArray data)
 }
 
 
-void ChatWindow::sendMessage(QString color, QString time, QString prefix, QString nickname, QString message, bool silent)
+void ChatWindow::sendMessage(QString color, QString time, QString prefix, QString nickname, QString message, bool exit)
 {
     // send message to server
 
@@ -212,7 +212,7 @@ void ChatWindow::sendMessage(QString color, QString time, QString prefix, QStrin
         qApp->processEvents();
     }
 
-    if(!silent){
+    if(!exit){
         // prepare for start
         refreshChatLoop.continueLoop = true;
     }
@@ -242,11 +242,11 @@ void ChatWindow::sendMessage(QString color, QString time, QString prefix, QStrin
 
     if (messageEncrypted.isEmpty()){
 
-        if(!silent){
+        if(!exit){
             QMessageBox::critical(this, "Upozornění", "Nepodařilo se zašifrovat zprávu! (odesílání zrušeno)\n\nChyba: " + process.readAllStandardError().trimmed());
             ChatWindow::disable_widgets(false);
+            refreshChatLoop.start();
         }
-        refreshChatLoop.start();
         return;
     }
 
@@ -275,11 +275,11 @@ void ChatWindow::sendMessage(QString color, QString time, QString prefix, QStrin
 
     if (encryptedData.isEmpty()){
 
-        if(!silent){
+        if(!exit){
             QMessageBox::critical(this, "Upozornění", "Nepodařilo se zašifrovat data! (odesílání zrušeno)\n\nChyba: " + process.readAllStandardError().trimmed());
             ChatWindow::disable_widgets(false);
+            refreshChatLoop.start();
         }
-        refreshChatLoop.start();
         return;
     }
 
@@ -314,21 +314,21 @@ void ChatWindow::sendMessage(QString color, QString time, QString prefix, QStrin
 
     if(reply_post->error() == QNetworkReply::ConnectionRefusedError){
 
-        if(!silent){
+        if(!exit){
             QMessageBox::critical(this, "Chyba", "Nelze se připojit k internetu nebo server není dostupný! (odesílání zrušeno)");
             ChatWindow::disable_widgets(false);
+            refreshChatLoop.start();
         }
-        refreshChatLoop.start();
         return;
 
     } else if(reply_post->error() != QNetworkReply::NoError){
         // Any error
 
-        if(!silent){
+        if(!exit){
             QMessageBox::critical(this, "Odpověd serveru (chyba)", tr("Nastala neznámá chyba!\n\n%1").arg(reply_post->errorString()));
             ChatWindow::disable_widgets(false);
+            refreshChatLoop.start();
         }
-        refreshChatLoop.start();
         return;
     }
 
@@ -340,54 +340,53 @@ void ChatWindow::sendMessage(QString color, QString time, QString prefix, QStrin
 
     if (responseData.isEmpty() || responseData[0] == "5"){
 
-        if(!silent){
+        if(!exit){
             QMessageBox::critical(this, "Chyba - symetrický klíč", "Server byl pravděpodobně restartován a kvůli tomu máte starý symetrický klíč. Pokud problém přetrvává, restartujte program.");
 
             //ChatWindow::roomNotExist();
             ChatWindow::disable_widgets(false);
+            refreshChatLoop.start();
         }
-        refreshChatLoop.start();
         return;
 
     } else if (responseData[0] == "4"){
 
-        if(!silent){
+        if(!exit){
             QMessageBox::critical(this, "Chyba - místnost byla smazána", "Místnost, ve které se nacházíte, již neexistuje! Odpojte se prosím.");
 
             ChatWindow::roomNotExist();
             ChatWindow::disable_widgets(false);
+            refreshChatLoop.start();
         }
-        refreshChatLoop.start();
         return;
 
     } else if (responseData[0] == "3"){
 
-        if(!silent){
+        if(!exit){
             QMessageBox::critical(this, "Chyba - heslo", "Heslo místnosti bylo změněno! Odpojte se a připojte znovu.");
 
             ChatWindow::roomNotExist();
             ChatWindow::disable_widgets(false);
+            refreshChatLoop.start();
         }
-        refreshChatLoop.start();
         return;
 
     } else if (responseData[0] != "1"){
 
-        if(!silent){
+        if(!exit){
             QMessageBox::critical(this, "Chyba", "Zprávu se nepodařilo odeslat! Server odpověděl {\"status_code\": " + responseData[0] + "}");
             ChatWindow::disable_widgets(false);
+            refreshChatLoop.start();
         }
-        refreshChatLoop.start();
         return;
     }
 
-    if(!silent){
+    if(!exit){
         ui->lineEdit->clear();
         ChatWindow::disable_widgets(false);
         ui->lineEdit->setFocus();
+        refreshChatLoop.start();
     }
-
-    refreshChatLoop.start();
 }
 
 void ChatWindow::disable_widgets(bool disable)
