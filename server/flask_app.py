@@ -6,6 +6,7 @@ import rsa
 from cryptography.fernet import Fernet
 
 import os
+import shutil
 import json
 from urllib.parse import unquote
 import hashlib
@@ -455,7 +456,7 @@ def send_message():
 def get_messages():
     """
     params: {'data': '<AES-encrypted-data> in hex'}
-    <AES-encrypted-data> = {'room_id': '<hex string (32)>', 'room_password_sha256': '<hashed password>', 'user_messages_count': <int>}
+    <AES-encrypted-data> = {'room_id': '<hex string (32)>', 'room_password': '<plaintext password>', 'user_messages_count': <int>}
 
     response: {'data': '<encrypted-data> in hex'}
     <encrypted-data> = {'status_code': '<error code>', 'server_messages_count': <int>, 'messages': [<encrypted with room key>, ...]}
@@ -492,8 +493,8 @@ def get_messages():
 
         decrypted_data: dict = json.loads(decrypted_data)
 
-        # keys 'room_id', 'room_password_sha256' and 'user_messages_count' must be in decrypted JSON
-        if not "room_id" in decrypted_data.keys() or not "room_password_sha256" in decrypted_data.keys() or not "user_messages_count" in decrypted_data.keys():
+        # keys 'room_id', 'room_password' and 'user_messages_count' must be in decrypted JSON
+        if not "room_id" in decrypted_data.keys() or not "room_password" in decrypted_data.keys() or not "user_messages_count" in decrypted_data.keys():
             return "Forbidden", 403
 
 
@@ -513,7 +514,7 @@ def get_messages():
             return flask.jsonify({"data": data}), 200
 
 
-        password_user_hash: str = decrypted_data["room_password_sha256"]
+        password_user_hash: str = hashlib.sha256(decrypted_data["room_password"].encode()).hexdigest()
         password_file_path = working_dir + "/rooms/" + room_id + "/password"
 
 
@@ -593,6 +594,95 @@ def get_messages():
             "status_code": "1",
             "server_messages_count": messages_count_server,
             "messages": messages_to_send
+        }
+
+        data = str(data).encode()
+        data = symetric_key.encrypt(data).hex()
+
+        return flask.jsonify({"data": data}), 200
+
+
+    except Exception as e:
+        print(e)
+        return str(e), 403
+
+
+@app.route('/delete-room', methods=["DELETE"])
+def delete_room():
+    """
+    params: {'data': '<AES-encrypted-data> in hex'}
+    <AES-encrypted-data> = {'room_id': '<hex string (32)>', 'room_password': '<plaintext password>'}
+
+    response: {'data': '<encrypted-data> in hex'}
+    <encrypted-data> = {'status_code': '<error code>'}
+    """
+
+    try:
+        # specific user-agent is required
+        if not "crypto-chat" in flask.request.user_agent.string:
+            return "Forbidden", 403
+
+        request_json: dict = flask.request.get_json()
+
+        # key 'data' must be in JSON
+        if not "data" in request_json.keys():
+            return "Forbidden", 403
+
+
+        # decrypt data from request
+        try:
+            decrypted_data = symetric_key.decrypt(bytes.fromhex(request_json["data"]))
+
+        except:
+
+            # wrong symetric key
+            data = {
+                "status_code": "5"
+            }
+
+            data = str(data).encode()
+            data = symetric_key.encrypt(data).hex()
+
+            return flask.jsonify({"data": data}), 200
+
+
+        decrypted_data: dict = json.loads(decrypted_data)
+
+         # keys 'room_id' and 'room_password' must be in decrypted JSON
+        if not "room_id" in decrypted_data.keys() or not "room_password" in decrypted_data.keys():
+            return "Forbidden", 403
+
+        room_id = decrypted_data["room_id"]
+
+        password_user_hash: str = hashlib.sha256(decrypted_data["room_password"].encode()).hexdigest()
+        password_file_path = working_dir + "/rooms/" + room_id + "/password"
+
+
+        if os.path.exists(password_file_path):
+            with open(password_file_path, "r") as f:
+                password_file_hash = f.read()
+
+        if password_user_hash.strip() != password_file_hash.strip():
+
+            # wrong password (should never happen)
+            data = {
+                "status_code": "3"
+            }
+
+            data = str(data).encode()
+            data = symetric_key.encrypt(data).hex()
+
+            return flask.jsonify({"data": data}), 200
+
+        try:
+            shutil.rmtree(working_dir + "/rooms/" + room_id)
+
+        except:
+            pass
+
+            
+        data = {
+            "status_code": "1"
         }
 
         data = str(data).encode()
