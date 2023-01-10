@@ -216,7 +216,7 @@
          <item>
           <widget class="QPushButton" name="pushButton">
            <property name="text">
-            <string>Vytvořit místnost</string>
+            <string> Vytvořit místnost </string>
            </property>
           </widget>
          </item>

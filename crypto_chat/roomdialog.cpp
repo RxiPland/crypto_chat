@@ -47,7 +47,7 @@ RoomDialog::RoomDialog(QWidget *parent, bool createRoom, QString server_url, QSt
         ui->lineEdit_3->setReadOnly(true);
         ui->lineEdit_3->setText(room_id);
 
-        ui->pushButton->setText("Vytvořit místnost");
+        ui->pushButton->setText(" Vytvořit místnost ");
 
     } else{
 
@@ -57,7 +57,7 @@ RoomDialog::RoomDialog(QWidget *parent, bool createRoom, QString server_url, QSt
         ui->lineEdit_3->setReadOnly(false);
         ui->lineEdit_3->clear();
 
-        ui->pushButton->setText("Připojit se do místnosti");
+        ui->pushButton->setText(" Připojit se do místnosti ");
     }
 
     this->show();
@@ -607,7 +607,7 @@ void RoomDialog::on_pushButton_2_clicked()
 
         ui->lineEdit_3->setFocus();
 
-        ui->pushButton->setText("Připojit se do místnosti");
+        ui->pushButton->setText(" Připojit se do místnosti ");
 
         RoomDialog::createRoom = false;
         QMessageBox::information(this, "Oznámení", "Přepnuto na připojení do existující místnosti");
@@ -622,7 +622,7 @@ void RoomDialog::on_pushButton_2_clicked()
 
         ui->lineEdit_2->setFocus();
 
-        ui->pushButton->setText("Vytvořit místnost");
+        ui->pushButton->setText(" Vytvořit místnost ");
 
         RoomDialog::createRoom = true;
         QMessageBox::information(this, "Oznámení", "Přepnuto na vytváření nové místnosti");
