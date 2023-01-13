@@ -217,6 +217,8 @@ def join_room():
             return "Forbidden", 403
 
 
+        decrypted_data: dict[str, str] = dict()
+
         # decrypt data from request
         try:
             decrypted_data = symetric_key.decrypt(bytes.fromhex(request_json["data"]))
@@ -234,7 +236,7 @@ def join_room():
             return flask.jsonify({"data": data}), 200
 
 
-        decrypted_data: dict = json.loads(decrypted_data)
+        decrypted_data = json.loads(decrypted_data)
 
         # keys 'room_id' and 'room_password' must be in decrypted JSON
         if not "room_id" in decrypted_data.keys() or not "room_password" in decrypted_data.keys():
