@@ -22,12 +22,16 @@ public:
     QByteArray user_agent;
     bool successful_login = false;
     bool create_room = false;
-    bool deleleFolder = true;
-    QString room_id;
 
     bool authentication_required = false;
     QString authentication_username;
     QString authentication_password;
+
+    QString room_id;
+    QString rsaPublicKeyPem;
+    QString rsaPrivateKeyPemHex;
+
+    QString serverAesKeyHex;
 
 private slots:
     void on_checkBox_stateChanged();
@@ -41,7 +45,6 @@ private slots:
     void on_toolButton_2_clicked();
     void on_lineEdit_2_returnPressed();
     void on_lineEdit_3_returnPressed();
-
     void on_toolButton_4_clicked();
 
 private:

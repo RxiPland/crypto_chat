@@ -40,6 +40,7 @@ int main(int argc, char *argv[])
     RoomDialog rd(nullptr, ld.create_room, server_url, ld.room_id);
     rd.app_version = app_version;
     rd.user_agent = user_agent;
+    rd.serverAesKeyHex = ld.serverAesKeyHex;
 
     if(ld.authentication_required){
         rd.authentication_required = true;

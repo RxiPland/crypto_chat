@@ -30,6 +30,9 @@ public:
     QString authentication_username;
     QString authentication_password;
 
+    QString serverAesKeyHex;
+    QString roomAesKeyHex;
+
     bool successful = false;
     bool deleleFolder = true;
 
