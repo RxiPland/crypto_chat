@@ -122,7 +122,7 @@ def create_room():
 
         # decrypt data from request
         try:
-            decrypted_data = symetric_key.decrypt(bytes.fromhex(request_json["data"]))
+            decrypted_data: str = bytes.fromhex(symetric_key.decrypt(bytes.fromhex(request_json["data"])).decode()).decode()
 
         except:
             print("Wrong symetric key")
