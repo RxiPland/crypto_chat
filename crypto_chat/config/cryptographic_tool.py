@@ -95,14 +95,15 @@ def main():
 
 
     elif operation == "encrypt_aes_server":
-        # encrypt user's input with server's key and save to encrypted_message file
+        # encrypt user's input with server's key
+        # print or save to temp file
 
         if length >= 2:
 
             if length >= 3:
 
                 if length >= 4:
-                    
+
                     server_symetric_key = Fernet(bytes.fromhex(argv[1]))
 
                     file_mode = "true" in argv[2].lower()
@@ -112,12 +113,12 @@ def main():
 
                         with open(temp_file_path, "r") as f:
                             plain_text = f.read().strip()
-                    
+
                     else:
                         plain_text = argv[3]
 
                     # encrypt plaintext
-                    message_crypt_hex = server_symetric_key.encrypt(data=plain_text).hex()
+                    message_crypt_hex = server_symetric_key.encrypt(data=plain_text.encode()).hex()
 
                     if file_mode:
                         # write encrypted data to temp file
@@ -137,32 +138,46 @@ def main():
 
 
     elif operation == "decrypt_aes_server":
-        # open encrypted_message file and decrypt it's content with server symetric key
-        # save decrypted content to decrypted_message file
+        # decrypt hex message with server symetric key
+        # print OR save to temp file
 
         if length >= 2:
 
-            room_id = argv[1]
-            room_id_folder = tempfile.gettempdir() + f"\\{room_id}"
+            if length >= 3:
 
-            message_crypt = bytes.fromhex(argv[2])
+                if length >= 4:
 
-            #with open(room_id_folder + "\\encrypted_message", "r") as f:
-            #    message_crypt = bytes.fromhex(f.read().strip())
-                
-            with open(room_id_folder + "\\symetric_key_server", "rb") as f:
-                symetric_key = Fernet(f.read().strip())
+                    server_symetric_key = Fernet(bytes.fromhex(argv[1]))
 
-            try:
-                message_plain = symetric_key.decrypt(message_crypt)
+                    file_mode = "true" in argv[2].lower()
 
-                print(message_plain.hex())
+                    if file_mode:
+                        temp_file_path = tempfile.gettempdir() + f"\\{argv[3]}"
 
-            except:
-                print(b'error'.hex())
-        
+                        with open(temp_file_path, "r") as f:
+                            encrypted_text_hex = f.read().strip()
+
+                    else:
+                        encrypted_text_hex = argv[3]
+
+                    # decrypt
+                    message_decrypted_hex = server_symetric_key.decrypt(bytes.fromhex(encrypted_text_hex)).hex()
+
+                    if file_mode:
+                        # write decrypted data to temp file
+                        with open(temp_file_path, "w") as f:
+                            f.write(message_decrypted_hex)
+
+                    else:
+                        # print decrypted data
+                        print(message_decrypted_hex)
+
+                else:
+                    raise Exception("Encrypted text OR filename is missing!")
+            else:
+                raise Exception("\"Saved to file\" boolean is missing!")
         else:
-            raise Exception("Room ID missing!")
+            raise Exception("Symetric key is missing!")
 
 
     elif operation == "encrypt_aes_room":
