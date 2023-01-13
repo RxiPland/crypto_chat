@@ -19,7 +19,7 @@ int main(int argc, char *argv[])
     QApplication a(argc, argv);
     a.setQuitOnLastWindowClosed(true);
 
-    // login to crypto-chat server && obtain server AES key
+    // login to crypto-chat server && obtain server symetric key
     LoginDialog ld;
     ld.app_version = app_version;
     ld.user_agent = user_agent;
@@ -36,7 +36,7 @@ int main(int argc, char *argv[])
 
     QString server_url = ld.server_url;
 
-    // create OR login to existing room
+    // create OR login to existing room (obtain room symetric key)
     RoomDialog rd(nullptr, ld.create_room, server_url, ld.room_id);
     rd.app_version = app_version;
     rd.user_agent = user_agent;
