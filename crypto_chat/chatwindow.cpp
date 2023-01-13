@@ -35,7 +35,7 @@ ChatWindow::ChatWindow(QWidget *parent, QString server_url, QString user_name)
 
     ui->setupUi(this);
     this->setWindowIcon(QIcon(":/images/hacker.ico"));
-    this->setWindowTitle(tr("crypto-chat  |  %1  |  %2").arg(server_url).arg(user_name));
+    this->setWindowTitle(tr("crypto-chat  |  %1  |  %2").arg(server_url, user_name));
 
     ui->label->setStyleSheet(tr("QLabel { background-color : %1 }").arg(user_color));
     ui->lineEdit->setFocus();
@@ -181,8 +181,8 @@ void ChatWindow::sendMessage(QString color, QString time, QString prefix, QStrin
     QString messageHtml;  // message in html format with color
     QString messageEncrypted;  // encrypted messageHtml with room symetric key (in hex)
 
-    messageText = tr("(%1) %2 <%3>: %4").arg(time).arg(prefix).arg(nickname).arg(message.trimmed());
-    messageHtml = tr("<span style=\"color:%1;\">%2</span>").arg(color).arg(messageText.toHtmlEscaped());
+    messageText = tr("(%1) %2 <%3>: %4").arg(time, prefix, nickname, message.trimmed());
+    messageHtml = tr("<span style=\"color:%1;\">%2</span>").arg(color, messageText.toHtmlEscaped());
 
     //QString command = "/C config/cryptographic_tool.exe encrypt_aes_room " + room_id + " " + messageHtml.toUtf8().toHex();
     QString command = "/C python config/cryptographic_tool.py encrypt_aes_room " + room_id + " " + messageHtml.toUtf8().toHex();
@@ -394,7 +394,7 @@ void ChatWindow::on_pushButton_3_clicked()
 
     if(nchd.new_name != ""){
         ChatWindow::user_name = nchd.new_name;
-        this->setWindowTitle(tr("crypto-chat  |  %1  |  %2").arg(server_url).arg(user_name));
+        this->setWindowTitle(tr("crypto-chat  |  %1  |  %2").arg(server_url, user_name));
     }
 
     if(nchd.prefix != ""){
@@ -409,7 +409,16 @@ void ChatWindow::on_pushButton_2_clicked()
 {
     // room info
 
-    QMessageBox::about(this, "Informace o místnosti", tr("Verze aplikace:  %1<br><br>URL:  %2<br>ID:  %3<br>Interval aktualizace chatu: %4s<br><br>Vaše přezdívka:  %5<br>Váš prefix: %6<br>Vaše barva:  %7").arg(app_version).arg(server_url).arg(room_id).arg(refreshInterval).arg(user_name).arg(prefix).arg(user_color));
+    QString displayMessage = QString("Verze aplikace:  %1<br><br>URL:  %2<br>ID:  %3<br>Interval aktualizace chatu: %4s<br><br>Vaše přezdívka:  %5<br>Váš prefix: %6<br>Vaše barva:  %7");
+    displayMessage = displayMessage.arg(app_version);
+    displayMessage = displayMessage.arg(server_url);
+    displayMessage = displayMessage.arg(room_id);
+    displayMessage = displayMessage.arg(refreshInterval);
+    displayMessage = displayMessage.arg(user_name);
+    displayMessage = displayMessage.arg(prefix);
+    displayMessage = displayMessage.arg(user_color);
+
+    QMessageBox::about(this, "Informace o místnosti", displayMessage);
 
     ui->lineEdit->setFocus();
 }
