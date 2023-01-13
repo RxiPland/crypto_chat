@@ -198,7 +198,7 @@ public:
         checkBox->setText(QCoreApplication::translate("RoomDialog", "Heslo m\303\255stnosti", nullptr));
         lineEdit->setPlaceholderText(QCoreApplication::translate("RoomDialog", "Bez hesla", nullptr));
         pushButton_2->setText(QCoreApplication::translate("RoomDialog", "P\305\231epnout", nullptr));
-        pushButton->setText(QCoreApplication::translate("RoomDialog", "Vytvo\305\231it m\303\255stnost", nullptr));
+        pushButton->setText(QCoreApplication::translate("RoomDialog", " Vytvo\305\231it m\303\255stnost ", nullptr));
     } // retranslateUi
 
 };
