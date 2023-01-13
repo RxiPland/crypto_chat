@@ -128,10 +128,10 @@ void RoomDialog::createRoomFunc()
     objMessage["room_password_sha256"] = (QString)hash.result().toHex();
 
     QJsonDocument docMessage(objMessage);
-    QString message_data = docMessage.toJson().toHex();
+    QString messageDataHex = docMessage.toJson().toHex();
 
-    //QString command = QString("/C python config/cryptographic_tool.exe encrypt_aes_server %1 %2 %3").arg(RoomDialog::serverAesKeyHex, "False", message_data);
-    QString command = QString("/C python config/cryptographic_tool.py encrypt_aes_server %1 %2 %3").arg(RoomDialog::serverAesKeyHex, "False", message_data);
+    //QString command = QString("/C python config/cryptographic_tool.exe encrypt_aes_server %1 %2 %3").arg(RoomDialog::serverAesKeyHex, "False", messageDataHex);
+    QString command = QString("/C python config/cryptographic_tool.py encrypt_aes_server %1 %2 %3").arg(RoomDialog::serverAesKeyHex, "False", messageDataHex);
 
 
     // encrypt
@@ -146,7 +146,7 @@ void RoomDialog::createRoomFunc()
 
 
     if (encryptedData.isEmpty()){
-        QMessageBox::critical(this, "Chyba", "Nastala chyba při šiforvání!");
+        QMessageBox::critical(this, "Chyba", QString("Nastala chyba při šifrování!\n\nChyba: %1").arg(process.readAllStandardError()));
 
         RoomDialog::disable_widgets(false);
         return;
@@ -297,7 +297,7 @@ void RoomDialog::joinRoomFunc()
 
 
     if (encryptedData.isEmpty()){
-        QMessageBox::critical(this, "Chyba", "Nastala chyba při šiforvání!");
+        QMessageBox::critical(this, "Chyba", QString("Nastala chyba při šifrování!\n\nChyba: %1").arg(process.readAllStandardError()));
 
         RoomDialog::disable_widgets(false);
         return;
@@ -456,19 +456,20 @@ void RoomDialog::writeTempFile(QString filename, QByteArray content){
     file.close();
 }
 
+
 QStringList RoomDialog::getJson(QStringList names, QByteArray data)
 {
     QJsonDocument jsonResponse;
     QJsonObject jsonObject;
-    QString jsonData;
+    QString dataHex;
 
 
     jsonResponse = QJsonDocument::fromJson(data);
     jsonObject = jsonResponse.object();
-    jsonData = jsonObject["data"].toString();
+    dataHex = jsonObject["data"].toString();
 
-    //QString command = "/C config/cryptographic_tool.exe decrypt_aes_server " + room_id + " " + jsonData;
-    QString command = "/C python config/cryptographic_tool.py decrypt_aes_server " + room_id + " " + jsonData;
+    //QString command = QString("/C python config/cryptographic_tool.exe decrypt_aes_server %1 %2 %3").arg(RoomDialog::serverAesKeyHex, "False", dataHex);
+    QString command = QString("/C python config/cryptographic_tool.py decrypt_aes_server %1 %2 %3").arg(RoomDialog::serverAesKeyHex, "False", dataHex);
 
     // decrypt
     QProcess process;
@@ -478,12 +479,16 @@ QStringList RoomDialog::getJson(QStringList names, QByteArray data)
         qApp->processEvents();
     }
 
-    // generate room id
-    QByteArray decryptedData = QByteArray::fromHex(process.readAllStandardOutput().trimmed());
+    QByteArray output = process.readAllStandardOutput().trimmed();
 
-    if(decryptedData.isEmpty() || decryptedData.contains("error")){
+    if(output.isEmpty()){
         return QStringList();
     }
+
+
+    // get decrypted data
+    QByteArray decryptedData = QByteArray::fromHex(output);
+
 
     decryptedData.replace("\'", "\"");
 
