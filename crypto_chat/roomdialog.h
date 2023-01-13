@@ -34,7 +34,6 @@ public:
     QString roomAesKeyHex;
 
     bool successful = false;
-    bool deleleFolder = true;
 
 private slots:
     void on_lineEdit_3_textEdited(const QString &arg1);

@@ -72,14 +72,6 @@ void RoomDialog::closeEvent(QCloseEvent *bar)
 {
     // Before application close
 
-    if(deleleFolder && !successful){
-        QDir roomFolder(QDir::tempPath() + "/" + room_id);
-
-        if(roomFolder.exists() && room_id != ""){
-            roomFolder.removeRecursively();
-        }
-    }
-
     this->close();
 
     if(bar != nullptr){
@@ -138,8 +130,8 @@ void RoomDialog::createRoomFunc()
     QJsonDocument docMessage(objMessage);
     QString message_data = docMessage.toJson().toHex();
 
-    //QString command = "/C config/cryptographic_tool.exe encrypt_aes_server " + room_id + " " + message_data;
-    QString command = "/C python config/cryptographic_tool.py encrypt_aes_server " + room_id + " " + message_data;
+    //QString command = QString("/C python config/cryptographic_tool.exe encrypt_aes_server %1 %2 %3").arg(RoomDialog::serverAesKeyHex, "False", message_data);
+    QString command = QString("/C python config/cryptographic_tool.py encrypt_aes_server %1 %2 %3").arg(RoomDialog::serverAesKeyHex, "False", message_data);
 
 
     // encrypt
@@ -231,14 +223,9 @@ void RoomDialog::createRoomFunc()
         return;
     }
 
-    QByteArray roomAesKey = QByteArray::fromHex(responseData[1].toUtf8());
+    // get room symetric key in hex
+    RoomDialog::roomAesKeyHex = responseData[1];
 
-
-    // write decrypted room's AES key to new file
-    QFile decryptedSymetricKeyRoom(QDir::tempPath() + "/" + room_id + "/symetric_key_room");
-    decryptedSymetricKeyRoom.open(QIODevice::WriteOnly);
-    decryptedSymetricKeyRoom.write(roomAesKey);
-    decryptedSymetricKeyRoom.close();
 
     QMessageBox::information(this, "Oznámení", "Místnost byla úspěšně vytvořena");
 
@@ -248,6 +235,7 @@ void RoomDialog::createRoomFunc()
     this->close();
 }
 
+
 void RoomDialog::joinRoomFunc()
 {
     RoomDialog::disable_widgets(true);
@@ -256,7 +244,7 @@ void RoomDialog::joinRoomFunc()
     QString roomId = ui->lineEdit_3->text().trimmed();
 
 
-    if(roomId == ""){
+    if (roomId.isEmpty()){
         QMessageBox::critical(this, "Chyba", "Pole pro ID místnosti nemůže být prázdné!");
 
         RoomDialog::disable_widgets(false);
@@ -270,7 +258,7 @@ void RoomDialog::joinRoomFunc()
         ui->lineEdit_3->setFocus();
         return;
 
-    } else if (nickname == ""){
+    } else if (nickname.isEmpty()){
         QMessageBox::critical(this, "Chyba", "Pole pro jméno nemůže být prázdné!");
 
         RoomDialog::disable_widgets(false);
@@ -281,7 +269,7 @@ void RoomDialog::joinRoomFunc()
     QJsonObject objMessage;
     objMessage["room_id"] = roomId;
 
-    if(ui->checkBox->isChecked()){
+    if (ui->checkBox->isChecked()){
         RoomDialog::room_password = ui->lineEdit->text();
         objMessage["room_password"] = RoomDialog::room_password;
 
@@ -293,14 +281,15 @@ void RoomDialog::joinRoomFunc()
     QJsonDocument docMessage(objMessage);
     QString message_data = docMessage.toJson().toHex();
 
-    //QString command = "/C config/cryptographic_tool.exe encrypt_aes_server " + room_id + " " + message_data;
-    QString command = "/C python config/cryptographic_tool.py encrypt_aes_server " + room_id + " " + message_data;
+    //QString command = QString("/C python config/cryptographic_tool.exe encrypt_aes_server %1 %2 %3").arg(RoomDialog::serverAesKeyHex, "False", message_data);
+    QString command = QString("/C python config/cryptographic_tool.py encrypt_aes_server %1 %2 %3").arg(RoomDialog::serverAesKeyHex, "False", message_data);
+
 
     // encrypt
     QProcess process;
     process.start("cmd", QStringList(command));
 
-    while(process.state() == QProcess::Running){
+    while (process.state() == QProcess::Running){
         qApp->processEvents();
     }
 
@@ -308,6 +297,8 @@ void RoomDialog::joinRoomFunc()
 
 
     if (encryptedData.isEmpty()){
+        QMessageBox::critical(this, "Chyba", "Nastala chyba při šiforvání!");
+
         RoomDialog::disable_widgets(false);
         return;
     }
@@ -323,7 +314,7 @@ void RoomDialog::joinRoomFunc()
     request.setHeader(QNetworkRequest::ContentTypeHeader, "application/json");
     request.setHeader(QNetworkRequest::UserAgentHeader, RoomDialog::user_agent);
 
-    if(RoomDialog::authentication_required){
+    if (RoomDialog::authentication_required){
         // authentication
 
         qurl_address.setUserName(authentication_username);
@@ -416,31 +407,14 @@ void RoomDialog::joinRoomFunc()
         return;
     }
 
-    QByteArray roomAesKey = QByteArray::fromHex(responseData[1].toUtf8());
+    // get room symetric key in hex
+    RoomDialog::roomAesKeyHex = responseData[1];
 
-
-    // write decrypted room's AES key to new file
-    QFile decryptedSymetricKeyRoom(QDir::tempPath() + "/" + room_id + "/symetric_key_room");
-    decryptedSymetricKeyRoom.open(QIODevice::WriteOnly);
-    decryptedSymetricKeyRoom.write(roomAesKey);
-    decryptedSymetricKeyRoom.close();
 
     QMessageBox::information(this, "Oznámení", "Připojení do místnosti proběhlo úspěšně");
 
     RoomDialog::successful = true;
     RoomDialog::username = nickname;
-
-    // folder with new id
-    QDir roomFolder(QDir::tempPath() + "/" + roomId);
-
-    if (roomFolder.exists()){
-        // delete folder with files
-        roomFolder.removeRecursively();
-    }
-
-    roomFolder.rename(QDir::tempPath() + "/" + RoomDialog::room_id, QDir::tempPath() + "/" + roomId);
-
-
     RoomDialog::room_id = roomId;
 
 
@@ -453,6 +427,7 @@ void RoomDialog::joinRoomFunc()
 
     this->close();
 }
+
 
 QByteArray RoomDialog::readTempFile(QString filename){
 
