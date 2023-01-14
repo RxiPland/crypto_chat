@@ -1,4 +1,5 @@
 .git
+.exe
 /crypto_chat/CMakeLists.txt.user
 /build-crypto_chat-*/
 /server/rooms/
