@@ -264,12 +264,12 @@ void LoginDialog::on_pushButton_clicked()
             // No error
 
             if(!response.contains("crypto-chat")){
-                QMessageBox::critical(this, "Odpověd serveru (chyba)", tr("Nastala nezmámá chyba!\n\nOčekáváná odpověď: crypto-chat %1\nOdpověď stránky: %2").arg(app_version).arg(response));
+                QMessageBox::critical(this, "Odpověd serveru (chyba)", QString("Nastala nezmámá chyba!\n\nOčekáváná odpověď: crypto-chat %1\nOdpověď stránky: %2").arg(app_version, response));
 
             } else if (!response.contains(app_version)){
                 // Version is wrong
 
-                QMessageBox::critical(this, "Odpověd serveru (chyba)", tr("Verze serveru se neshoduje s verzí klienta! Aktualizujte na novou verzi.\n\nOčekáváná odpověď: crypto-chat %1\nOdpověď stránky: %2").arg(app_version).arg(response));
+                QMessageBox::critical(this, "Odpověd serveru (chyba)", QString("Verze serveru se neshoduje s verzí klienta! Aktualizujte na novou verzi.\n\nOčekáváná odpověď: crypto-chat %1\nOdpověď stránky: %2").arg(app_version, response));
 
             } else{
                 // Validation succesful
