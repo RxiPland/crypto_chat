@@ -36,7 +36,7 @@ version = "crypto-chat v1.1.0"
 username length: 25
 prefix length: 25
 password length: 100
-message length: 960
+message length: 100_000
 number of stored messages (server): 100
 """
 
