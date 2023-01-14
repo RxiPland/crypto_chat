@@ -62,6 +62,7 @@ void ChatWindow::closeEvent(QCloseEvent *bar)
     if(restart){
         ChatWindow::restart = false;
         QProcess::startDetached(QApplication::applicationFilePath());
+        return;
     }
 
     refreshChatLoop.stopLoop();
