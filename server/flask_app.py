@@ -428,7 +428,7 @@ def send_message():
         # read value
         if os.path.exists(messages_count_path):
             with open(messages_count_path, "r") as f:
-                messages_count = f.read()
+                messages_count = str(f.read())
 
                 if messages_count.isdecimal():
                     messages_count = int(messages_count)
@@ -555,7 +555,7 @@ def get_messages():
 
         if os.path.exists(messages_count_path):
             with open(messages_count_path, "r") as f:
-                messages_count_server = f.read()
+                messages_count_server = str(f.read())
 
                 if messages_count_server.isdecimal():
                     messages_count_server = int(messages_count_server)
@@ -573,6 +573,7 @@ def get_messages():
             messages_to_send_count: int = messages_count_server - messages_count_user
 
         messages_to_send: list = []
+        skipped_messages: int = 0
 
         if messages_to_send_count == 0:
             pass
@@ -586,9 +587,10 @@ def get_messages():
             if messages_to_send_count > 100:
                 # max 100 messages
                 messages_to_send = rows
-                messages_to_send.insert(0, f"({messages_to_send_count-100} zpráv bylo přeskočeno) ...")
+                skipped_messages = messages_to_send_count-100
 
             else:
+
                 rows = rows[::-1]
 
                 for i in range(messages_to_send_count):
@@ -600,6 +602,7 @@ def get_messages():
         data = {
             "status_code": "1",
             "server_messages_count": messages_count_server,
+            "skipped_messages": skipped_messages,
             "messages": messages_to_send
         }
 
