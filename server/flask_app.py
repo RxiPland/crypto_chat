@@ -120,9 +120,12 @@ def create_room():
             print("'Data' key not in json")
             return "Forbidden", 403
 
+
+        decrypted_data: dict[str, str] = dict()
+
         # decrypt data from request
         try:
-            decrypted_data: str = bytes.fromhex(symetric_key.decrypt(bytes.fromhex(request_json["data"])).decode()).decode()
+            decrypted_data: str = symetric_key.decrypt(bytes.fromhex(request_json["data"]))
 
         except:
             print("Wrong symetric key")
@@ -330,6 +333,7 @@ def send_message():
         if not "data" in request_json.keys():
             return "Forbidden", 403
 
+        decrypted_data: dict[str, str] = dict()
 
         # decrypt data from request
         try:
