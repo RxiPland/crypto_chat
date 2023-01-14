@@ -109,19 +109,21 @@ void ThreadFunctions::appendMessage(QString messageHtml)
 
     if (messagesNumber == 0){
         // add first message without new line at front
-        ui->textEdit->insertHtml(messageHtml);
 
-    } else {
-        // add message to text edit
-        ui->textEdit->insertHtml("<br></br>" + messageHtml);
+        ui->textEdit->insertHtml(QString("Touto místností prošlo od založení celkem %1 zpráv").arg(recievedMessagesCount).toHtmlEscaped() + "<br></br>");
+        messagesNumber++;
     }
+
+    // add message to text edit
+    ui->textEdit->insertHtml("<br></br>" + messageHtml);
 
 
     // increment and set back
-    ui->action_zpravy_1->setText(tr("Počet zobrazených: %1").arg(messagesNumber + 1));
+    ui->action_zpravy_1->setText(QString("Počet zobrazených: %1").arg(messagesNumber + 1));
 
 
     // move scrollbar to end
+    c = ui->textEdit->textCursor();
     c.movePosition(QTextCursor::End);
     ui->textEdit->setTextCursor(c);
 
@@ -237,13 +239,14 @@ void ThreadFunctions::getMessages()
     QStringList keys;
     keys.append("status_code");
     keys.append("server_messages_count");
+    keys.append("skipped_messages");
     keys.append("messages");
 
     QList<QJsonValue> responseData = getJson(keys, response);
 
     if (responseData.isEmpty()){
 
-        ThreadFunctions::appendMessage(tr("<span style=\"background-color: #ff0000;\">%1</span>").arg(QString("(%1) Nepodařilo se dešifrovat data! (zpráva byla pravděpodobně moc dlouhá)").arg(QTime::currentTime().toString()).toHtmlEscaped()));
+        ThreadFunctions::appendMessage(QString("<span style=\"background-color: #ff0000;\">%1</span>").arg(QString("(%1) Nepodařilo se dešifrovat data! (zpráva byla pravděpodobně moc dlouhá)").arg(QTime::currentTime().toString()).toHtmlEscaped()));
         return;
     }
 
@@ -251,7 +254,7 @@ void ThreadFunctions::getMessages()
 
     if (statusCode == "4"){
         ThreadFunctions::stopLoop();
-        ThreadFunctions::appendMessage(tr("<span style=\"background-color: #ff0000;\"><br></br>%1</span>").arg(QString("(%1) Místnost byla smazána! Nebude možné již odesílat další zprávy.").arg(QTime::currentTime().toString()).toHtmlEscaped()));
+        ThreadFunctions::appendMessage(QString("<span style=\"background-color: #ff0000;\"><br></br>%1</span>").arg(QString("(%1) Místnost byla smazána! Nebude možné již odesílat další zprávy.").arg(QTime::currentTime().toString()).toHtmlEscaped()));
 
         ui->action_room_1->setDisabled(true);
         return;
@@ -268,9 +271,16 @@ void ThreadFunctions::getMessages()
         return;
     }
 
+    int skipped_messages = responseData[2].toInt();
+
+    if (skipped_messages > 0){
+        ThreadFunctions::recievedMessagesCount -= 1;
+        ThreadFunctions::appendMessage(QString("(%1 zpráv bylo přeskočeno) ...").arg(skipped_messages).toHtmlEscaped());
+    }
+
     //ThreadFunctions::recievedMessagesCount = messagesCountServer;
 
-    QStringList encryptedMessages = responseData[2].toVariant().toStringList();
+    QStringList encryptedMessages = responseData[3].toVariant().toStringList();
 
     QString decryptedMessage;
     int j;
@@ -281,9 +291,9 @@ void ThreadFunctions::getMessages()
         if (decryptedMessage.isEmpty()){
             int messagesNumber = ui->action_zpravy_1->text().split(" ").back().toInt();
 
-            QString messageHtmlEscaped = (tr("(%1) Zprávu #%2 se nepodařilo dešifrovat!").arg(QTime::currentTime().toString()).arg(messagesNumber+1)).toHtmlEscaped();
+            QString messageHtmlEscaped = (QString("(%1) Zprávu #%2 se nepodařilo dešifrovat!").arg(QTime::currentTime().toString()).arg(messagesNumber+1)).toHtmlEscaped();
 
-            ThreadFunctions::appendMessage(tr("<span style=\"background-color: #ff0000;\">%1</span>").arg(messageHtmlEscaped));
+            ThreadFunctions::appendMessage(QString("<span style=\"background-color: #ff0000;\">%1</span>").arg(messageHtmlEscaped));
 
         } else{
             ThreadFunctions::appendMessage(decryptedMessage);
@@ -321,7 +331,7 @@ void ThreadFunctions::run()
 
                 // sleep 1/10 of second
                 QThread::msleep(100);
-                ui->menuZpravy_2->menuAction()->setText(tr("Aktualizace za %1s").arg((int)i));
+                ui->menuZpravy_2->menuAction()->setText(QString("Aktualizace za %1s").arg((int)i));
             }
 
         } while(continueLoop);
