@@ -39,6 +39,10 @@ public:
     bool authentication_required = false;
     QString authentication_username = "";
     QString authentication_password = "";
+
+    QString serverAesKeyHex;
+    QString roomAesKeyHex;
+
     QString server_url;
     QString room_id;
     int serverMessagesCount = 0;
