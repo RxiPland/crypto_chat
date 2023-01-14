@@ -55,15 +55,9 @@ ChatWindow::~ChatWindow()
 void ChatWindow::closeEvent(QCloseEvent *bar)
 {
     // Before application close
+    qApp->setQuitOnLastWindowClosed(false);
 
     this->hide();
-
-    // open app as new process
-    if(restart){
-        ChatWindow::restart = false;
-        QProcess::startDetached(QApplication::applicationFilePath());
-        return;
-    }
 
     refreshChatLoop.stopLoop();
 
@@ -81,10 +75,7 @@ void ChatWindow::closeEvent(QCloseEvent *bar)
         qApp->processEvents();
     }
 
-
-    if(!restart){
-        QApplication::quit();
-    }
+    QApplication::quit();
 }
 
 void ChatWindow::welcomeMessage()
@@ -95,8 +86,10 @@ void ChatWindow::welcomeMessage()
 
 void ChatWindow::quitMessage()
 {
-    QString message = tr("%1 se odpojil/a").arg(ChatWindow::user_name);
-    ChatWindow::sendMessage("grey", QTime::currentTime().toString(), "", "Server", message, true);
+    if (ui->pushButton->isEnabled()){
+        QString message = tr("%1 se odpojil/a").arg(ChatWindow::user_name);
+        ChatWindow::sendMessage("grey", QTime::currentTime().toString(), "", "Server", message, true);
+    }
 }
 
 void ChatWindow::startRefreshLoop()
@@ -484,10 +477,9 @@ void ChatWindow::on_action_zpravy_3_triggered()
 void ChatWindow::on_action_room_3_triggered()
 {
     // disconnect room
+    QProcess::startDetached(QApplication::applicationFilePath());
 
-    ChatWindow::restart = true;
-    this->hide();
-    ChatWindow::closeEvent();
+    this->close();
 }
 
 
@@ -598,6 +590,8 @@ void ChatWindow::on_action_room_1_triggered()
 {
     // delete room button
 
+    ChatWindow::disable_widgets(true);
+
     QJsonObject objMessage;
     objMessage["room_id"] = ChatWindow::room_id;
     objMessage["room_password"] = ChatWindow::room_password;
@@ -680,13 +674,15 @@ void ChatWindow::on_action_room_1_triggered()
     QStringList responseData = getJson(names, response);
 
     if(responseData[0] != "4"){
-        QMessageBox::critical(this, "Odpověd serveru (chyba)", tr("Nastala neznámá chyba!\n\n%1").arg(reply_post->readAll()));
+        QMessageBox::critical(this, "Odpověd serveru (chyba)", QString("Nastala neznámá chyba!\n\n%1").arg(reply_post->readAll()));
         ChatWindow::disable_widgets(false);
 
         return;
 
     } else{
-        QMessageBox::information(this, "Smazání místnosti", "Místnost byla úspěšně smazána, ostatním uživatelům se zobrazí tato informace, jakmile se pokusí získat nové zprávy.");
         ChatWindow::roomNotExist();
+        ui->textEdit->insertHtml(QString("<br></br><span style=\"background-color: #ff0000;\"><br></br>%1</span>").arg(QString("(%1) Místnost byla smazána! Nebude možné již odesílat další zprávy.").arg(QTime::currentTime().toString()).toHtmlEscaped()));
+        QMessageBox::information(this, "Smazání místnosti", "Místnost byla úspěšně smazána, ostatním uživatelům se zobrazí tato informace, jakmile se pokusí získat nové zprávy.");
     }
 }
+

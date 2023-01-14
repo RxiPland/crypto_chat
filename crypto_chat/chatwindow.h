@@ -64,11 +64,10 @@ private slots:
     void on_lineEdit_returnPressed();
     void on_action_room_1_triggered();
 
+
 private:
     void closeEvent(QCloseEvent *bar = nullptr);
     Ui::ChatWindow *ui;
-
-    bool restart = false;
 
     QStringList getJson(QStringList names, QByteArray data);
 
