@@ -20,6 +20,7 @@ Window for sending messages
 #include <QJsonDocument>
 #include <QJsonObject>
 #include <QJsonValue>
+#include <QTemporaryFile>
 
 
 ThreadFunctions refreshChatLoop;
@@ -67,11 +68,6 @@ void ChatWindow::closeEvent(QCloseEvent *bar)
 
     ChatWindow::quitMessage();
 
-    QDir roomFolder(QDir::tempPath() + "/" + room_id);
-
-    if(roomFolder.exists() && room_id != ""){
-        roomFolder.removeRecursively();
-    }
 
     this->close();
 
@@ -137,8 +133,9 @@ QStringList ChatWindow::getJson(QStringList names, QByteArray data)
     jsonData = jsonObject["data"].toString();
 
 
-    //QString command = "/C config/cryptographic_tool.exe decrypt_aes_server " + room_id + " " + jsonData;
-    QString command = "/C python config/cryptographic_tool.py decrypt_aes_server " + room_id + " " + jsonData;
+    //QString command = QString("/C python config/cryptographic_tool.exe decrypt_aes_server %1 %2 %3").arg(ChatWindow::serverAesKeyHex, "False", jsonData);
+    QString command = QString("/C python config/cryptographic_tool.py decrypt_aes_server %1 %2 %3").arg(ChatWindow::serverAesKeyHex, "False", jsonData);
+
 
     // decrypt
     QProcess process;
@@ -181,11 +178,16 @@ void ChatWindow::sendMessage(QString color, QString time, QString prefix, QStrin
     QString messageHtml;  // message in html format with color
     QString messageEncrypted;  // encrypted messageHtml with room symetric key (in hex)
 
-    messageText = tr("(%1) %2 <%3>: %4").arg(time, prefix, nickname, message.trimmed());
-    messageHtml = tr("<span style=\"color:%1;\">%2</span>").arg(color, messageText.toHtmlEscaped());
+    messageText = QString("(%1) %2 <%3>: %4").arg(time, prefix, nickname, message.trimmed());
+    messageHtml = QString("<span style=\"color:%1;\">%2</span>").arg(color, messageText.toHtmlEscaped());
 
-    //QString command = "/C config/cryptographic_tool.exe encrypt_aes_room " + room_id + " " + messageHtml.toUtf8().toHex();
-    QString command = "/C python config/cryptographic_tool.py encrypt_aes_room " + room_id + " " + messageHtml.toUtf8().toHex();
+    QTemporaryFile tempFile;
+    tempFile.open();
+    tempFile.write(messageHtml.toUtf8().toHex());
+    tempFile.close();
+
+    //QString command = QString("/C python config/cryptographic_tool.exe encrypt_aes_room %1 %2 %3").arg(ChatWindow::roomAesKeyHex, "True", tempFile.fileName());
+    QString command = QString("/C python config/cryptographic_tool.py encrypt_aes_room %1 %2 %3").arg(ChatWindow::roomAesKeyHex, "True", tempFile.fileName());
 
     // encrypt with room symetric key
     QProcess process;
@@ -195,7 +197,13 @@ void ChatWindow::sendMessage(QString color, QString time, QString prefix, QStrin
         qApp->processEvents();
     }
 
-    messageEncrypted = process.readAllStandardOutput().trimmed();
+    // get encrypted data
+    tempFile.open();
+    messageEncrypted = tempFile.readAll();
+    tempFile.close();
+
+    // delete temp file
+    tempFile.remove();
 
     if (messageEncrypted.isEmpty()){
 
@@ -213,11 +221,17 @@ void ChatWindow::sendMessage(QString color, QString time, QString prefix, QStrin
     objMessage["message"] = messageEncrypted;
 
     QJsonDocument docMessage(objMessage);
-    QString postData = docMessage.toJson().toHex();  // in hex
+    QByteArray postDataHex = docMessage.toJson().toHex();  // in hex
 
 
-    //command = "/C config/cryptographic_tool.exe encrypt_aes_server " + room_id + " " + postData;
-    command = "/C python config/cryptographic_tool.py encrypt_aes_server " + room_id + " " + postData;
+    QTemporaryFile tempFile2;
+    tempFile2.open();
+    tempFile2.write(postDataHex);
+    tempFile2.close();
+
+    //command = QString("/C python config/cryptographic_tool.exe encrypt_aes_server %1 %2 %3").arg(ChatWindow::serverAesKeyHex, "True", tempFile2.fileName());
+    command = QString("/C python config/cryptographic_tool.py encrypt_aes_server %1 %2 %3").arg(ChatWindow::serverAesKeyHex, "True", tempFile2.fileName());
+
 
     // encrypt postData (json) with server symetric key
     process.start("cmd", QStringList(command));
@@ -226,7 +240,13 @@ void ChatWindow::sendMessage(QString color, QString time, QString prefix, QStrin
         qApp->processEvents();
     }
 
-    QString encryptedData = process.readAllStandardOutput().trimmed();
+    // get encrypted data
+    tempFile2.open();
+    QString encryptedData = tempFile2.readAll();
+    tempFile2.close();
+
+    // delete temp file
+    tempFile2.remove();
 
 
     if (encryptedData.isEmpty()){
@@ -279,7 +299,7 @@ void ChatWindow::sendMessage(QString color, QString time, QString prefix, QStrin
         // Any error
 
         if(!exit){
-            QMessageBox::critical(this, "Odpověd serveru (chyba)", tr("Nastala neznámá chyba!\n\n%1").arg(reply_post->errorString()));
+            QMessageBox::critical(this, "Odpověd serveru (chyba)", QString("Nastala neznámá chyba!\n\n%1").arg(reply_post->errorString()));
             ChatWindow::disable_widgets(false);
         }
         return;
@@ -568,17 +588,18 @@ void ChatWindow::on_lineEdit_returnPressed()
 
 void ChatWindow::on_action_room_1_triggered()
 {
+    // delete room button
 
     QJsonObject objMessage;
     objMessage["room_id"] = ChatWindow::room_id;
     objMessage["room_password"] = ChatWindow::room_password;
 
     QJsonDocument docMessage(objMessage);
-    QString postData = docMessage.toJson().toHex();  // in hex
+    QString postDataHex = docMessage.toJson().toHex();  // in hex
 
+    //QString command = QString("/C python config/cryptographic_tool.exe encrypt_aes_server %1 %2 %3").arg(ChatWindow::serverAesKeyHex, "False", postDataHex);
+    QString command = QString("/C python config/cryptographic_tool.py encrypt_aes_server %1 %2 %3").arg(ChatWindow::serverAesKeyHex, "False", postDataHex);
 
-    //QString command = "/C config/cryptographic_tool.exe encrypt_aes_server " + room_id + " " + postData;
-    QString command = "/C python config/cryptographic_tool.py encrypt_aes_server " + room_id + " " + postData;
 
     // encrypt postData (json) with server symetric key
     QProcess process;
