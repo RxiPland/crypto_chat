@@ -105,8 +105,10 @@ void ChatWindow::startRefreshLoop()
     refreshChatLoop.authentication_required = ChatWindow::authentication_required;
     refreshChatLoop.authentication_username = ChatWindow::authentication_username;
     refreshChatLoop.authentication_password = ChatWindow::authentication_password;
-    refreshChatLoop.room_id = ChatWindow::room_id;
+    refreshChatLoop.serverAesKeyHex = ChatWindow::serverAesKeyHex;
+    refreshChatLoop.roomAesKeyHex = ChatWindow::roomAesKeyHex;
 
+    refreshChatLoop.room_id = ChatWindow::room_id;
     refreshChatLoop.room_password = room_password;
     refreshChatLoop.server_url = ChatWindow::server_url;
     refreshChatLoop.user_agent = ChatWindow::user_agent;
@@ -186,8 +188,10 @@ void ChatWindow::sendMessage(QString color, QString time, QString prefix, QStrin
     tempFile.write(messageHtml.toUtf8().toHex());
     tempFile.close();
 
-    //QString command = QString("/C python config/cryptographic_tool.exe encrypt_aes_room %1 %2 %3").arg(ChatWindow::roomAesKeyHex, "True", tempFile.fileName());
-    QString command = QString("/C python config/cryptographic_tool.py encrypt_aes_room %1 %2 %3").arg(ChatWindow::roomAesKeyHex, "True", tempFile.fileName());
+    QString fileName = tempFile.fileName().split('/').back();
+
+    //QString command = QString("/C python config/cryptographic_tool.exe encrypt_aes_room %1 %2 %3").arg(ChatWindow::roomAesKeyHex, "True", fileName);
+    QString command = QString("/C python config/cryptographic_tool.py encrypt_aes_room %1 %2 %3").arg(ChatWindow::roomAesKeyHex, "True", fileName);
 
     // encrypt with room symetric key
     QProcess process;
@@ -201,6 +205,7 @@ void ChatWindow::sendMessage(QString color, QString time, QString prefix, QStrin
     tempFile.open();
     messageEncrypted = tempFile.readAll();
     tempFile.close();
+
 
     // delete temp file
     tempFile.remove();
@@ -229,8 +234,10 @@ void ChatWindow::sendMessage(QString color, QString time, QString prefix, QStrin
     tempFile2.write(postDataHex);
     tempFile2.close();
 
-    //command = QString("/C python config/cryptographic_tool.exe encrypt_aes_server %1 %2 %3").arg(ChatWindow::serverAesKeyHex, "True", tempFile2.fileName());
-    command = QString("/C python config/cryptographic_tool.py encrypt_aes_server %1 %2 %3").arg(ChatWindow::serverAesKeyHex, "True", tempFile2.fileName());
+    QString fileName2 = tempFile2.fileName().split('/').back();
+
+    //command = QString("/C python config/cryptographic_tool.exe encrypt_aes_server %1 %2 %3").arg(ChatWindow::serverAesKeyHex, "True", fileName2);
+    command = QString("/C python config/cryptographic_tool.py encrypt_aes_server %1 %2 %3").arg(ChatWindow::serverAesKeyHex, "True", fileName2);
 
 
     // encrypt postData (json) with server symetric key

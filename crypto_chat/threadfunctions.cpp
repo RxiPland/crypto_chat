@@ -14,6 +14,7 @@ Program for making threads
 #include <QDir>
 #include <QScrollBar>
 #include <QTime>
+#include <QTemporaryFile>
 
 
 ThreadFunctions::ThreadFunctions()
@@ -45,17 +46,32 @@ QList<QJsonValue> ThreadFunctions::getJson(QStringList keys, QByteArray data)
     jsonObject = jsonResponse.object();
     jsonData = jsonObject["data"].toString();
 
+    QTemporaryFile tempFile;
+    tempFile.open();
+    tempFile.write(jsonData.toUtf8());
+    tempFile.close();
 
-    //QString command = "/C config/cryptographic_tool.exe decrypt_aes_server " + room_id + " " + jsonData;
-    QString command = "/C python config/cryptographic_tool.py decrypt_aes_server " + room_id + " " + jsonData;
+    QString fileName = tempFile.fileName().split('/').back();
+
+    //QString command = QString("/C python config/cryptographic_tool.exe decrypt_aes_server %1 %2 %3").arg(ThreadFunctions::serverAesKeyHex, "True", fileName);
+    QString command = QString("/C python config/cryptographic_tool.py decrypt_aes_server %1 %2 %3").arg(ThreadFunctions::serverAesKeyHex, "True", fileName);
+
 
     // decrypt
     QProcess process;
     process.start("cmd", QStringList(command));
     process.waitForFinished(-1); // will wait forever until finished
 
+
     QList<QJsonValue> returnData;
-    QByteArray decryptedData = process.readAllStandardOutput().trimmed();
+
+    // get decrypted data
+    tempFile.open();
+    QByteArray decryptedData = tempFile.readAll().trimmed();
+    tempFile.close();
+
+    // delete temp file
+    tempFile.remove();
 
     if (decryptedData.isEmpty()){
         return returnData;
@@ -63,7 +79,7 @@ QList<QJsonValue> ThreadFunctions::getJson(QStringList keys, QByteArray data)
 
     decryptedData = QByteArray::fromHex(decryptedData);
 
-    if(decryptedData.isEmpty() || decryptedData.contains("error")){
+    if(decryptedData.isEmpty()){
         return returnData;
     }
 
@@ -117,34 +133,38 @@ QString ThreadFunctions::decryptMessage(QString encryptedMessage)
 {
     QByteArray decryptedMessage;
 
-    encryptedMessage = encryptedMessage.trimmed();
 
-    //QString command = "/C config/cryptographic_tool.exe decrypt_aes_room " + room_id + " " + encryptedMessage;
-    QString command = "/C python config/cryptographic_tool.py decrypt_aes_room " + room_id + " " + encryptedMessage;
+    QTemporaryFile tempFile;
+    tempFile.open();
+    tempFile.write(encryptedMessage.trimmed().toUtf8());
+    tempFile.close();
+
+    QString fileName = tempFile.fileName().split('/').back();
+
+    //QString command = QString("/C python config/cryptographic_tool.exe decrypt_aes_room %1 %2 %3").arg(ThreadFunctions::roomAesKeyHex, "True", fileName);
+    QString command = QString("/C python config/cryptographic_tool.py decrypt_aes_room %1 %2 %3").arg(ThreadFunctions::roomAesKeyHex, "True", fileName);
+
 
     QProcess process;
     process.start("cmd", QStringList(command));
     process.waitForFinished(-1); // will wait forever until finished
 
+    // get decrypted data
+    tempFile.open();
+    decryptedMessage = tempFile.readAll().trimmed();
+    tempFile.close();
 
-    decryptedMessage = process.readAllStandardOutput().trimmed();
+    // delete temp file
+    tempFile.remove();
 
     if(decryptedMessage.isEmpty()){
         return decryptedMessage;
-
     }
 
     decryptedMessage = QByteArray::fromHex(decryptedMessage);
 
-    if (decryptedMessage.contains("error")){
 
-        return QString();
-
-    } else{
-
-        return decryptedMessage;
-    }
-
+    return decryptedMessage;
 }
 
 void ThreadFunctions::getMessages()
@@ -156,11 +176,11 @@ void ThreadFunctions::getMessages()
     objMessage["room_password"] = ThreadFunctions::room_password;
     objMessage["user_messages_count"] = ThreadFunctions::recievedMessagesCount;
     QJsonDocument docMessage(objMessage);
-    QString postData = docMessage.toJson().toHex();  // in hex
+    QString postDataHex = docMessage.toJson().toHex();  // in hex
 
-    //QString = "/C config/cryptographic_tool.exe encrypt_aes_server " + room_id + " " + postData;
-    QString command = "/C python config/cryptographic_tool.py encrypt_aes_server " + room_id + " " + postData;
 
+    //QString command = QString("/C python config/cryptographic_tool.exe encrypt_aes_server %1 %2 %3").arg(ThreadFunctions::serverAesKeyHex, "False", postDataHex);
+    QString command = QString("/C python config/cryptographic_tool.py encrypt_aes_server %1 %2 %3").arg(ThreadFunctions::serverAesKeyHex, "False", postDataHex);
 
     // encrypt postData (json) with server symetric key
     QProcess process;

@@ -34,6 +34,10 @@ public:
     bool authentication_required = false;
     QString authentication_username = "";
     QString authentication_password = "";
+
+    QString serverAesKeyHex;
+    QString roomAesKeyHex;
+
     QByteArray user_agent;
     QString server_url;
     QString room_id;
