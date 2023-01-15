@@ -494,6 +494,11 @@ void ChatWindow::on_action_zpravy_3_1_triggered()
         fontInfo.setPointSize(pointSize + 1);
         ui->textEdit->setFont(fontInfo);
     }
+
+    // move scrollbar to end
+    QTextCursor c = ui->textEdit->textCursor();
+    c.movePosition(QTextCursor::End);
+    ui->textEdit->setTextCursor(c);
 }
 
 
@@ -508,6 +513,11 @@ void ChatWindow::on_action_zpravy_3_2_triggered()
         fontInfo.setPointSize(pointSize - 1);
         ui->textEdit->setFont(fontInfo);
     }
+
+    // move scrollbar to end
+    QTextCursor c = ui->textEdit->textCursor();
+    c.movePosition(QTextCursor::End);
+    ui->textEdit->setTextCursor(c);
 }
 
 
@@ -518,6 +528,11 @@ void ChatWindow::on_action_zpravy_3_3_triggered()
     QFont fontInfo = ui->textEdit->font();
     fontInfo.setPointSize(9);
     ui->textEdit->setFont(fontInfo);
+
+    // move scrollbar to end
+    QTextCursor c = ui->textEdit->textCursor();
+    c.movePosition(QTextCursor::End);
+    ui->textEdit->setTextCursor(c);
 }
 
 

@@ -114,6 +114,10 @@ void ThreadFunctions::appendMessage(QString messageHtml)
         messagesNumber++;
     }
 
+    c = ui->textEdit->textCursor();
+    c.movePosition(QTextCursor::End);
+    ui->textEdit->setTextCursor(c);
+
     // add message to text edit
     ui->textEdit->insertHtml("<br></br>" + messageHtml);
 
