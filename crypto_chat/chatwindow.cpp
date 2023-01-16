@@ -584,15 +584,18 @@ void ChatWindow::on_pushButton_clicked()
 {
     // send message
 
-    QString message = ui->lineEdit->text().trimmed();
+    if (ui->pushButton->isEnabled()){
 
-    if (message.isEmpty()){
-        return;
+        QString message = ui->lineEdit->text().trimmed();
+
+        if (message.isEmpty()){
+            return;
+        }
+
+        ChatWindow::sendMessage(ChatWindow::user_color, QTime::currentTime().toString(), ChatWindow::prefix, ChatWindow::user_name, message);
+
+        ui->lineEdit->setFocus();
     }
-
-    ChatWindow::sendMessage(ChatWindow::user_color, QTime::currentTime().toString(), ChatWindow::prefix, ChatWindow::user_name, message);
-
-    ui->lineEdit->setFocus();
 }
 
 
