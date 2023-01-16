@@ -121,7 +121,6 @@ void ThreadFunctions::appendMessage(QString messageHtml)
     // add message to text edit
     ui->textEdit->insertHtml("<br></br>" + messageHtml);
 
-
     // increment and set back
     ui->action_zpravy_1->setText(QString("Počet zobrazených: %1").arg(messagesNumber + 1));
 
@@ -246,6 +245,7 @@ void ThreadFunctions::getMessages()
     keys.append("skipped_messages");
     keys.append("messages");
 
+
     QList<QJsonValue> responseData = getJson(keys, response);
 
     if (responseData.isEmpty()){
@@ -285,6 +285,7 @@ void ThreadFunctions::getMessages()
     //ThreadFunctions::recievedMessagesCount = messagesCountServer;
 
     QStringList encryptedMessages = responseData[3].toVariant().toStringList();
+
 
     QString decryptedMessage;
     int j;
@@ -327,8 +328,12 @@ void ThreadFunctions::run()
         // get info about new messages
 
         do{
+            qInfo() << QTime::currentTime().toString() << " while start";
+
             // request for messages
             ThreadFunctions::getMessages();
+
+            qInfo() << QTime::currentTime().toString() << " getmessages pass";
 
             // sleep
             for(i=sleep_time; i>=0.0 && continueLoop; i -= 0.1){
@@ -338,7 +343,11 @@ void ThreadFunctions::run()
                 ui->menuZpravy_2->menuAction()->setText(QString("Aktualizace za %1s").arg((int)i));
             }
 
+            qInfo() << QTime::currentTime().toString() << " while end";
+
         } while(continueLoop);
+
+        qInfo() << QTime::currentTime().toString() << " while break";
 
         ui->menuZpravy_2->menuAction()->setText("Aktualizace za Nikdy");
     }
