@@ -364,7 +364,7 @@ void LoginDialog::on_pushButton_clicked()
                         msgBox.setText(previousText + "<span style=\"color:green;\"> [Dokončeno]<br></span>");
 
 
-                        msgBox.setText(msgBox.text() + "5/5 Dešiforvání přijatého symetrického klíče (AES) pomocí privátního klíče (RSA)");
+                        msgBox.setText(msgBox.text() + "5/5 Dešifrování přijatého symetrického klíče (AES) pomocí privátního klíče (RSA)");
                         previousText = msgBox.text();
                         msgBox.setText(msgBox.text() + "<span style=\"color:orange;\"> [Probíhá]<br></span>");
 

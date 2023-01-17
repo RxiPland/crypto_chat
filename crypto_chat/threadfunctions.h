@@ -19,6 +19,8 @@ public:
     void stopLoop();
     void reload();
 
+    void (*appendMessageChat) = NULL;
+
     float i;
     bool continueLoop = false;
     int operation = 3;  // 1=sleep; 2=shell; 3=sleep(infinite)
