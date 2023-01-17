@@ -99,50 +99,42 @@ QList<QJsonValue> ThreadFunctions::getJson(QStringList keys, QByteArray data)
 
 void ThreadFunctions::appendMessage(QString messageHtml)
 {
-    qInfo() << "7";
-
-    // load number of messages as int
-    int messagesNumber = ui->action_zpravy_1->text().split(" ").back().toInt();
-
-    // move scrollbar to end
-    QTextCursor c = ui->textEdit->textCursor();
-    c.movePosition(QTextCursor::End);
-    ui->textEdit->setTextCursor(c);
-
-    qInfo() << "8";
-
-    if (messagesNumber == 0){
-        // add first message without new line at front
-
-        ui->textEdit->insertHtml(QString("Touto místností prošlo od založení celkem %1 zpráv").arg(recievedMessagesCount).toHtmlEscaped() + "<br></br>");
-        messagesNumber++;
-    }
-
-    qInfo() << "9";
-
-    c = ui->textEdit->textCursor();
-    c.movePosition(QTextCursor::End);
-    ui->textEdit->setTextCursor(c);
 
     // add message to text edit
-    //ui->textEdit->insertHtml("<br></br>" + messageHtml);
-    ui->textEdit->setText(QString("ahoj %1").arg(messagesNumber));
+    QObject signalSource;
+    QObject::connect(&signalSource, &QObject::destroyed, qApp, [=](QObject *){
+
+        // load number of messages as int
+        int messagesNumber = ui->action_zpravy_1->text().split(" ").back().toInt();
+
+        // move scrollbar to end
+        QTextCursor c = ui->textEdit->textCursor();
+        c.movePosition(QTextCursor::End);
+        ui->textEdit->setTextCursor(c);
 
 
-    QThread::sleep(1);
+        if (messagesNumber == 0){
+            // add first message without new line at front
 
-    qInfo() << "10";
+            ui->textEdit->insertHtml(QString("Touto místností prošlo od založení celkem %1 zpráv").arg(recievedMessagesCount).toHtmlEscaped() + "<br></br>");
+            messagesNumber++;
+        }
 
-    // increment and set back
-    ui->action_zpravy_1->setText(QString("Počet zobrazených: %1").arg(messagesNumber + 1));
+        c = ui->textEdit->textCursor();
+        c.movePosition(QTextCursor::End);
+        ui->textEdit->setTextCursor(c);
+
+        ui->textEdit->insertHtml("<br></br>" + messageHtml);
+
+        // increment and set back
+        ui->action_zpravy_1->setText(QString("Počet zobrazených: %1").arg(messagesNumber + 1));
 
 
-    // move scrollbar to end
-    c = ui->textEdit->textCursor();
-    c.movePosition(QTextCursor::End);
-    ui->textEdit->setTextCursor(c);
-
-    qInfo() << "11";
+        // move scrollbar to end
+        c = ui->textEdit->textCursor();
+        c.movePosition(QTextCursor::End);
+        ui->textEdit->setTextCursor(c);
+    });
 
     ThreadFunctions::recievedMessagesCount += 1;
 }
@@ -208,8 +200,6 @@ void ThreadFunctions::getMessages()
 
     QByteArray encryptedData = process.readAllStandardOutput().trimmed();
 
-    qInfo() << "1";
-
 
     QJsonObject objData;
     objData["data"] = (QString)encryptedData;
@@ -264,8 +254,6 @@ void ThreadFunctions::getMessages()
 
     QList<QJsonValue> responseData = getJson(keys, response);
 
-    qInfo() << "2";
-
     if (responseData.isEmpty()){
 
         ThreadFunctions::appendMessage(QString("<span style=\"background-color: #ff0000;\">%1</span>").arg(QString("(%1) Nepodařilo se dešifrovat data! (zpráva byla pravděpodobně moc dlouhá)").arg(QTime::currentTime().toString()).toHtmlEscaped()));
@@ -285,8 +273,6 @@ void ThreadFunctions::getMessages()
         // server error
         return;
     }
-
-    qInfo() << "3";
 
     int messagesCountServer = responseData[1].toInt();
 
@@ -310,13 +296,10 @@ void ThreadFunctions::getMessages()
     QString decryptedMessage;
     int j;
 
-    qInfo() << "4";
 
     for(j=0; j<encryptedMessages.size() && continueLoop; j++){
 
         decryptedMessage = ThreadFunctions::decryptMessage(encryptedMessages[j]);
-
-        qInfo() << "5";
 
         if (decryptedMessage.isEmpty()){
             int messagesNumber = ui->action_zpravy_1->text().split(" ").back().toInt();
@@ -326,9 +309,7 @@ void ThreadFunctions::getMessages()
             ThreadFunctions::appendMessage(QString("<span style=\"background-color: #ff0000;\">%1</span>").arg(messageHtmlEscaped));
 
         } else{
-            qInfo() << "6";
             ThreadFunctions::appendMessage(decryptedMessage);
-            //qInfo() << "7";
         }
     }
 }
@@ -354,7 +335,11 @@ void ThreadFunctions::run()
         // every 100ms
         // get info about new messages
 
+        QObject signalSource;
+
         do{
+            ui->menuZpravy_2->menuAction()->setText("Probíhá aktualizace ...");
+
             // request for messages
             ThreadFunctions::getMessages();
 
@@ -364,6 +349,7 @@ void ThreadFunctions::run()
                 // sleep 1/10 of second
                 QThread::msleep(100);
 
+                // update text
                 ui->menuZpravy_2->menuAction()->setText(QString("Aktualizace za %1s").arg((int)i));
             }
 
