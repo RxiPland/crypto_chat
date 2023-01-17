@@ -22,8 +22,6 @@ Window for sending messages
 #include <QJsonValue>
 #include <QTemporaryFile>
 
-ChatWindow::appendMessageChat(QString message);
-
 
 ThreadFunctions refreshChatLoop;
 
@@ -92,10 +90,6 @@ void ChatWindow::quitMessage()
         QString message = tr("%1 se odpojil/a").arg(ChatWindow::user_name);
         ChatWindow::sendMessage("grey", QTime::currentTime().toString(), "", "Server", message, true);
     }
-}
-
-void ChatWindow::appendMessageChat(QString message){
-    ui->textEdit->setText(QString("ahoj %1").arg(ChatWindow::serverMessagesCount));
 }
 
 void ChatWindow::startRefreshLoop()
@@ -544,7 +538,7 @@ void ChatWindow::on_action_zpravy_3_3_triggered()
 
 void ChatWindow::on_action_zpravy_2_1_triggered()
 {
-    // change chat refresh interval
+    // change refresh interval
 
     IntervalDialog ind;
     ind.interval = ChatWindow::refreshInterval;
