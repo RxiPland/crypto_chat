@@ -71,10 +71,11 @@ private:
 
     QStringList getJson(QStringList names, QByteArray data);
 
-    void sendMessage(QString color="black", QString time="", QString prefix="", QString nickname="", QString message="", bool silent=false);
+    void sendMessage(QString message="", bool silent=false);
     void disable_widgets(bool disable=true);
 
     void roomNotExist();
+    QString makeHtmlMessage(QString message="", QString color="black", QString time="", QString prefix="", QString nickname="");
 
 };
 #endif // CHATWINDOW_H

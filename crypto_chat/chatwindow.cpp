@@ -81,14 +81,16 @@ void ChatWindow::closeEvent(QCloseEvent *bar)
 void ChatWindow::welcomeMessage()
 {
     QString message = tr("%1 se připojil/a").arg(ChatWindow::user_name);
-    ChatWindow::sendMessage("grey", QTime::currentTime().toString(), "", "Server", message);
+    QString messageHtml = ChatWindow::makeHtmlMessage(message, "grey", QTime::currentTime().toString(), "", "Server");
+    ChatWindow::sendMessage(messageHtml);
 }
 
 void ChatWindow::quitMessage()
 {
     if (ui->pushButton->isEnabled()){
         QString message = tr("%1 se odpojil/a").arg(ChatWindow::user_name);
-        ChatWindow::sendMessage("grey", QTime::currentTime().toString(), "", "Server", message, true);
+        QString messageHtml = ChatWindow::makeHtmlMessage(message, "grey", QTime::currentTime().toString(), "", "Server");
+        ChatWindow::sendMessage(messageHtml, true);
     }
 }
 
@@ -164,22 +166,18 @@ QStringList ChatWindow::getJson(QStringList names, QByteArray data)
 }
 
 
-void ChatWindow::sendMessage(QString color, QString time, QString prefix, QString nickname, QString message, bool exit)
+void ChatWindow::sendMessage(QString message, bool exit)
 {
     // send message to server
 
     ChatWindow::disable_widgets(true);
 
-    QString messageText;  // user's message
-    QString messageHtml;  // message in html format with color
-    QString messageEncrypted;  // encrypted messageHtml with room symetric key (in hex)
 
-    messageText = QString("(%1) %2 <%3>: %4").arg(time, prefix, nickname, message.trimmed());
-    messageHtml = QString("<span style=\"color:%1;\">%2</span>").arg(color, messageText.toHtmlEscaped());
+    QString messageEncrypted;  // encrypted message with room symetric key (in hex)
 
     QTemporaryFile tempFile;
     tempFile.open();
-    tempFile.write(messageHtml.toUtf8().toHex());
+    tempFile.write(message.toUtf8().toHex());
     tempFile.close();
 
     QString fileName = tempFile.fileName().split('/').back();
@@ -382,6 +380,20 @@ void ChatWindow::roomNotExist()
     ui->action_room_1->setDisabled(true);
     ui->action_zpravy_2_1->setDisabled(true);
     ui->action_zpravy_4->setDisabled(true);
+}
+
+QString ChatWindow::makeHtmlMessage(QString message, QString color, QString time, QString prefix, QString nickname)
+{
+    // convert parameters to message HTML format
+    // (hours:minutes:seconds) Prefix <Username>: Message
+
+    QString messageBody;  // user's message
+    QString messageHtml;  // message in html format with color
+
+    messageBody = QString("(%1) %2 <%3>: %4").arg(time, prefix, nickname, message.trimmed());
+    messageHtml = QString("<span style=\"color:%1;\">%2</span>").arg(color, messageBody.toHtmlEscaped());
+
+    return messageHtml;
 }
 
 
@@ -592,7 +604,8 @@ void ChatWindow::on_pushButton_clicked()
             return;
         }
 
-        ChatWindow::sendMessage(ChatWindow::user_color, QTime::currentTime().toString(), ChatWindow::prefix, ChatWindow::user_name, message);
+        QString messageHtml = ChatWindow::makeHtmlMessage(message, ChatWindow::user_color, QTime::currentTime().toString(), ChatWindow::prefix, ChatWindow::user_name);
+        ChatWindow::sendMessage(messageHtml);
 
         ui->lineEdit->setFocus();
     }
