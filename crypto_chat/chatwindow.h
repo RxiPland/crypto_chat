@@ -75,7 +75,7 @@ private:
     void disable_widgets(bool disable=true);
 
     void roomNotExist();
-    QString makeHtmlMessage(QString message="", QString color="black", QString time="", QString prefix="", QString nickname="");
+    QString makeHtmlMessage(QString message="", QString color="black", QString time=QTime::currentTime().toString(), QString prefix="", QString nickname="");
 
 };
 #endif // CHATWINDOW_H
