@@ -44,7 +44,10 @@ void NameChangeDialog::on_pushButton_clicked()
     NameChangeDialog::new_name = ui->lineEdit->text().trimmed();
     NameChangeDialog::prefix = ui->lineEdit_2->text().trimmed();
 
-    if(ui->checkBox->isChecked()){
+    if(new_name.isEmpty() || NameChangeDialog::new_name == NameChangeDialog::original_name){
+        QMessageBox::information(this, "Oznámení", "Jméno nebylo změněno.");
+
+    } else if (ui->checkBox->isChecked()){
         QMessageBox::information(this, "Oznámení", "Údaje o jménu a prefixu byly úspěšně změněny.");
 
     } else{

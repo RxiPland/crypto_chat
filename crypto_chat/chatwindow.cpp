@@ -425,12 +425,20 @@ void ChatWindow::on_pushButton_3_clicked()
     nchd.setModal(true);
     nchd.exec();
 
-    if(nchd.new_name != ""){
+    if (!nchd.new_name.isEmpty() && user_name != nchd.new_name){
+        ChatWindow::sendMessage(QString("Uživatel %1 <%2> se přejmenoval na %3 <%4>").arg(ChatWindow::prefix, ChatWindow::user_name, nchd.prefix, nchd.new_name).toHtmlEscaped());
+
+    } else if (!nchd.prefix.isEmpty() && prefix != nchd.prefix){
+        ChatWindow::sendMessage(QString("Uživatel <%1> si změnil prefix na %2").arg(ChatWindow::prefix, nchd.prefix).toHtmlEscaped());
+    }
+
+
+    if (!nchd.new_name.isEmpty() && user_name != nchd.new_name){
         ChatWindow::user_name = nchd.new_name;
         this->setWindowTitle(tr("crypto-chat  |  %1  |  %2").arg(server_url, user_name));
     }
 
-    if(nchd.prefix != ""){
+    if (!nchd.prefix.isEmpty() && prefix != nchd.prefix){
         ChatWindow::prefix = nchd.prefix;
     }
 
