@@ -19,6 +19,9 @@ public:
     QString new_name = "";
     QString prefix;
 
+    bool name_changed = false;
+    bool prefix_changed = false;
+
     void set_name(QString name);
 
 private slots:

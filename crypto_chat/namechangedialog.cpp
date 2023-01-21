@@ -44,14 +44,14 @@ void NameChangeDialog::on_pushButton_clicked()
     NameChangeDialog::new_name = ui->lineEdit->text().trimmed();
     NameChangeDialog::prefix = ui->lineEdit_2->text().trimmed();
 
-    if(new_name.isEmpty() || NameChangeDialog::new_name == NameChangeDialog::original_name){
-        QMessageBox::information(this, "Oznámení", "Jméno nebylo změněno.");
+    if (!new_name.isEmpty() || NameChangeDialog::new_name != NameChangeDialog::original_name){
 
-    } else if (ui->checkBox->isChecked()){
-        QMessageBox::information(this, "Oznámení", "Údaje o jménu a prefixu byly úspěšně změněny.");
+        NameChangeDialog::name_changed = true;
+    }
 
-    } else{
-        QMessageBox::information(this, "Oznámení", "Jméno bylo úspěšně změněno.");
+    if (ui->checkBox->isChecked()){
+
+        NameChangeDialog::prefix_changed = true;
     }
 
 

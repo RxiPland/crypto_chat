@@ -16,7 +16,7 @@ public:
     ~ColorDialog();
 
     QString user_color;
-    bool change_color = false;
+    bool color_changed = false;
 
     QString convert_color(QString color);
     void set_color(QString color);

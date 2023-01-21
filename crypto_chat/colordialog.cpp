@@ -148,7 +148,7 @@ void ColorDialog::on_pushButton_clicked()
         QString hexColor = ui->lineEdit->text().replace(" ", "");
 
         if (hexColor.length() == 7 && hexColor.startsWith("#")){
-            change_color = true;
+            color_changed = true;
 
         } else {
             QMessageBox::critical(this, "Chyba", "Zadejte validní HEX hodnotu barvy! (např. #fffff, #cdff00)");
@@ -156,7 +156,7 @@ void ColorDialog::on_pushButton_clicked()
         }
 
     } else {
-        change_color = true;
+        color_changed = true;
     }
 
 
