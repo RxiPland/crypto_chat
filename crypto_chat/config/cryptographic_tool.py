@@ -28,7 +28,6 @@ def main():
 
     
     if operation == "generate_rsa":
-        # generate random room_id
         # generate RSA key pairs (public & private)
         # print them separated with ';'
 
@@ -70,15 +69,15 @@ def main():
             if length >= 3:
 
                 private_k = rsa.PrivateKey.load_pkcs1(bytes.fromhex(argv[1]))
-                aes_crypt = bytes.fromhex(argv[2])
+                encrypted = bytes.fromhex(argv[2])
 
-                aes_plain = rsa.decrypt(crypto=aes_crypt, priv_key=private_k)
+                decrypted = rsa.decrypt(crypto=encrypted, priv_key=private_k)
 
                 # print decrypted server AES key in hex
-                print(aes_plain.hex())
+                print(decrypted.hex())
 
             else:
-                raise Exception("Encrypted AES key is missing!")
+                raise Exception("Encrypted text is missing!")
 
         else:
             raise Exception("Private Key is missing!")

@@ -27,7 +27,6 @@ public:
     QString authentication_username;
     QString authentication_password;
 
-    QString room_id;
     QString rsaPublicKeyPem;
     QString rsaPrivateKeyPemHex;
 

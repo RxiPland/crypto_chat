@@ -10,6 +10,7 @@ import shutil
 import json
 from urllib.parse import unquote
 import hashlib
+import uuid
 
 
 app = flask.Flask(__name__)
@@ -29,7 +30,7 @@ version = "crypto-chat v1.1.0"
 2 = file with symetric key not found
 3 = wrong password
 4 = wrong room ID / successfull deletetion
-5 = wrong symetric key
+5 = wrong symetric/RSA key
 6 = other error
 
 - Maximums:
@@ -64,7 +65,8 @@ def get_key():
     """
     params: {'rsa_pem': "<user's RSA public key> in PEM"}
 
-    response: {'status_code': '<error code>', 'server_aes_key': '<encrypted server's AES key by public key> in hex'}
+    response: {'data': '<RSA-encrypted-data> in hex'}
+    <RSA-encrypted-data> = {'status_code': '<error code>', 'server_aes_key': '<plaintext server AES> in hex'}
     """
 
     try:
@@ -78,19 +80,27 @@ def get_key():
         if not "rsa_pem" in request_json.keys():
             return "Forbidden", 403
 
+
         # load RSA public key from PEM
-        rsa_public_key = rsa.PublicKey.load_pkcs1(unquote(request_json["rsa_pem"]))
+        try:
+            rsa_public_key = rsa.PublicKey.load_pkcs1(unquote(request_json["rsa_pem"]))
+        
+            data = {
+                "status_code": "1",
+                "server_aes_key": server_aes_key.hex()
+            }
 
+        except:
+            print("Invalid RSA public key!")
+            data = {
+                "status_code": "5",
+                "server_aes_key": ""
+            }
+        
+        # encrypt data json with RSA public key
+        encrypted_data = rsa.encrypt(str(data).encode(), rsa_public_key)
 
-        # encrypt server's AES key
-        encrypted_aes = rsa.encrypt(server_aes_key, rsa_public_key)
-
-        data = {
-            "status_code": "1",
-            "server_aes_key": encrypted_aes.hex()
-        }
-
-        return flask.jsonify(data)
+        return flask.jsonify({"data": encrypted_data.hex()}), 200
 
     except Exception as e:
         print(e)
@@ -100,69 +110,54 @@ def get_key():
 @app.route('/create-room', methods=["POST"])
 def create_room():
     """
-    params: {'data': '<AES-encrypted-data> in hex'}
-    <AES-encrypted-data> = {'room_id': '<random hex string (32)>', 'room_password_sha256': '<hashed password from user>'}
+    params: {'rsa_pem': "<user's RSA public key> in PEM"}
 
-    response: {'data': '<encrypted-data> in hex'}
-    <encrypted-data> = {'status_code': '<error code>', 'room_aes_key': '<symetric key of room> in hex'}
+    response: {'data': '<RSA-encrypted-data> in hex'}
+    <RSA-encrypted-data> = {'status_code': '<error code>', 'room_aes_key': '<plaintext room AES> in hex', 'room_id': '<32 chars hex string>'}
     """
 
     try:
         # specific user-agent is required
         if not "crypto-chat" in flask.request.user_agent.string:
-            print("Wrong header")
             return "Forbidden", 403
 
         request_json: dict = flask.request.get_json()
 
-        # key 'data' must be in JSON
-        if not "data" in request_json.keys():
-            print("'Data' key not in json")
+        # key 'rsa_pem' and 'data' must be in JSON
+        if not "rsa_pem" in request_json.keys():
             return "Forbidden", 403
 
 
-        decrypted_data: dict[str, str] = dict()
-
-        # decrypt data from request
+        # load RSA public key from PEM
         try:
-            decrypted_data: str = symetric_key.decrypt(bytes.fromhex(request_json["data"]))
+            rsa_public_key = rsa.PublicKey.load_pkcs1(unquote(request_json["rsa_pem"]))
 
         except:
-            print("Wrong symetric key")
+            print("Invalid RSA public key!")
 
-            # wrong symetric key
             data = {
                 "status_code": "5",
-                "room_aes_key": "None"
+                "room_aes_key": "",
+                "room_id": ""
             }
 
-            data = str(data).encode()
-            data = symetric_key.encrypt(data).hex()
+            # encrypt data json with RSA public key
+            encrypted_data = rsa.encrypt(str(data).encode(), rsa_public_key)
 
-            return flask.jsonify({"data": data}), 200
+            return flask.jsonify({"data": encrypted_data.hex()}), 200
 
-        decrypted_data: dict = json.loads(decrypted_data)
 
-        # keys 'room_id' and 'room_password_sha256' must be in decrypted JSON
-        if not "room_id" in decrypted_data.keys() or not "room_password_sha256" in decrypted_data.keys():
-            print("<room_id> or <room_password_sha256> not in decrypted json")
-            return "Forbidden", 403
-
-        # rooms folder in server's directory
+        # create rooms folder in server's directory if not exists
         if not os.path.exists(working_dir + "rooms"):
             os.mkdir(f"{working_dir}rooms")
 
         rooms_path = working_dir + "rooms" + "/"
 
-        room_id: str = decrypted_data["room_id"][0:32]
-        password: str = decrypted_data["room_password_sha256"]
+        # create 32 hex characters ID
+        room_id: str = uuid.uuid4().hex
 
         # create folder with random HEX string (room_id)
         os.mkdir(rooms_path + room_id)
-
-        # save password to file (already sha256 hash)
-        with open(rooms_path + room_id + "/password", "w") as f:
-            f.write(password)
 
         # create blank txt file for storing encrypted chat messages (only 100)
         with open(rooms_path + room_id + "/messages", "w") as f:
@@ -184,14 +179,107 @@ def create_room():
         # prepare data for return
         data = {
             "status_code": "1",
-            "room_aes_key": key.hex()
+            "room_aes_key": key.hex(),
+            "room_id": room_id
         }
 
-        # encrypt json
-        data = str(data).encode()
-        data = symetric_key.encrypt(data).hex()
+        # encrypt data json with RSA public key
+        encrypted_data = rsa.encrypt(str(data).encode(), rsa_public_key)
 
-        return flask.jsonify({"data": data}), 200
+        return flask.jsonify({"data": encrypted_data.hex()}), 200
+
+    except Exception as e:
+        print(e)
+        return str(e), 403
+
+
+@app.route('/change-password', methods=["POST"])
+def change_password():
+    """
+    params: {'data': '<AES-encrypted-data> in hex'}
+    <AES-encrypted-data> = {'room_id': '<hex string (32)>', 'encrypted_room_password': '<encrypted-with-room-key> in hex'}
+
+    response: {'data': '<AES-encrypted-data> in hex'}
+    <encrypted-data> = {'status_code': '<error code>'}
+    """
+
+    try:
+        # specific user-agent is required
+        if not "crypto-chat" in flask.request.user_agent.string:
+            return "Forbidden", 403
+
+        request_json: dict = flask.request.get_json()
+
+        # key 'data' must be in JSON
+        if not "data" in request_json.keys():
+            return "Forbidden", 403
+
+
+        decrypted_data: dict[str, str] = dict()
+
+        # decrypt data from request
+        try:
+            decrypted_data = symetric_key.decrypt(bytes.fromhex(request_json["data"]))
+
+        except:
+
+            # wrong symetric key
+            data = {
+                "status_code": "5"
+            }
+
+            data = str(data).encode()
+            data = symetric_key.encrypt(data).hex()
+
+            return flask.jsonify({"data": data}), 200
+
+
+        # keys 'room_id' and 'encrypted_room_password' must be in decrypted JSON
+        if not "room_id" in decrypted_data.keys() or not "encrypted_room_password" in decrypted_data.keys():
+            return "Forbidden", 403
+
+        room_id = decrypted_data["room_id"][:32]
+        rooms_path = working_dir + "rooms" + "/"
+
+        if not os.path.exists(rooms_path + room_id):
+
+            data = {
+                "status_code": "4"
+            }
+
+            data = str(data).encode()
+            data = symetric_key.encrypt(data).hex()
+
+            return flask.jsonify({"data": data}), 200
+
+        with open(rooms_path + room_id + "/symetric_key", "rb") as f:
+            room_key = f.read()
+
+        try:
+            room_key = Fernet(room_key)
+            encrypted_password = bytes.fromhex(decrypted_data["encrypted_room_password"])
+
+            # decrypt password
+            room_password_sha256 = room_key.decrypt(encrypted_password)
+
+            with open(rooms_path + room_id + "/password", "wb") as f:
+                f.write(room_password_sha256)
+        
+        except:
+
+            data = {
+                "status_code": "5"
+            }
+
+            data = str(data).encode()
+            data = symetric_key.encrypt(data).hex()
+
+            return flask.jsonify({"data": data}), 200
+
+
+        
+        
+
 
     except Exception as e:
         print(e)

@@ -299,118 +299,147 @@ void LoginDialog::on_pushButton_clicked()
                 }
 
 
-                QList<QByteArray> cmdOutput = process.readAllStandardOutput().trimmed().split(';');
+                QList<QByteArray> cmdOutput = process.readAllStandardOutput().split(';');
 
                 if(cmdOutput.isEmpty()){
 
                     // python did not create the required data
-                    QMessageBox::critical(this, "Chyba", "Nepodařilo se vytvořit RSA klíče nebo ID!");
+                    QMessageBox::critical(this, "Chyba", "Nepodařilo se vytvořit RSA klíče!");
+
+                    msgBox.close();
+                    LoginDialog::disable_widgets(false);
+                    return;
+                }
+
+                // get rsa public key PEM from hex
+                LoginDialog::rsaPublicKeyPem = QByteArray::fromHex(cmdOutput[0].trimmed());
+
+                //get rsa private key PEM in hex
+                LoginDialog::rsaPrivateKeyPemHex = cmdOutput[1].trimmed();
+
+                msgBox.setText(previousText + "<span style=\"color:green;\"> [Dokončeno]<br></span>");
+
+
+                qurl_address = QUrl(url_address + "/get-key");
+
+                msgBox.setText(msgBox.text() + "4/5 Získávání symetrického klíče (AES) serveru pomocí veřejného klíče (RSA)");
+                previousText = msgBox.text();
+                msgBox.setText(msgBox.text() + "<span style=\"color:orange;\"> [Probíhá]<br></span>");
+
+                if(ui->checkBox->isChecked()){
+                    // authentication
+
+                    qurl_address.setUserName(authentication_username);
+                    qurl_address.setPassword(authentication_password);
+                }
+
+                request.setUrl(qurl_address);
+                request.setHeader(QNetworkRequest::ContentTypeHeader, "application/json");
+
+
+                QJsonObject obj;
+                obj["rsa_pem"] = (QString)QUrl::toPercentEncoding(rsaPublicKeyPem);
+                QJsonDocument doc(obj);
+                QByteArray data = doc.toJson();
+
+                QNetworkReply *reply_post = manager.post(request, data);
+
+                // wait for server response
+                while (!reply_post->isFinished())
+                {
+                    qApp->processEvents();
+                }
+
+                QJsonDocument jsonResponse = QJsonDocument::fromJson(reply_post->readAll());
+                QJsonObject jsonObject = jsonResponse.object();
+
+                // encrypted RSA data in hex
+                QString encryptedDataHex = jsonObject["data"].toString();
+
+                if(encryptedDataHex.isEmpty()){
+                    QMessageBox::critical(this, "Chyba", "Nastala chyba při komunikaci se serverem!");
+
+                    msgBox.close();
+                    LoginDialog::disable_widgets(false);
+                    return;
+                }
+
+                msgBox.setText(previousText + "<span style=\"color:green;\"> [Dokončeno]<br></span>");
+
+
+                msgBox.setText(msgBox.text() + "5/5 Dešifrování přijatého symetrického klíče (AES) pomocí privátního klíče (RSA)");
+                previousText = msgBox.text();
+                msgBox.setText(msgBox.text() + "<span style=\"color:orange;\"> [Probíhá]<br></span>");
+
+
+                //command = QString("/C python config/cryptographic_tool.exe decrypt_rsa %1 %2").arg(rsaPrivateKeyPem, encryptedDataHex);
+                command = QString("/C python config/cryptographic_tool.py decrypt_rsa %1 %2").arg(rsaPrivateKeyPemHex, encryptedDataHex);
+
+                // decrypt RSA encrypted data
+                process.start("cmd", QStringList(command));
+
+                while(process.state() == QProcess::Running){
+                    qApp->processEvents();
+                }
+
+
+                // get decrypted data
+                QByteArray decryptedDataHex = process.readAllStandardOutput().trimmed();
+
+                if (decryptedDataHex.isEmpty()){
+
+                    QMessageBox::critical(this, "Chyba", "Nepodařilo se dešifrovat data!");
+
+                    msgBox.close();
+                    LoginDialog::disable_widgets(false);
+                    return;
+                }
+
+                jsonResponse = QJsonDocument::fromJson(decryptedDataHex);
+                jsonObject = jsonResponse.object();
+
+                QString statusCode = jsonObject["status_code"].toString();
+
+                if (statusCode != "1"){
+
+                    QMessageBox::critical(this, "Chyba", "Serveru se nepodařilo zašifrovat data veřejným klíčem!");
+
+                    msgBox.close();
+                    LoginDialog::disable_widgets(false);
+                    return;
+                }
+
+
+                LoginDialog::serverAesKeyHex = jsonObject["server_aes_key"].toString();
+
+                msgBox.setText(previousText + "<span style=\"color:green;\"> [Dokončeno]<br></span>");
+                msgBox.setText(msgBox.text() + "<br>Symetrický klíč serveru byl úspěšně přijat. Vyberte zda chcete vytvořit novou místnost, nebo se připojit už k existující:");
+
+                pButtonCreate->setDisabled(false);
+                pButtonJoin->setDisabled(false);
+
+                pButtonJoin->setFocus();
+
+                // wait for user input
+                while(!msgBox.isHidden()){
+                    qApp->processEvents();
+                }
+
+                if (msgBox.clickedButton()==pButtonCreate) {
+                    LoginDialog::create_room = true;
 
                 } else{
-
-                    // get room id
-                    LoginDialog::room_id = QByteArray::fromHex(cmdOutput[0].trimmed());
-
-                    // get rsa public key PEM
-                    LoginDialog::rsaPublicKeyPem = QByteArray::fromHex(cmdOutput[1].trimmed());
-
-                    //get rsa private key PEM in hex
-                    LoginDialog::rsaPrivateKeyPemHex = cmdOutput[2].trimmed();
-
-                    msgBox.setText(previousText + "<span style=\"color:green;\"> [Dokončeno]<br></span>");
-
-
-                    qurl_address = QUrl(url_address + "/get-key");
-
-                    msgBox.setText(msgBox.text() + "4/5 Získávání symetrického klíče (AES) serveru pomocí veřejného klíče (RSA)");
-                    previousText = msgBox.text();
-                    msgBox.setText(msgBox.text() + "<span style=\"color:orange;\"> [Probíhá]<br></span>");
-
-                    if(ui->checkBox->isChecked()){
-                        // authentication
-
-                        qurl_address.setUserName(authentication_username);
-                        qurl_address.setPassword(authentication_password);
-                    }
-
-                    request.setUrl(qurl_address);
-                    request.setHeader(QNetworkRequest::ContentTypeHeader, "application/json");
-
-
-                    QJsonObject obj;
-                    obj["rsa_pem"] = (QString)QUrl::toPercentEncoding(rsaPublicKeyPem);
-                    QJsonDocument doc(obj);
-                    QByteArray data = doc.toJson();
-
-                    QNetworkReply *reply_post = manager.post(request, data);
-
-                    // wait for server response
-                    while (!reply_post->isFinished())
-                    {
-                        qApp->processEvents();
-                    }
-
-                    QJsonDocument jsonResponse = QJsonDocument::fromJson(reply_post->readAll());
-                    QJsonObject jsonObject = jsonResponse.object();
-
-                    QString status_code = jsonObject["status_code"].toString();
-
-                    if(status_code != "1"){
-                        QMessageBox::critical(this, "Chyba", "Server neposlal zašifrovaný symetrický klíč! (AES)");
-
-                    } else{
-
-                        QString encryptedAesKeyHex = jsonObject["server_aes_key"].toString();
-                        msgBox.setText(previousText + "<span style=\"color:green;\"> [Dokončeno]<br></span>");
-
-
-                        msgBox.setText(msgBox.text() + "5/5 Dešifrování přijatého symetrického klíče (AES) pomocí privátního klíče (RSA)");
-                        previousText = msgBox.text();
-                        msgBox.setText(msgBox.text() + "<span style=\"color:orange;\"> [Probíhá]<br></span>");
-
-                        //command = QString("/C python config/cryptographic_tool.exe decrypt_rsa %1 %2").arg(rsaPrivateKeyPem, encryptedAesKeyHex);
-                        command = QString("/C python config/cryptographic_tool.py decrypt_rsa %1 %2").arg(rsaPrivateKeyPemHex, encryptedAesKeyHex);
-
-                        // decrypt RSA encrypted symetric key
-                        process.start("cmd", QStringList(command));
-
-                        while(process.state() == QProcess::Running){
-                            qApp->processEvents();
-                        }
-
-                        // get decrypted server AES key in hex
-                        LoginDialog::serverAesKeyHex = process.readAllStandardOutput().trimmed();
-
-                        msgBox.setText(previousText + "<span style=\"color:green;\"> [Dokončeno]<br></span>");
-                        msgBox.setText(msgBox.text() + "<br>Symetrický klíč serveru byl úspěšně přijat. Vyberte zda chcete vytvořit novou místnost, nebo se připojit už k existující:");
-
-                        pButtonCreate->setDisabled(false);
-                        pButtonJoin->setDisabled(false);
-
-                        pButtonJoin->setFocus();
-
-                        // wait for user input
-                        while(!msgBox.isHidden()){
-                            qApp->processEvents();
-                        }
-
-                        if (msgBox.clickedButton()==pButtonCreate) {
-                            LoginDialog::create_room = true;
-
-                        } else{
-                            LoginDialog::create_room = false;
-                        }
-
-                        LoginDialog::successful_login = true;
-                        LoginDialog::server_url = ui->lineEdit->text();
-
-
-                        msgBox.close();
-                        this->close();
-
-                        return;
-                    }
+                    LoginDialog::create_room = false;
                 }
+
+                LoginDialog::successful_login = true;
+                LoginDialog::server_url = ui->lineEdit->text();
+
+
+                msgBox.close();
+                this->close();
+
+                return;
             }
         }
     }
