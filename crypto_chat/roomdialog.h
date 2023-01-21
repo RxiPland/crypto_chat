@@ -56,9 +56,6 @@ private:
     void createRoomFunc();
     void joinRoomFunc();
 
-    QByteArray readTempFile(QString filename);
-    void writeTempFile(QString filename, QByteArray content);
-
     QStringList getJson(QStringList names, QByteArray data);
 };
 

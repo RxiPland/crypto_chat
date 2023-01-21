@@ -45,7 +45,7 @@ RoomDialog::RoomDialog(QWidget *parent, bool createRoom, QString server_url, QSt
 
         ui->lineEdit_3->setDisabled(true);
         ui->lineEdit_3->setReadOnly(true);
-        ui->lineEdit_3->setText(room_id);
+        ui->lineEdit_3->setText("Vytvoří server");
 
         ui->pushButton->setText(" Vytvořit místnost ");
 
@@ -103,7 +103,7 @@ void RoomDialog::createRoomFunc()
     RoomDialog::disable_widgets(true);
     QString nickname = ui->lineEdit_4->text().trimmed();
 
-    if(nickname == ""){
+    if(nickname.isEmpty()){
         QMessageBox::critical(this, "Chyba", "Pole pro jméno nemůže být prázdné!");
 
         RoomDialog::disable_widgets(false);
@@ -429,34 +429,6 @@ void RoomDialog::joinRoomFunc()
 }
 
 
-QByteArray RoomDialog::readTempFile(QString filename){
-
-    QFile file(QDir::tempPath() + "/" + room_id + "/" + filename);
-    QByteArray content;
-
-    if(!file.exists()){
-        // python did not create the file
-        return content;
-
-    } else{
-        file.open(QIODevice::ReadOnly);
-        content = file.readAll();
-        file.close();
-    }
-
-    return content;
-}
-
-void RoomDialog::writeTempFile(QString filename, QByteArray content){
-
-    QFile file(QDir::tempPath() + "/" + room_id + "/" + filename);
-
-    file.open(QIODevice::WriteOnly);
-    file.write(content);
-    file.close();
-}
-
-
 QStringList RoomDialog::getJson(QStringList names, QByteArray data)
 {
     QJsonDocument jsonResponse;
@@ -598,7 +570,7 @@ void RoomDialog::on_pushButton_2_clicked()
 
         ui->lineEdit_3->setDisabled(true);
         ui->lineEdit_3->setReadOnly(true);
-        ui->lineEdit_3->setText(room_id);
+        ui->lineEdit_3->setText("Vytvoří server");
 
         ui->lineEdit_2->setFocus();
 
