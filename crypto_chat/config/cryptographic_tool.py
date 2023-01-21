@@ -7,7 +7,6 @@ import sys
 import os
 import os.path
 import tempfile
-import uuid
 
 
 app_dir = os.path.dirname(__file__).replace("\\", "/") + "/"
@@ -45,15 +44,6 @@ def main():
                 raise Exception("Size must be [2048, 4096] !")
 
             else:
-                
-                # generate random hex id (32)
-                room_id = uuid.uuid4().hex
-                
-                # print id in hex
-                print(room_id.encode().hex())
-
-                # print ';' for easier splitting
-                print(";")
 
                 # generate RSA keys
                 public_k, private_k = rsa.newkeys(int(argv[1]))
