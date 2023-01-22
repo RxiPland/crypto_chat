@@ -10,7 +10,7 @@ import tempfile
 
 
 app_dir = os.path.dirname(__file__).replace("\\", "/") + "/"
-operations = "[generate_rsa, generate_aes, decrypt_rsa, encrypt_aes_server, decrypt_aes_server, get_messages]"
+operations = "[generate_rsa, decrypt_rsa, encrypt_aes, decrypt_aes]"
 
 def main():
 
@@ -83,94 +83,9 @@ def main():
             raise Exception("Private Key is missing!")
 
 
-    elif operation == "encrypt_aes_server":
-        # encrypt user's input with server's key
-        # print or save to temp file
 
-        if length >= 2:
-
-            if length >= 3:
-
-                if length >= 4:
-
-                    server_symetric_key = Fernet(bytes.fromhex(argv[1]))
-
-                    file_mode = "true" in argv[2].lower()
-
-                    if file_mode:
-                        temp_file_path = tempfile.gettempdir() + f"\\{argv[3]}"
-
-                        with open(temp_file_path, "r") as f:
-                            plain_text = f.read().strip()
-
-                    else:
-                        plain_text = argv[3]
-
-                    # encrypt plaintext
-                    message_crypt_hex = server_symetric_key.encrypt(data=bytes.fromhex(plain_text)).hex()
-
-                    if file_mode:
-                        # write encrypted data to temp file
-                        with open(temp_file_path, "w") as f:
-                            f.write(message_crypt_hex)
-
-                    else:
-                        # print encrypted data
-                        print(message_crypt_hex)
-
-                else:
-                    raise Exception("Plain text OR filename is missing!")
-            else:
-                raise Exception("\"Saved to file\" boolean is missing!")
-        else:
-            raise Exception("Server symetric key is missing!")
-
-
-    elif operation == "decrypt_aes_server":
-        # decrypt hex message with server symetric key
-        # print OR save to temp file
-
-        if length >= 2:
-
-            if length >= 3:
-
-                if length >= 4:
-
-                    server_symetric_key = Fernet(bytes.fromhex(argv[1]))
-
-                    file_mode = "true" in argv[2].lower()
-
-                    if file_mode:
-                        temp_file_path = tempfile.gettempdir() + f"\\{argv[3]}"
-
-                        with open(temp_file_path, "r") as f:
-                            encrypted_text_hex = f.read().strip()
-
-                    else:
-                        encrypted_text_hex = argv[3]
-
-                    # decrypt
-                    message_decrypted_hex = server_symetric_key.decrypt(bytes.fromhex(encrypted_text_hex)).hex()
-
-                    if file_mode:
-                        # write decrypted data to temp file
-                        with open(temp_file_path, "w") as f:
-                            f.write(message_decrypted_hex)
-
-                    else:
-                        # print decrypted data
-                        print(message_decrypted_hex)
-
-                else:
-                    raise Exception("Encrypted text OR filename is missing!")
-            else:
-                raise Exception("\"Saved to file\" boolean is missing!")
-        else:
-            raise Exception("Server symetric key is missing!")
-
-
-    elif operation == "encrypt_aes_room":
-        # encrypt hex message with room symetric key
+    elif operation == "encrypt_aes":
+        # encrypt hex message with symetric key
         # print OR save to temp file
 
         """
@@ -216,8 +131,8 @@ def main():
             raise Exception("Room symetric key is missing!")
 
 
-    elif operation == "decrypt_aes_room":
-        # decrypt hex message with room symetric key
+    elif operation == "decrypt_aes":
+        # decrypt hex message with symetric key
         # print OR save to temp file
 
         """
