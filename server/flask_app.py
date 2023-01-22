@@ -62,6 +62,8 @@ def check_version():
 
 @app.route('/get-key', methods=["POST"])
 def get_key():
+    # get server's symetric key
+
     """
     params: {'rsa_pem': "<user's RSA public key> in PEM"}
 
@@ -109,6 +111,8 @@ def get_key():
 
 @app.route('/create-room', methods=["POST"])
 def create_room():
+    # create new chat room without password
+
     """
     params: {'rsa_pem': "<user's RSA public key> in PEM"}
 
@@ -153,8 +157,8 @@ def create_room():
 
         rooms_path = working_dir + "rooms" + "/"
 
-        # create 32 hex characters ID
-        room_id: str = uuid.uuid4().hex
+        # create 32 hex characters long ID
+        room_id: str = uuid.uuid4().hex[:32]
 
         # create folder with random HEX string (room_id)
         os.mkdir(rooms_path + room_id)
@@ -166,6 +170,10 @@ def create_room():
         # create txt for storing count of recieved messages (not only 100)
         with open(rooms_path + room_id + "/messages_count", "w") as f:
             f.write("0")
+        
+        # create password file with sha256 hash of empty string
+        with open(rooms_path + room_id + "/password", "w") as f:
+            f.write("e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855")
 
 
         # generate AES key for room
@@ -195,6 +203,8 @@ def create_room():
 
 @app.route('/change-password', methods=["POST"])
 def change_password():
+    # change or set new password
+
     """
     params: {'data': '<AES-encrypted-data> in hex'}
     <AES-encrypted-data> = {'room_id': '<hex string (32)>', 'encrypted_room_password': '<encrypted-with-room-key> in hex'}
@@ -242,6 +252,7 @@ def change_password():
         rooms_path = working_dir + "rooms" + "/"
 
         if not os.path.exists(rooms_path + room_id):
+            # ID is wrong
 
             data = {
                 "status_code": "4"
@@ -252,16 +263,21 @@ def change_password():
 
             return flask.jsonify({"data": data}), 200
 
+
+        # load AES key from room's folder
         with open(rooms_path + room_id + "/symetric_key", "rb") as f:
             room_key = f.read()
 
         try:
+            # decrypt password with room's key
+
             room_key = Fernet(room_key)
             encrypted_password = bytes.fromhex(decrypted_data["encrypted_room_password"])
 
             # decrypt password
             room_password_sha256 = room_key.decrypt(encrypted_password)
 
+            # overwrite password in file with new hashed password
             with open(rooms_path + room_id + "/password", "wb") as f:
                 f.write(room_password_sha256)
         
@@ -277,8 +293,14 @@ def change_password():
             return flask.jsonify({"data": data}), 200
 
 
-        
-        
+        data = {
+            "status_code": "1"
+        }
+
+        data = str(data).encode()
+        data = symetric_key.encrypt(data).hex()
+
+        return flask.jsonify({"data": data}), 200
 
 
     except Exception as e:
