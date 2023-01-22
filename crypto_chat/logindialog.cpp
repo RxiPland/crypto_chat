@@ -173,7 +173,7 @@ void LoginDialog::on_pushButton_clicked()
         QStringList temp_list;
         int i;
 
-        msgBox.setText(msgBox.text() + "1/5 Čištění URL adresy");
+        msgBox.setText(msgBox.text() + "1/6 Čištění URL adresy");
         previousText = msgBox.text();
         msgBox.setText(msgBox.text() + "<span style=\"color:orange;\"> [Probíhá]<br></span>");
 
@@ -214,7 +214,7 @@ void LoginDialog::on_pushButton_clicked()
         request.setHeader(QNetworkRequest::UserAgentHeader, user_agent);
         request.setHeader(QNetworkRequest::ContentTypeHeader, "text/html; charset=utf-8");
 
-        msgBox.setText(msgBox.text() + "2/5 Ověřování verze aplikace s verzí serveru");
+        msgBox.setText(msgBox.text() + "2/6 Ověřování verze aplikace s verzí serveru");
         previousText = msgBox.text();
         msgBox.setText(msgBox.text() + "<span style=\"color:orange;\"> [Probíhá]<br></span>");
 
@@ -276,8 +276,43 @@ void LoginDialog::on_pushButton_clicked()
 
                 msgBox.setText(previousText + "<span style=\"color:green;\"> [Dokončeno]<br></span>");
 
+                msgBox.setText(msgBox.text() + "3/6 Získávání veřejného klíče serveru");
+                previousText = msgBox.text();
+                msgBox.setText(msgBox.text() + "<span style=\"color:orange;\"> [Probíhá]<br></span>");
 
-                msgBox.setText(msgBox.text() + "3/5 Generace veřejného a soukromého klíče (RSA)");
+
+                qurl_address = QUrl(url_address + "/get-public");
+
+                if(ui->checkBox->isChecked()){
+                    // authentication
+
+                    qurl_address.setUserName(authentication_username);
+                    qurl_address.setPassword(authentication_password);
+                }
+
+                request.setUrl(qurl_address);
+                reply_get = manager.get(request);
+
+                while (!reply_get->isFinished())
+                {
+                    qApp->processEvents();
+                }
+
+                if (reply_get->readAll().isEmpty()){
+                    msgBox.close();
+
+                    QMessageBox::critical(this, "Nastala chyba", "Server nevrátil svůj veřejný klíč!");
+                    LoginDialog::disable_widgets(false);
+                    return;
+                }
+
+                // save server's RSA public key
+                LoginDialog::serverPublicKeyPemHex = reply_get->readAll();
+
+                msgBox.setText(previousText + "<span style=\"color:green;\"> [Dokončeno]<br></span>");
+
+
+                msgBox.setText(msgBox.text() + "4/6 Generace veřejného a soukromého klíče (RSA)");
                 previousText = msgBox.text();
                 msgBox.setText(msgBox.text() + "<span style=\"color:orange;\"> [Probíhá]<br></span>");
 
@@ -302,11 +337,11 @@ void LoginDialog::on_pushButton_clicked()
                 QList<QByteArray> cmdOutput = process.readAllStandardOutput().split(';');
 
                 if(cmdOutput.isEmpty()){
+                    msgBox.close();
 
                     // python did not create the required data
                     QMessageBox::critical(this, "Chyba", "Nepodařilo se vytvořit RSA klíče!");
 
-                    msgBox.close();
                     LoginDialog::disable_widgets(false);
                     return;
                 }
@@ -322,7 +357,7 @@ void LoginDialog::on_pushButton_clicked()
 
                 qurl_address = QUrl(url_address + "/get-key");
 
-                msgBox.setText(msgBox.text() + "4/5 Získávání symetrického klíče (AES) serveru pomocí veřejného klíče (RSA)");
+                msgBox.setText(msgBox.text() + "5/6 Získávání symetrického klíče (AES) serveru pomocí veřejného klíče (RSA)");
                 previousText = msgBox.text();
                 msgBox.setText(msgBox.text() + "<span style=\"color:orange;\"> [Probíhá]<br></span>");
 
@@ -367,7 +402,7 @@ void LoginDialog::on_pushButton_clicked()
                 msgBox.setText(previousText + "<span style=\"color:green;\"> [Dokončeno]<br></span>");
 
 
-                msgBox.setText(msgBox.text() + "5/5 Dešifrování přijatého symetrického klíče (AES) pomocí privátního klíče (RSA)");
+                msgBox.setText(msgBox.text() + "6/6 Dešifrování přijatého symetrického klíče (AES) pomocí privátního klíče (RSA)");
                 previousText = msgBox.text();
                 msgBox.setText(msgBox.text() + "<span style=\"color:orange;\"> [Probíhá]<br></span>");
 
@@ -387,10 +422,9 @@ void LoginDialog::on_pushButton_clicked()
                 QByteArray decryptedDataHex = process.readAllStandardOutput().trimmed();
 
                 if (decryptedDataHex.isEmpty()){
+                    msgBox.close();
 
                     QMessageBox::critical(this, "Chyba", "Nepodařilo se dešifrovat data!");
-
-                    msgBox.close();
                     LoginDialog::disable_widgets(false);
                     return;
                 }

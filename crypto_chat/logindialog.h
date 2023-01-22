@@ -30,6 +30,8 @@ public:
     QString rsaPublicKeyPem;
     QString rsaPrivateKeyPemHex;
 
+
+    QString serverPublicKeyPemHex;
     QString serverAesKeyHex;
 
 private slots:
