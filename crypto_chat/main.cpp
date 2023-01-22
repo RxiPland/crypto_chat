@@ -41,6 +41,8 @@ int main(int argc, char *argv[])
     rd.app_version = app_version;
     rd.user_agent = user_agent;
     rd.serverAesKeyHex = ld.serverAesKeyHex;
+    rd.rsaPublicKeyPem = ld.rsaPublicKeyPem;
+    rd.rsaPrivateKeyPemHex = ld.rsaPrivateKeyPemHex;
 
     if(ld.authentication_required){
         rd.authentication_required = true;
