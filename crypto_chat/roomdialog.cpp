@@ -160,8 +160,13 @@ void RoomDialog::createRoomFunc()
     }
 
 
-    //QString command = QString("/C python config/cryptographic_tool.exe decrypt_rsa %1 %2").arg(rsaPrivateKeyPem, response.toHex());
-    QString command = QString("/C python config/cryptographic_tool.py decrypt_rsa %1 %2").arg(rsaPrivateKeyPemHex, response.toHex());
+    QJsonDocument jsonResponse = QJsonDocument::fromJson(response);
+    QJsonObject jsonObject = jsonResponse.object();
+    QString dataHex = jsonObject["data"].toString();
+
+
+    //QString command = QString("/C python config/cryptographic_tool.exe decrypt_rsa %1 %2").arg(rsaPrivateKeyPem, dataHex);
+    QString command = QString("/C python config/cryptographic_tool.py decrypt_rsa %1 %2").arg(rsaPrivateKeyPemHex, dataHex);
 
     // decrypt RSA encrypted data
     QProcess process;
@@ -183,8 +188,8 @@ void RoomDialog::createRoomFunc()
         return;
     }
 
-    QJsonDocument jsonResponse = QJsonDocument::fromJson(decryptedDataHex);
-    QJsonObject jsonObject = jsonResponse.object();
+    jsonResponse = QJsonDocument::fromJson(decryptedDataHex);
+    jsonObject = jsonResponse.object();
 
 
     QString statusCode = jsonObject["status_code"].toString();
@@ -515,20 +520,10 @@ void RoomDialog::setPassword(QString password)
     }
 
 
-    //command = QString("/C python config/cryptographic_tool.exe decrypt_aes %1 %2 %3").arg(RoomDialog::serverAesKeyHex, "False", response.toHex());
-    command = QString("/C python config/cryptographic_tool.py decrypt_aes %1 %2 %3").arg(RoomDialog::serverAesKeyHex, "False", response.toHex());
-
-    // decrypt RSA encrypted data
-    process.start("cmd", QStringList(command));
-
-    while(process.state() == QProcess::Running){
-        qApp->processEvents();
-    }
-
     // get decrypted data
-    QByteArray decryptedDataHex = process.readAllStandardOutput().trimmed();
+    QStringList decryptedData = getJson(QStringList("status_code"), response);
 
-    if (decryptedDataHex.isEmpty()){
+    if (decryptedData.isEmpty()){
 
         QMessageBox::critical(this, "Chyba", "Nepodařilo se dešifrovat data!");
 
@@ -536,10 +531,7 @@ void RoomDialog::setPassword(QString password)
         return;
     }
 
-    QJsonDocument jsonResponse = QJsonDocument::fromJson(decryptedDataHex);
-    QJsonObject jsonObject = jsonResponse.object();
-
-    QString statusCode = jsonObject["status_code"].toString();
+    QString statusCode = decryptedData[0];
 
     if (statusCode != "1"){
         QMessageBox::critical(this, "Chyba", "Nepodařilo se nastavit heslo!");
@@ -547,7 +539,6 @@ void RoomDialog::setPassword(QString password)
         RoomDialog::disable_widgets(false);
         return;
     }
-
 }
 
 
