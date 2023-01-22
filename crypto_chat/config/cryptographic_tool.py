@@ -60,9 +60,32 @@ def main():
             raise Exception("Size of RSA key is missing! [2048, 4096]")
    
 
+    elif operation == "encrypt_rsa":
+        # encrypt plaintext with RSA public key in PEM hex
+        # print encrypted text
+
+        if length >= 2:
+
+            if length >= 3:
+
+                public_k = rsa.PublicKey.load_pkcs1(bytes.fromhex(argv[1]))
+                plaintext = bytes.fromhex(argv[2])
+
+                encrypted = rsa.encrypt(message=plaintext, pub_key=public_k)
+
+                # print ciphertext in hex
+                print(encrypted.hex())
+
+            else:
+                raise Exception("Plaintext is missing!")
+
+        else:
+            raise Exception("Public Key is missing!")
+
+
     elif operation == "decrypt_rsa":
-        # decrypt RSA cipher to obtain symetric key (AES)
-        # save AES to file
+        # decrypt ciphertext with RSA private key in PEM hex
+        # print decrypted text
 
         if length >= 2:
 
@@ -81,7 +104,6 @@ def main():
 
         else:
             raise Exception("Private Key is missing!")
-
 
 
     elif operation == "encrypt_aes":
