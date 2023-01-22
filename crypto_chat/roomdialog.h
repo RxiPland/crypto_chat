@@ -30,6 +30,9 @@ public:
     QString authentication_username;
     QString authentication_password;
 
+    QString rsaPublicKeyPem;
+    QString rsaPrivateKeyPemHex;
+
     QString serverAesKeyHex;
     QString roomAesKeyHex;
 
@@ -55,6 +58,7 @@ private:
 
     void createRoomFunc();
     void joinRoomFunc();
+    void setPassword(QString password);
 
     QStringList getJson(QStringList names, QByteArray data);
 };

@@ -100,10 +100,12 @@ void RoomDialog::disable_widgets(bool disable){
 
 void RoomDialog::createRoomFunc()
 {
-    RoomDialog::disable_widgets(true);
-    QString nickname = ui->lineEdit_4->text().trimmed();
+    // create new room
 
-    if(nickname.isEmpty()){
+    RoomDialog::disable_widgets(true);
+    RoomDialog::username = ui->lineEdit_4->text().trimmed();
+
+    if(RoomDialog::username.isEmpty()){
         QMessageBox::critical(this, "Chyba", "Pole pro jméno nemůže být prázdné!");
 
         RoomDialog::disable_widgets(false);
@@ -111,49 +113,9 @@ void RoomDialog::createRoomFunc()
         return;
     }
 
-    RoomDialog::room_password = ui->lineEdit->text();
-
-    QCryptographicHash hash(QCryptographicHash::Sha256);
-
-    // data for POST
-    QJsonObject objMessage;
-    objMessage["room_id"] = ui->lineEdit_3->text();
-
-    if(ui->checkBox->isChecked()){
-        hash.addData(ui->lineEdit->text().toStdString());
-    } else{
-        hash.addData("");
-    }
-
-    objMessage["room_password_sha256"] = (QString)hash.result().toHex();
-
-    QJsonDocument docMessage(objMessage);
-    QString messageDataHex = docMessage.toJson().toHex();
-
-    //QString command = QString("/C python config/cryptographic_tool.exe encrypt_aes_server %1 %2 %3").arg(RoomDialog::serverAesKeyHex, "False", messageDataHex);
-    QString command = QString("/C python config/cryptographic_tool.py encrypt_aes_server %1 %2 %3").arg(RoomDialog::serverAesKeyHex, "False", messageDataHex);
-
-
-    // encrypt
-    QProcess process;
-    process.start("cmd", QStringList(command));
-
-    while(process.state() == QProcess::Running){
-        qApp->processEvents();
-    }
-
-    QString encryptedData = process.readAllStandardOutput().trimmed();
-
-
-    if (encryptedData.isEmpty()){
-        QMessageBox::critical(this, "Chyba", QString("Nastala chyba při šifrování!\n\nChyba: %1").arg(process.readAllStandardError()));
-
-        RoomDialog::disable_widgets(false);
-        return;
-    }
 
     QJsonObject objData;
-    objData["data"] = encryptedData;
+    objData["rsa_pem"] = RoomDialog::rsaPublicKeyPem;
     QJsonDocument docData(objData);
     QByteArray CreateRoomData = docData.toJson();
 
@@ -179,6 +141,7 @@ void RoomDialog::createRoomFunc()
         qApp->processEvents();
     }
 
+
     QByteArray response = reply_post->readAll();
 
     if(reply_post->error() == QNetworkReply::ConnectionRefusedError){
@@ -196,41 +159,69 @@ void RoomDialog::createRoomFunc()
         return;
     }
 
-    QStringList names;
-    names.append("status_code");
-    names.append("room_aes_key");
 
-    QStringList responseData = getJson(names, response);
+    //QString command = QString("/C python config/cryptographic_tool.exe decrypt_rsa %1 %2").arg(rsaPrivateKeyPem, response.toHex());
+    QString command = QString("/C python config/cryptographic_tool.py decrypt_rsa %1 %2").arg(rsaPrivateKeyPemHex, response.toHex());
 
-    if (responseData.isEmpty()){
-        QMessageBox::critical(this, "Chyba - symetrický klíč", "Server byl pravděpodobně restartován a kvůli tomu máte starý symetrický klíč. Restartuje program pro získání aktuálního.");
+    // decrypt RSA encrypted data
+    QProcess process;
+    process.start("cmd", QStringList(command));
+
+    while(process.state() == QProcess::Running){
+        qApp->processEvents();
+    }
+
+    // get decrypted data
+    QByteArray decryptedDataHex = process.readAllStandardOutput().trimmed();
+
+
+    if (decryptedDataHex.isEmpty()){
+
+        QMessageBox::critical(this, "Chyba", "Nepodařilo se dešifrovat data!");
 
         RoomDialog::disable_widgets(false);
         return;
     }
 
+    QJsonDocument jsonResponse = QJsonDocument::fromJson(decryptedDataHex);
+    QJsonObject jsonObject = jsonResponse.object();
 
-    if (responseData[0] == "5"){
-        QMessageBox::critical(this, "Chyba (Server: 5) - symetrický klíč", "Server byl pravděpodobně restartován a kvůli tomu máte starý symetrický klíč. Restartuje program pro získání aktuálního.");
 
-        RoomDialog::disable_widgets(false);
-        return;
+    QString statusCode = jsonObject["status_code"].toString();
 
-    } else if (responseData[0] != "1"){
-        QMessageBox::critical(this, "Chyba", "Nastala neznámá chyba! Server odpověděl {\"status_code\": " + responseData[0] + "}");
+    if (statusCode != "1"){
+
+        QMessageBox::critical(this, "Chyba", "Serveru se nepodařilo zašifrovat data veřejným klíčem!");
 
         RoomDialog::disable_widgets(false);
         return;
     }
 
-    // get room symetric key in hex
-    RoomDialog::roomAesKeyHex = responseData[1];
+    RoomDialog::roomAesKeyHex = jsonObject["room_aes_key"].toString();
 
+    if(RoomDialog::roomAesKeyHex.isEmpty()){
+        QMessageBox::critical(this, "Chyba", "Server nevytvořil symetrický klíč místnosti!");
 
-    QMessageBox::information(this, "Oznámení", "Místnost byla úspěšně vytvořena");
+        RoomDialog::disable_widgets(false);
+        return;
+    }
+
+    RoomDialog::room_id = jsonObject["room_id"].toString();
+
+    if(RoomDialog::room_id.isEmpty()){
+        QMessageBox::critical(this, "Chyba", "Server nevytvořil ID místnosti!");
+
+        RoomDialog::disable_widgets(false);
+        return;
+    }
+
+    // set password for room
+    if(ui->checkBox->isChecked()){
+        RoomDialog::setPassword(ui->lineEdit->text());
+    }
 
     RoomDialog::successful = true;
-    RoomDialog::username = nickname;
+    QMessageBox::information(this, "Oznámení", "Místnost byla úspěšně vytvořena");
 
     this->close();
 }
@@ -281,8 +272,8 @@ void RoomDialog::joinRoomFunc()
     QJsonDocument docMessage(objMessage);
     QString message_data = docMessage.toJson().toHex();
 
-    //QString command = QString("/C python config/cryptographic_tool.exe encrypt_aes_server %1 %2 %3").arg(RoomDialog::serverAesKeyHex, "False", message_data);
-    QString command = QString("/C python config/cryptographic_tool.py encrypt_aes_server %1 %2 %3").arg(RoomDialog::serverAesKeyHex, "False", message_data);
+    //QString command = QString("/C python config/cryptographic_tool.exe encrypt_aes %1 %2 %3").arg(RoomDialog::serverAesKeyHex, "False", message_data);
+    QString command = QString("/C python config/cryptographic_tool.py encrypt_aes %1 %2 %3").arg(RoomDialog::serverAesKeyHex, "False", message_data);
 
 
     // encrypt
@@ -429,6 +420,137 @@ void RoomDialog::joinRoomFunc()
 }
 
 
+void RoomDialog::setPassword(QString password)
+{
+
+    //hash password
+    QCryptographicHash hash(QCryptographicHash::Sha256);
+
+    if(ui->checkBox->isChecked()){
+        hash.addData(password.toStdString());
+        RoomDialog::room_password = password;
+
+    } else{
+        return;
+    }
+
+    QByteArray passwordSha256 = hash.result().toHex();
+
+    //QString command = QString("/C python config/cryptographic_tool.exe encrypt_aes %1 %2 %3").arg(RoomDialog::roomAesKeyHex, "False", passwordSha256.toHex());
+    QString command = QString("/C python config/cryptographic_tool.py encrypt_aes %1 %2 %3").arg(RoomDialog::roomAesKeyHex, "False", passwordSha256.toHex());
+
+    // encrypt hashed password with room key
+    QProcess process;
+    process.start("cmd", QStringList(command));
+
+    while(process.state() == QProcess::Running){
+        qApp->processEvents();
+    }
+
+    // get decrypted data
+    QString encryptedPasswordHex = process.readAllStandardOutput().trimmed();
+
+    QJsonObject objData;
+    objData["room_id"] = RoomDialog::room_id;
+    objData["encrypted_room_password"] = encryptedPasswordHex;
+    QJsonDocument docData(objData);
+    QByteArray setPasswordData = docData.toJson();
+
+
+    //command = QString("/C python config/cryptographic_tool.exe encrypt_aes %1 %2 %3").arg(RoomDialog::serverAesKeyHex, "False", setPasswordData.toHex());
+    command = QString("/C python config/cryptographic_tool.py encrypt_aes %1 %2 %3").arg(RoomDialog::serverAesKeyHex, "False", setPasswordData.toHex());
+
+    // encrypt JSON with server key
+    process.start("cmd", QStringList(command));
+
+    while(process.state() == QProcess::Running){
+        qApp->processEvents();
+    }
+
+    QString postData = process.readAllStandardOutput().trimmed();
+
+    QJsonObject objPostData;
+    objData["data"] = postData;
+    QJsonDocument docPostData(objData);
+    QByteArray postDataJson = docPostData.toJson();
+
+    QNetworkRequest request;
+    QUrl qurl_address = QUrl(server_url + "/change-password");
+
+    request.setHeader(QNetworkRequest::ContentTypeHeader, "application/json");
+    request.setHeader(QNetworkRequest::UserAgentHeader, RoomDialog::user_agent);
+
+    if(RoomDialog::authentication_required){
+        // authentication
+
+        qurl_address.setUserName(authentication_username);
+        qurl_address.setPassword(authentication_password);
+    }
+
+    request.setUrl(qurl_address);
+
+    QNetworkReply *reply_post = manager.post(request, postDataJson);
+
+    while (!reply_post->isFinished())
+    {
+        qApp->processEvents();
+    }
+
+
+    QByteArray response = reply_post->readAll();
+
+    if(reply_post->error() == QNetworkReply::ConnectionRefusedError){
+        QMessageBox::critical(this, "Chyba", "Nelze se připojit k internetu nebo server není dostupný!");
+
+        RoomDialog::disable_widgets(false);
+        return;
+
+    } else if(reply_post->error() != QNetworkReply::NoError){
+        // Any error
+
+        QMessageBox::critical(this, "Odpověd serveru (chyba)", tr("Nastala neznámá chyba!\nOznačení QNetworkReply chyby: %1\n\nOdpověd serveru: %2").arg(reply_post->error()).arg(response));
+
+        RoomDialog::disable_widgets(false);
+        return;
+    }
+
+
+    //command = QString("/C python config/cryptographic_tool.exe decrypt_aes %1 %2 %3").arg(RoomDialog::serverAesKeyHex, "False", response.toHex());
+    command = QString("/C python config/cryptographic_tool.py decrypt_aes %1 %2 %3").arg(RoomDialog::serverAesKeyHex, "False", response.toHex());
+
+    // decrypt RSA encrypted data
+    process.start("cmd", QStringList(command));
+
+    while(process.state() == QProcess::Running){
+        qApp->processEvents();
+    }
+
+    // get decrypted data
+    QByteArray decryptedDataHex = process.readAllStandardOutput().trimmed();
+
+    if (decryptedDataHex.isEmpty()){
+
+        QMessageBox::critical(this, "Chyba", "Nepodařilo se dešifrovat data!");
+
+        RoomDialog::disable_widgets(false);
+        return;
+    }
+
+    QJsonDocument jsonResponse = QJsonDocument::fromJson(decryptedDataHex);
+    QJsonObject jsonObject = jsonResponse.object();
+
+    QString statusCode = jsonObject["status_code"].toString();
+
+    if (statusCode != "1"){
+        QMessageBox::critical(this, "Chyba", "Nepodařilo se nastavit heslo!");
+
+        RoomDialog::disable_widgets(false);
+        return;
+    }
+
+}
+
+
 QStringList RoomDialog::getJson(QStringList names, QByteArray data)
 {
     QJsonDocument jsonResponse;
@@ -440,8 +562,8 @@ QStringList RoomDialog::getJson(QStringList names, QByteArray data)
     jsonObject = jsonResponse.object();
     dataHex = jsonObject["data"].toString();
 
-    //QString command = QString("/C python config/cryptographic_tool.exe decrypt_aes_server %1 %2 %3").arg(RoomDialog::serverAesKeyHex, "False", dataHex);
-    QString command = QString("/C python config/cryptographic_tool.py decrypt_aes_server %1 %2 %3").arg(RoomDialog::serverAesKeyHex, "False", dataHex);
+    //QString command = QString("/C python config/cryptographic_tool.exe decrypt_aes %1 %2 %3").arg(RoomDialog::serverAesKeyHex, "False", dataHex);
+    QString command = QString("/C python config/cryptographic_tool.py decrypt_aes %1 %2 %3").arg(RoomDialog::serverAesKeyHex, "False", dataHex);
 
     // decrypt
     QProcess process;
@@ -484,12 +606,17 @@ void RoomDialog::on_lineEdit_3_textEdited(const QString &arg1)
     int textLength = arg1.length();
 
     if(arg1.length() == 33){
-        QString text = arg1;
-        text.chop(1);
+        // length of ID is more than 32 chars
 
+        QString text = arg1;
+
+        if (text.back() != '\n'){
+            QMessageBox::critical(this, "Upozornění", "Délka ID musí být přesně 32 znaků!");
+        }
+
+        text.chop(1);
         ui->lineEdit_3->setText(text);
 
-        QMessageBox::critical(this, "Upozornění", "Délka ID musí být přesně 32 znaků!");
 
     } else if (textLength == 0 || ui->lineEdit_4->text().length() == 0){
         ui->pushButton->setDisabled(true);
@@ -504,6 +631,8 @@ void RoomDialog::on_lineEdit_4_textEdited(const QString &arg1)
     int textLength = arg1.length();
 
     if(textLength == 26){
+        // length of username is more than 25 chars
+
         QString text = arg1;
         text.chop(1);
 
