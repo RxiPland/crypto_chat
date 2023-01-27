@@ -51,7 +51,6 @@ if not os.path.exists(working_dir + "rooms"):
 
 @app.route('/')
 def homepage():
-    #return '<a href=\"https://github.com/RxiPland/crypto_chat\">https://github.com/RxiPland/crypto_chat</a>'
 
     return "Forbidden", 403
 
@@ -83,9 +82,10 @@ def get_symetric():
     # get server's symetric key
 
     """
-    params: {'rsa_pem': "<user's RSA public key> in PEM"}
+    params: <RSA-encrypted-data> in hex
+    <RSA-encrypted-data> = {'rsa_pem': "<user's RSA public key> in PEM"}
 
-    response: {'data': '<RSA-encrypted-data> in hex'}
+    response: <RSA-encrypted-data> in hex
     <RSA-encrypted-data> = {'status_code': '<error code>', 'server_aes_key': '<plaintext server AES> in hex'}
     """
 
@@ -132,11 +132,11 @@ def create_room():
     # create new chat room
 
     """
-    params: {'data': '<server-public-RSA-encrypted-data>'}
-    <server-public-RSA-encrypted-data> = {'rsa_pem': "<user's RSA public key> in PEM", 'room_password_sha256': '<hashed password>'}
+    params: <RSA-encrypted-data> in hex
+    <RSA-encrypted-data> = {'rsa_pem': "<user's RSA public key> in PEM", 'room_password_sha256': '<hashed password>'}
 
-    response: {'data': '<user-public-RSA-encrypted-data> in hex'}
-    <user-public-RSA-encrypted-data> = {'status_code': '<error code>', 'room_aes_key': '<plaintext room AES> in hex', 'room_id': '<32 chars hex string>'}
+    response: <RSA-encrypted-data> in hex
+    <RSA-encrypted-data> = {'status_code': '<error code>', 'room_aes_key': '<plaintext room AES> in hex', 'room_id': '<32 chars hex string>'}
     """
 
     try:
@@ -223,14 +223,14 @@ def create_room():
 
 @app.route('/change-password', methods=["POST"])
 def change_password():
-    # change or set new password
+    # set new password for room
 
     """
-    params: {'data': '<encrypted-with-server-key> in hex'}
-    <encrypted-with-room-key> = {'room_id': '<hex string (32)>', 'encrypted_room_password': '<encrypted-with-room-key> in hex'}
+    params: <RSA-encrypted-data> in hex
+    <RSA-encrypted-data> = {'rsa_pem': "<user's RSA public key> in PEM", 'room_id': '<hex string (32)>', 'encrypted_room_password': '<encrypted-with-room-key> in hex'}
 
-    response: {'data': '<encrypted-with-room-key> in hex'}
-    <encrypted-with-room-key> = {'status_code': '<error code>'}
+    response: <RSA-encrypted-data> in hex
+    <RSA-encrypted-data> = {'status_code': '<error code>'}
     """
 
     try:
@@ -331,11 +331,11 @@ def change_password():
 @app.route('/join-room', methods=["POST"])
 def join_room():
     """
-    params: {'data': '<encrypted-with-room-key> in hex'}
-    <encrypted-with-room-key> = {'room_id': '<random hex string (32)>', 'room_password': '<plaintext password from user>'}
+    params: <RSA-encrypted-data> in hex
+    <RSA-encrypted-data> = {'rsa_pem': "<user's RSA public key> in PEM", 'room_id': '<hex string (32)>', 'room_password': '<plaintext password from user>'}
 
-    response: {'data': '<encrypted-data> in hex'}
-    <encrypted-data> = {'status_code': '<error code>', 'room_aes_key': '<symetric key of room> in hex', 'messages_count': <int>}
+    response: <RSA-encrypted-data> in hex
+    <RSA-encrypted-data> = {'status_code': '<error code>', 'room_aes_key': '<symetric key of room> in hex', 'messages_count': <int>}
     """
 
     try:
@@ -445,11 +445,12 @@ def join_room():
 @app.route('/send-message', methods=["POST"])
 def send_message():
     """
-    params: {'data': '<AES-encrypted-data> in hex'}
-    <AES-encrypted-data> = {'room_id': '<hex string (32)>', 'room_password': '<plain text password>', 'message': '<encrypted-message> with room symetric key in hex'}
+    params: {'data': '<server-AES-encrypted-data> in hex'}
+    <server-AES-encrypted-data> = {'room_id': '<hex string (32)>', 'data': '<room-AES-encrypted-data> in hex'}
+    <room-AES-encrypted-data> = {'room_password': '<plain text password>', 'message': '<plain text message> in hex'}
 
-    response: {'data': '<encrypted-data> in hex'}
-    <encrypted-data> = {'status_code': '<error code>'}
+    response: {'data': '<server-AES-encrypted-data> in hex'}
+    <server-AES-encrypted-data> = {'status_code': '<error code>'}
     """
 
     try:
@@ -592,11 +593,12 @@ def send_message():
 @app.route('/get-messages', methods=["POST"])
 def get_messages():
     """
-    params: {'data': '<AES-encrypted-data> in hex'}
-    <AES-encrypted-data> = {'room_id': '<hex string (32)>', 'room_password': '<plaintext password>', 'user_messages_count': <int>}
+    params: {'data': '<server-AES-encrypted-data> in hex'}
+    <server-AES-encrypted-data> = {'room_id': '<hex string (32)>', 'data': '<room-AES-encrypted-data> in hex'}
+    <room-AES-encrypted-data> = {'room_password': '<plaintext password>', 'user_messages_count': <int>}
 
-    response: {'data': '<encrypted-data> in hex'}
-    <encrypted-data> = {'status_code': '<error code>', 'server_messages_count': <int>, 'messages': [<encrypted with room key>, ...]}
+    response: {'data': '<server-AES-encrypted-data> in hex'}
+    <server-AES-encrypted-data> = {'status_code': '<error code>', 'server_messages_count': <int>, 'messages': [<encrypted with room key>, ...]}
     """
 
     try:
@@ -750,11 +752,12 @@ def get_messages():
 @app.route('/delete-room', methods=["POST"])
 def delete_room():
     """
-    params: {'data': '<AES-encrypted-data> in hex'}
-    <AES-encrypted-data> = {'room_id': '<hex string (32)>', 'room_password': '<plaintext password>'}
+    params: {'data': '<server-AES-encrypted-data> in hex'}
+    <server-AES-encrypted-data> = {'room_id': '<hex string (32)>', 'data': '<room-AES-encrypted-data> in hex'}
+    <room-AES-encrypted-data> = {'room_password': '<plaintext password>'}
 
-    response: {'data': '<encrypted-data> in hex'}
-    <encrypted-data> = {'status_code': '<error code>'}
+    response: {'data': '<server-AES-encrypted-data> in hex'}
+    <server-AES-encrypted-data> = {'status_code': '<error code>'}
     """
 
     try:
