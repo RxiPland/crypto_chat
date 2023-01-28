@@ -19,12 +19,12 @@ working_dir = os.path.dirname(__file__).replace("\\", "/") + "/"
 
 # generate AES key for server
 server_aes_key = Fernet.generate_key()
+# load bytes as server's AES key
+symetric_key_fernet: Fernet = Fernet(server_aes_key)
 
 # generate RSA keys for server
 public_k, private_k = rsa.newkeys(2048)
 
-# load bytes as server's AES key
-symetric_key = Fernet(server_aes_key)
 
 version = "crypto-chat v1.1.0"
 
@@ -82,10 +82,9 @@ def get_symetric():
     # get server's symetric key
 
     """
-    params: <RSA-encrypted-data> in hex
-    <RSA-encrypted-data> = {'rsa_pem': "<user's RSA public key> in PEM"}
+    params: {'rsa_pem': "<user's RSA public key> in PEM hex"}
 
-    response: <RSA-encrypted-data> in hex
+    response: {'data': <RSA-encrypted-data> in hex}
     <RSA-encrypted-data> = {'status_code': '<error code>', 'server_aes_key': '<plaintext server AES> in hex'}
     """
 
@@ -103,20 +102,18 @@ def get_symetric():
 
         # load RSA public key from PEM
         try:
-            rsa_public_key = rsa.PublicKey.load_pkcs1(unquote(request_json["rsa_pem"]))
+            rsa_public_key = rsa.PublicKey.load_pkcs1(bytes.fromhex(unquote(request_json["rsa_pem"])))
         
-            data = {
-                "status_code": "1",
-                "server_aes_key": server_aes_key.hex()
-            }
-
         except:
-            print("Invalid RSA public key!")
-            data = {
-                "status_code": "5",
-                "server_aes_key": ""
-            }
+            # Invalid RSA public key
+            return "Forbidden", 403
         
+
+        data = {
+            "status_code": "1",
+            "server_aes_key": server_aes_key.hex()
+        }
+
         # encrypt data json with RSA public key
         encrypted_data = rsa.encrypt(str(data).encode(), rsa_public_key)
 
@@ -132,10 +129,10 @@ def create_room():
     # create new chat room
 
     """
-    params: <RSA-encrypted-data> in hex
-    <RSA-encrypted-data> = {'rsa_pem': "<user's RSA public key> in PEM", 'room_password_sha256': '<hashed password>'}
+    params: {'rsa_pem': '<user RSA public key> in PEM', 'data': <RSA-encrypted-data> in hex}
+    <RSA-encrypted-data> = {'room_password_sha256': '<hashed password>'}
 
-    response: <RSA-encrypted-data> in hex
+    response: {'data': <RSA-encrypted-data> in hex}
     <RSA-encrypted-data> = {'status_code': '<error code>', 'room_aes_key': '<plaintext room AES> in hex', 'room_id': '<32 chars hex string>'}
     """
 
@@ -147,27 +144,28 @@ def create_room():
         request_json: dict = flask.request.get_json()
 
         # key 'data' must be in JSON
-        if not "data" in request_json.keys():
-            return "Forbidden", 403
-
-        try:
-            decrypted_data = rsa.decrypt(request_json["data"], priv_key=private_k)
-        
-        except:
-            print("Invalid RSA encrypted data!")
-            return "Forbidden", 403
-        
-        # keys 'rsa_pem' and 'room_password_sha256' must be in decrypted JSON
-        if not "rsa_pem" in request_json.keys() or not "room_password_sha256" in request_json.keys():
+        if not "data" in request_json.keys() or not "rsa_pem" in request_json.keys():
             return "Forbidden", 403
 
 
         # load RSA public key from PEM
         try:
-            user_rsa_public_key = rsa.PublicKey.load_pkcs1(unquote(decrypted_data["rsa_pem"]))
-
+            rsa_public_key = rsa.PublicKey.load_pkcs1(bytes.fromhex(unquote(request_json["rsa_pem"])))
+        
         except:
-            print("Invalid RSA public key!")
+            # Invalid RSA public key
+            return "Forbidden", 403
+
+        # decrypt RSA
+        try:
+            decrypted_data: dict[str, str] = json.loads(rsa.decrypt(request_json["data"], priv_key=private_k))
+        
+        except:
+            # Invalid RSA encrypted data
+            return "Forbidden", 403
+        
+        # key 'room_password_sha256' not in decrypted JSON
+        if not "room_password_sha256" in decrypted_data.keys():
             return "Forbidden", 403
 
 
@@ -212,7 +210,7 @@ def create_room():
         }
 
         # encrypt data json with RSA public key
-        encrypted_data = rsa.encrypt(str(data).encode(), user_rsa_public_key)
+        encrypted_data = rsa.encrypt(str(data).encode(), rsa_public_key)
 
         return flask.jsonify({"data": encrypted_data.hex()}), 200
 
@@ -226,10 +224,10 @@ def change_password():
     # set new password for room
 
     """
-    params: <RSA-encrypted-data> in hex
-    <RSA-encrypted-data> = {'rsa_pem': "<user's RSA public key> in PEM", 'room_id': '<hex string (32)>', 'encrypted_room_password': '<encrypted-with-room-key> in hex'}
+    params: {'rsa_pem': "<user's RSA public key> in PEM", 'data': <RSA-encrypted-data> in hex}
+    <RSA-encrypted-data> = {'room_id': '<hex string (32)>', 'encrypted_new_room_password': '<encrypted-with-room-key> in hex'}
 
-    response: <RSA-encrypted-data> in hex
+    response: {'data': <RSA-encrypted-data> in hex}
     <RSA-encrypted-data> = {'status_code': '<error code>'}
     """
 
@@ -249,7 +247,7 @@ def change_password():
 
         # decrypt data from request
         try:
-            decrypted_data = symetric_key.decrypt(bytes.fromhex(request_json["data"]))
+            decrypted_data = symetric_key_fernet.decrypt(bytes.fromhex(request_json["data"]))
 
         except:
 
@@ -259,7 +257,7 @@ def change_password():
             }
 
             data = str(data).encode()
-            data = symetric_key.encrypt(data).hex()
+            data = symetric_key_fernet.encrypt(data).hex()
 
             return flask.jsonify({"data": data}), 200
 
@@ -279,7 +277,7 @@ def change_password():
             }
 
             data = str(data).encode()
-            data = symetric_key.encrypt(data).hex()
+            data = symetric_key_fernet.encrypt(data).hex()
 
             return flask.jsonify({"data": data}), 200
 
@@ -308,7 +306,7 @@ def change_password():
             }
 
             data = str(data).encode()
-            data = symetric_key.encrypt(data).hex()
+            data = symetric_key_fernet.encrypt(data).hex()
 
             return flask.jsonify({"data": data}), 200
 
@@ -318,7 +316,7 @@ def change_password():
         }
 
         data = str(data).encode()
-        data = symetric_key.encrypt(data).hex()
+        data = symetric_key_fernet.encrypt(data).hex()
 
         return flask.jsonify({"data": data}), 200
 
@@ -331,11 +329,11 @@ def change_password():
 @app.route('/join-room', methods=["POST"])
 def join_room():
     """
-    params: <RSA-encrypted-data> in hex
-    <RSA-encrypted-data> = {'rsa_pem': "<user's RSA public key> in PEM", 'room_id': '<hex string (32)>', 'room_password': '<plaintext password from user>'}
+    params: {'rsa_pem': "<user's RSA public key> in PEM", 'data': <RSA-encrypted-data> in hex}
+    <RSA-encrypted-data> = {'room_id': '<hex string (32)>', 'room_password': '<plaintext password from user>'}
 
-    response: <RSA-encrypted-data> in hex
-    <RSA-encrypted-data> = {'status_code': '<error code>', 'room_aes_key': '<symetric key of room> in hex', 'messages_count': <int>}
+    response: {'data': <RSA-encrypted-data> in hex}
+    <RSA-encrypted-data> = {'status_code': '<error code>', 'room_aes_key': '<plaintext room AES> in hex', 'messages_count': <int>}
     """
 
     try:
@@ -354,7 +352,7 @@ def join_room():
 
         # decrypt data from request
         try:
-            decrypted_data = symetric_key.decrypt(bytes.fromhex(request_json["data"]))
+            decrypted_data = symetric_key_fernet.decrypt(bytes.fromhex(request_json["data"]))
 
         except:
 
@@ -364,7 +362,7 @@ def join_room():
             }
 
             data = str(data).encode()
-            data = symetric_key.encrypt(data).hex()
+            data = symetric_key_fernet.encrypt(data).hex()
 
             return flask.jsonify({"data": data}), 200
 
@@ -432,7 +430,7 @@ def join_room():
 
 
         data = str(data).encode()
-        data = symetric_key.encrypt(data).hex()
+        data = symetric_key_fernet.encrypt(data).hex()
 
         return flask.jsonify({"data": data}), 200
 
@@ -447,7 +445,7 @@ def send_message():
     """
     params: {'data': '<server-AES-encrypted-data> in hex'}
     <server-AES-encrypted-data> = {'room_id': '<hex string (32)>', 'data': '<room-AES-encrypted-data> in hex'}
-    <room-AES-encrypted-data> = {'room_password': '<plain text password>', 'message': '<plain text message> in hex'}
+    <room-AES-encrypted-data> = {'room_password': '<plain text password>', 'message': '<encrypted-with-room-key> in hex'}
 
     response: {'data': '<server-AES-encrypted-data> in hex'}
     <server-AES-encrypted-data> = {'status_code': '<error code>'}
@@ -468,7 +466,7 @@ def send_message():
 
         # decrypt data from request
         try:
-            decrypted_data = symetric_key.decrypt(bytes.fromhex(request_json["data"]))
+            decrypted_data = symetric_key_fernet.decrypt(bytes.fromhex(request_json["data"]))
 
         except:
 
@@ -478,7 +476,7 @@ def send_message():
             }
 
             data = str(data).encode()
-            data = symetric_key.encrypt(data).hex()
+            data = symetric_key_fernet.encrypt(data).hex()
 
             return flask.jsonify({"data": data}), 200
 
@@ -500,7 +498,7 @@ def send_message():
             }
 
             data = str(data).encode()
-            data = symetric_key.encrypt(data).hex()
+            data = symetric_key_fernet.encrypt(data).hex()
 
             return flask.jsonify({"data": data}), 200
 
@@ -530,7 +528,7 @@ def send_message():
             }
 
             data = str(data).encode()
-            data = symetric_key.encrypt(data).hex()
+            data = symetric_key_fernet.encrypt(data).hex()
 
             return flask.jsonify({"data": data}), 200
 
@@ -580,7 +578,7 @@ def send_message():
         }
 
         data = str(data).encode()
-        data = symetric_key.encrypt(data).hex()
+        data = symetric_key_fernet.encrypt(data).hex()
 
         return flask.jsonify({"data": data}), 200
 
@@ -615,7 +613,7 @@ def get_messages():
 
         # decrypt data from request
         try:
-            decrypted_data = symetric_key.decrypt(bytes.fromhex(request_json["data"]))
+            decrypted_data = symetric_key_fernet.decrypt(bytes.fromhex(request_json["data"]))
 
         except:
 
@@ -625,7 +623,7 @@ def get_messages():
             }
 
             data = str(data).encode()
-            data = symetric_key.encrypt(data).hex()
+            data = symetric_key_fernet.encrypt(data).hex()
 
             return flask.jsonify({"data": data}), 200
 
@@ -648,7 +646,7 @@ def get_messages():
             }
 
             data = str(data).encode()
-            data = symetric_key.encrypt(data).hex()
+            data = symetric_key_fernet.encrypt(data).hex()
 
             return flask.jsonify({"data": data}), 200
 
@@ -678,7 +676,7 @@ def get_messages():
             }
 
             data = str(data).encode()
-            data = symetric_key.encrypt(data).hex()
+            data = symetric_key_fernet.encrypt(data).hex()
 
             return flask.jsonify({"data": data}), 200
 
@@ -739,7 +737,7 @@ def get_messages():
         }
 
         data = str(data).encode()
-        data = symetric_key.encrypt(data).hex()
+        data = symetric_key_fernet.encrypt(data).hex()
 
         return flask.jsonify({"data": data}), 200
 
@@ -752,12 +750,11 @@ def get_messages():
 @app.route('/delete-room', methods=["POST"])
 def delete_room():
     """
-    params: {'data': '<server-AES-encrypted-data> in hex'}
-    <server-AES-encrypted-data> = {'room_id': '<hex string (32)>', 'data': '<room-AES-encrypted-data> in hex'}
-    <room-AES-encrypted-data> = {'room_password': '<plaintext password>'}
+    params: {'data': <RSA-encrypted-data> in hex}
+    <RSA-encrypted-data> = {'room_id': '<hex string (32)>', 'room_password': '<plaintext password>'}
 
-    response: {'data': '<server-AES-encrypted-data> in hex'}
-    <server-AES-encrypted-data> = {'status_code': '<error code>'}
+    response: {'data': <RSA-encrypted-data> in hex}
+    <RSA-encrypted-data> = {'status_code': '<error code>'}
     """
 
     try:
@@ -774,7 +771,7 @@ def delete_room():
 
         # decrypt data from request
         try:
-            decrypted_data = symetric_key.decrypt(bytes.fromhex(request_json["data"]))
+            decrypted_data = symetric_key_fernet.decrypt(bytes.fromhex(request_json["data"]))
 
         except:
 
@@ -784,12 +781,12 @@ def delete_room():
             }
 
             data = str(data).encode()
-            data = symetric_key.encrypt(data).hex()
+            data = symetric_key_fernet.encrypt(data).hex()
 
             return flask.jsonify({"data": data}), 200
 
 
-        decrypted_data: dict = json.loads(decrypted_data)
+        decrypted_data: dict[str, str] = json.loads(decrypted_data)
 
          # keys 'room_id' and 'room_password' must be in decrypted JSON
         if not "room_id" in decrypted_data.keys() or not "room_password" in decrypted_data.keys():
@@ -813,7 +810,7 @@ def delete_room():
             }
 
             data = str(data).encode()
-            data = symetric_key.encrypt(data).hex()
+            data = symetric_key_fernet.encrypt(data).hex()
 
             return flask.jsonify({"data": data}), 200
 
@@ -831,7 +828,7 @@ def delete_room():
 
             
         data = str(data).encode()
-        data = symetric_key.encrypt(data).hex()
+        data = symetric_key_fernet.encrypt(data).hex()
 
         return flask.jsonify({"data": data}), 200
 
