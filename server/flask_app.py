@@ -493,6 +493,23 @@ def send_message():
             return flask.jsonify({"data": data}), 200
 
 
+        # decrypt data from request
+        try:
+            decrypted_data = symetric_key_fernet.decrypt()
+
+        except:
+
+            # wrong symetric key
+            data = {
+                "status_code": "5"
+            }
+
+            data = str(data).encode()
+            data = symetric_key_fernet.encrypt(data).hex()
+
+            return flask.jsonify({"data": data}), 200
+
+
         password_user_hash: str = hashlib.sha256(decrypted_data["room_password"].encode()).hexdigest()
         password_file_path = working_dir + "/rooms/" + room_id + "/password"
 
