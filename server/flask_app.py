@@ -239,31 +239,29 @@ def change_password():
         request_json: dict = flask.request.get_json()
 
         # key 'data' must be in JSON
-        if not "data" in request_json.keys():
+        if not "data" in request_json.keys() or not "rsa_pem" in request_json.keys():
             return "Forbidden", 403
 
 
-        decrypted_data: dict[str, str] = dict()
-
-        # decrypt data from request
+        # load RSA public key from PEM
         try:
-            decrypted_data = symetric_key_fernet.decrypt(bytes.fromhex(request_json["data"]))
-
+            rsa_public_key = rsa.PublicKey.load_pkcs1(bytes.fromhex(unquote(request_json["rsa_pem"])))
+        
         except:
+            # Invalid RSA public key
+            return "Forbidden", 403
 
-            # wrong symetric key
-            data = {
-                "status_code": "5"
-            }
-
-            data = str(data).encode()
-            data = symetric_key_fernet.encrypt(data).hex()
-
-            return flask.jsonify({"data": data}), 200
+        # decrypt RSA
+        try:
+            decrypted_data: dict[str, str] = json.loads(rsa.decrypt(request_json["data"], priv_key=private_k))
+        
+        except:
+            # Invalid RSA encrypted data
+            return "Forbidden", 403
 
 
-        # keys 'room_id' and 'encrypted_room_password' must be in decrypted JSON
-        if not "room_id" in decrypted_data.keys() or not "encrypted_room_password" in decrypted_data.keys():
+        # keys 'room_id' and 'encrypted_new_room_password' must be in decrypted JSON
+        if not "room_id" in decrypted_data.keys() or not "encrypted_new_room_password" in decrypted_data.keys():
             return "Forbidden", 403
 
         room_id = decrypted_data["room_id"][:32]
@@ -276,10 +274,9 @@ def change_password():
                 "status_code": "4"
             }
 
-            data = str(data).encode()
-            data = symetric_key_fernet.encrypt(data).hex()
+            encrypted_data = rsa.encrypt(str(data).encode(), rsa_public_key)
 
-            return flask.jsonify({"data": data}), 200
+            return flask.jsonify({"data": encrypted_data.hex()}), 200
 
 
         # load AES key from room's folder
@@ -290,7 +287,7 @@ def change_password():
             # decrypt password with room's key
 
             room_key = Fernet(room_key)
-            encrypted_password = bytes.fromhex(decrypted_data["encrypted_room_password"])
+            encrypted_password = bytes.fromhex(decrypted_data["encrypted_new_room_password"])
 
             # decrypt password
             room_password_sha256 = room_key.decrypt(encrypted_password)
@@ -305,20 +302,18 @@ def change_password():
                 "status_code": "5"
             }
 
-            data = str(data).encode()
-            data = symetric_key_fernet.encrypt(data).hex()
+            encrypted_data = rsa.encrypt(str(data).encode(), rsa_public_key)
 
-            return flask.jsonify({"data": data}), 200
+            return flask.jsonify({"data": encrypted_data.hex()}), 200
 
 
         data = {
             "status_code": "1"
         }
 
-        data = str(data).encode()
-        data = symetric_key_fernet.encrypt(data).hex()
+        encrypted_data = rsa.encrypt(str(data).encode(), rsa_public_key)
 
-        return flask.jsonify({"data": data}), 200
+        return flask.jsonify({"data": encrypted_data.hex()}), 200
 
 
     except Exception as e:
@@ -344,30 +339,26 @@ def join_room():
         request_json: dict = flask.request.get_json()
 
         # key 'data' must be in JSON
-        if not "data" in request_json.keys():
+        if not "data" in request_json.keys() or not "rsa_pem" in request_json.keys():
             return "Forbidden", 403
 
 
-        decrypted_data: dict[str, str] = dict()
-
-        # decrypt data from request
+        # load RSA public key from PEM
         try:
-            decrypted_data = symetric_key_fernet.decrypt(bytes.fromhex(request_json["data"]))
-
+            rsa_public_key = rsa.PublicKey.load_pkcs1(bytes.fromhex(unquote(request_json["rsa_pem"])))
+        
         except:
+            # Invalid RSA public key
+            return "Forbidden", 403
 
-            # wrong symetric key
-            data = {
-                "status_code": "5"
-            }
+        # decrypt RSA
+        try:
+            decrypted_data: dict[str, str] = json.loads(rsa.decrypt(request_json["data"], priv_key=private_k))
+        
+        except:
+            # Invalid RSA encrypted data
+            return "Forbidden", 403
 
-            data = str(data).encode()
-            data = symetric_key_fernet.encrypt(data).hex()
-
-            return flask.jsonify({"data": data}), 200
-
-
-        decrypted_data = json.loads(decrypted_data)
 
         # keys 'room_id' and 'room_password' must be in decrypted JSON
         if not "room_id" in decrypted_data.keys() or not "room_password" in decrypted_data.keys():
@@ -429,10 +420,9 @@ def join_room():
                     }
 
 
-        data = str(data).encode()
-        data = symetric_key_fernet.encrypt(data).hex()
-
-        return flask.jsonify({"data": data}), 200
+        encrypted_data = rsa.encrypt(str(data).encode(), rsa_public_key)
+            
+        return flask.jsonify({"data": encrypted_data.hex()}), 200
 
 
     except Exception as e:
@@ -481,10 +471,10 @@ def send_message():
             return flask.jsonify({"data": data}), 200
 
 
-        decrypted_data: dict = json.loads(decrypted_data)
+        decrypted_data: dict[str, str] = json.loads(decrypted_data)
 
         # keys 'room_id', 'room_password' and 'message' must be in decrypted JSON
-        if not "room_id" in decrypted_data.keys() or not "room_password" in decrypted_data.keys() or not "message" in decrypted_data.keys():
+        if not "room_id" in decrypted_data.keys() or not "data" in decrypted_data.keys():
             return "Forbidden", 403
 
         room_id = decrypted_data["room_id"]
