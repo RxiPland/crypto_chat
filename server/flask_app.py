@@ -22,7 +22,7 @@ working_dir = os.path.dirname(__file__).replace("\\", "/") + "/"
 # load bytes as server's AES key
 #symetric_key_fernet: Fernet = Fernet(server_aes_key)
 
-# generate RSA keys for server
+# generate 2048 bit RSA keys for server
 rsa_public_k, rsa_private_k = rsa.newkeys(2048)
 
 
@@ -77,53 +77,6 @@ def get_public():
     # return server's Public key in hex
     return rsa_public_k.save_pkcs1().hex(), 200
 
-"""
-@app.route('/get-symetric', methods=["POST"])
-def get_symetric():
-    # get server's symetric key
-
-    params: {'rsa_pem': "<user's RSA public key> in PEM hex"}
-
-    response: {'data_rsa': <RSA-encrypted-data> in hex}
-    <RSA-encrypted-data> = {'status_code': '<error code>', 'server_aes_key': '<plaintext server AES> in hex'}
-
-
-    try:
-        # specific user-agent is required
-        if not "crypto-chat" in flask.request.user_agent.string:
-            return "Forbidden", 403
-
-        request_json: dict = flask.request.get_json()
-
-        # key 'rsa_pem' must be in JSON
-        if not "rsa_pem" in request_json.keys():
-            return "Forbidden", 403
-
-
-        # load RSA public key from PEM
-        try:
-            user_rsa_publickey = rsa.PublicKey.load_pkcs1(bytes.fromhex(unquote(request_json["rsa_pem"])))
-        
-        except:
-            # Invalid RSA public key
-            return "Forbidden", 403
-        
-
-        data = {
-            "status_code": "1",
-            "server_aes_key": server_aes_key.hex()
-        }
-
-        # encrypt data json with RSA public key
-        encrypted_data = rsa.encrypt(str(data).encode(), user_rsa_publickey)
-
-        return flask.jsonify({"data_rsa": encrypted_data.hex()}), 200
-
-    except Exception as e:
-        print(e)
-        return str(e), 403
-"""
-
 
 @app.route('/create-room', methods=["POST"])
 def create_room():
@@ -144,27 +97,22 @@ def create_room():
 
         request_json: dict = flask.request.get_json()
 
-        # key 'data_rsa' must be in JSON
-        if not "data_rsa" in request_json.keys() or not "rsa_pem" in request_json.keys():
+        # keys 'rsa_pem' and 'data_rsa' must be in JSON
+        if not "rsa_pem" in request_json.keys() or not "data_rsa" in request_json.keys():
             return "Forbidden", 403
 
 
-        # load RSA public key from PEM
+        # load user's RSA public key from PEM
+        # decrypt data_rsa
         try:
             user_rsa_publickey = rsa.PublicKey.load_pkcs1(bytes.fromhex(unquote(request_json["rsa_pem"])))
-        
-        except:
-            # Invalid RSA public key
-            return "Forbidden", 403
-
-        # decrypt RSA
-        try:
             decrypted_data: dict[str, str] = json.loads(rsa.decrypt(request_json["data_rsa"], priv_key=rsa_private_k))
-        
+
         except:
-            # Invalid RSA encrypted data
+            # Invalid RSA public key / encrypted data
             return "Forbidden", 403
         
+
         # key 'room_password_sha256' not in decrypted JSON
         if not "room_password_sha256" in decrypted_data.keys():
             return "Forbidden", 403
@@ -239,25 +187,19 @@ def change_password():
 
         request_json: dict = flask.request.get_json()
 
-        # key 'data_rsa' must be in JSON
-        if not "data_rsa" in request_json.keys() or not "rsa_pem" in request_json.keys():
+        # keys 'rsa_pem' and 'data_rsa' must be in JSON
+        if not "rsa_pem" in request_json.keys() or not "data_rsa" in request_json.keys():
             return "Forbidden", 403
 
 
-        # load RSA public key from PEM
+        # load user's RSA public key from PEM
+        # decrypt data_rsa
         try:
             user_rsa_publickey = rsa.PublicKey.load_pkcs1(bytes.fromhex(unquote(request_json["rsa_pem"])))
-        
-        except:
-            # Invalid RSA public key
-            return "Forbidden", 403
-
-        # decrypt RSA
-        try:
             decrypted_data: dict[str, str] = json.loads(rsa.decrypt(request_json["data_rsa"], priv_key=rsa_private_k))
-        
+
         except:
-            # Invalid RSA encrypted data
+            # Invalid RSA public key / encrypted data
             return "Forbidden", 403
 
 
@@ -339,25 +281,19 @@ def join_room():
 
         request_json: dict = flask.request.get_json()
 
-        # key 'data_rsa' must be in JSON
-        if not "data_rsa" in request_json.keys() or not "rsa_pem" in request_json.keys():
+        # keys 'rsa_pem' and 'data_rsa' must be in JSON
+        if not "rsa_pem" in request_json.keys() or not "data_rsa" in request_json.keys():
             return "Forbidden", 403
 
 
-        # load RSA public key from PEM
+        # load user's RSA public key from PEM
+        # decrypt data_rsa
         try:
             user_rsa_publickey = rsa.PublicKey.load_pkcs1(bytes.fromhex(unquote(request_json["rsa_pem"])))
-        
-        except:
-            # Invalid RSA public key
-            return "Forbidden", 403
-
-        # decrypt RSA
-        try:
             decrypted_data: dict[str, str] = json.loads(rsa.decrypt(request_json["data_rsa"], priv_key=rsa_private_k))
-        
+
         except:
-            # Invalid RSA encrypted data
+            # Invalid RSA public key / encrypted data
             return "Forbidden", 403
 
 
@@ -449,27 +385,20 @@ def send_message():
 
         request_json: dict = flask.request.get_json()
 
-        # key 'rsa_pem', 'data_rsa' and 'message' must be in JSON
+        # keys 'rsa_pem', 'data_rsa' and 'message' must be in JSON
         if not "rsa_pem" in request_json.keys() or not "data_rsa" in request_json.keys() or not "message" in request_json.keys():
             return "Forbidden", 403
 
         decrypted_data: dict[str, str] = dict()
 
-
         # load user's RSA public key from PEM
+        # decrypt data_rsa
         try:
             user_rsa_publickey = rsa.PublicKey.load_pkcs1(bytes.fromhex(unquote(request_json["rsa_pem"])))
-        
-        except:
-            # Invalid RSA public key
-            return "Forbidden", 403
+            decrypted_data: dict[str, str] = json.loads(rsa.decrypt(request_json["data_rsa"], priv_key=rsa_private_k))
 
-        # decrypt RSA
-        try:
-            decrypted_data = json.loads(rsa.decrypt(request_json["data_rsa"], priv_key=rsa_private_k))
-        
         except:
-            # Invalid RSA encrypted data
+            # Invalid RSA public key / encrypted data
             return "Forbidden", 403
 
 
@@ -607,32 +536,24 @@ def get_messages():
 
         request_json: dict = flask.request.get_json()
 
-        # key 'data_rsa' must be in JSON
-        if not "data_rsa" in request_json.keys():
+        # keys 'rsa_pem' and 'data_rsa' must be in JSON
+        if not "rsa_pem" in request_json.keys() or not "data_rsa" in request_json.keys():
             return "Forbidden", 403
 
 
-        # decrypt data from request
+        # load user's RSA public key from PEM
+        # decrypt data_rsa
         try:
-            decrypted_data = symetric_key_fernet.decrypt(bytes.fromhex(request_json["data_rsa"]))
+            user_rsa_publickey = rsa.PublicKey.load_pkcs1(bytes.fromhex(unquote(request_json["rsa_pem"])))
+            decrypted_data: dict[str, str] = json.loads(rsa.decrypt(request_json["data_rsa"], priv_key=rsa_private_k))
 
         except:
+            # Invalid RSA public key / encrypted data
+            return "Forbidden", 403
 
-            # wrong symetric key
-            data = {
-                "status_code": "5"
-            }
-
-            data = str(data).encode()
-            data = symetric_key_fernet.encrypt(data).hex()
-
-            return flask.jsonify({"data_rsa": data}), 200
-
-
-        decrypted_data: dict[str, str] = json.loads(decrypted_data)
 
         # keys 'room_id', 'room_password' and 'user_messages_count' must be in decrypted JSON
-        if not "room_id" in decrypted_data.keys() or not "room_password" in decrypted_data.keys() or not "user_messages_count" in decrypted_data.keys():
+        if not "room_id" in decrypted_data.keys() or not "room_password" in decrypted_data.keys() or not "user_messages_count" in decrypted_data.keys() or not "symetric_key" in decrypted_data.keys():
             return "Forbidden", 403
 
 
