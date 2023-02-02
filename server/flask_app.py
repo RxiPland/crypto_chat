@@ -370,9 +370,9 @@ def join_room():
 @app.route('/send-message', methods=["POST"])
 def send_message():
     """
-    params: {'rsa_pem': '<user RSA public key> in PEM', 'data_rsa': '<RSA-encrypted-data> in hex', 'message': '<AES-encrypted-message> in hex'}
-    <RSA-encrypted-data> = {'room_id': '<hex string (32)>', 'room_password': '<plain text password>', 'symetric_key': <temp-AES-key-used-to-encrypt-message> in hex}
-    <AES-encrypted-message> = '<encrypted-with-temp-AES-key> in hex'
+    params: {'rsa_pem': '<user RSA public key> in PEM', 'data_rsa': '<RSA-encrypted-data> in hex', 'data_aes': '<AES-encrypted-message> in hex'}
+    <RSA-encrypted-data> = {'room_id': '<hex string (32)>', 'room_password': '<plain text password>', 'symetric_key': <temp-AES-key-used-to-encrypt-data_aes> in hex}
+    <AES-encrypted-message> = {'message': '<encrypted-with-room-AES-key> in hex'}
 
     response: {'data_rsa': <RSA-encrypted-data> in hex}
     <RSA-encrypted-data> = {'status_code': '<error code>'}
@@ -446,12 +446,12 @@ def send_message():
             return flask.jsonify({"data_rsa": encrypted_data.hex()}), 200
 
         try:
-            # load temporary symetric key and decrypt message
+            # load temporary symetric key and decrypt data_aes to obtain message
 
             temp_symetric_key = Fernet(bytes.fromhex(decrypted_data["symetric_key"]))
 
-            encrypted_message = bytes.fromhex(request_json["message"])
-            message = temp_symetric_key.decrypt(encrypted_message).decode("utf-8")
+            decrypted_aes_data = temp_symetric_key.decrypt(bytes.fromhex(request_json["data_aes"]))
+            message = bytes.fromhex(json.loads(decrypted_aes_data)["message"]).decode()
 
         except:
             # wrong symetric key
@@ -522,11 +522,11 @@ def send_message():
 def get_messages():
     """
     params: {'rsa_pem': '<user RSA public key> in PEM', 'data_rsa': '<RSA-encrypted-data> in hex'}
-    <RSA-encrypted-data> = {'room_id': '<hex string (32)>', 'room_password': '<plain text password>', 'user_messages_count': <int>, 'symetric_key': <temp-AES-key-for-json-encryption> in hex}
+    <RSA-encrypted-data> = {'room_id': '<hex string (32)>', 'room_password': '<plain text password>', 'user_messages_count': <int>}
 
     response: {'data_rsa': <RSA-encrypted-data> in hex, 'data_aes': <temp-AES-key-encrypted-data> in hex}
-    <RSA-encrypted-data> = {'status_code': '<error code>'}
-    <AES-encrypted-data> = {'server_messages_count': <int>, 'messages': [<encrypted with room key>, ...]}
+    <RSA-encrypted-data> = {'status_code': '<error code>', 'symetric_key': <temp-AES-key-for-json-encryption> in hex}
+    <AES-encrypted-data> = {'server_messages_count': <int>, 'skipped_messages': <int>, 'messages': [<encrypted with room key>, ...]}
     """
 
     try:
@@ -553,7 +553,7 @@ def get_messages():
 
 
         # keys 'room_id', 'room_password' and 'user_messages_count' must be in decrypted JSON
-        if not "room_id" in decrypted_data.keys() or not "room_password" in decrypted_data.keys() or not "user_messages_count" in decrypted_data.keys() or not "symetric_key" in decrypted_data.keys():
+        if not "room_id" in decrypted_data.keys() or not "room_password" in decrypted_data.keys() or not "user_messages_count" in decrypted_data.keys():
             return "Forbidden", 403
 
 
@@ -564,13 +564,13 @@ def get_messages():
 
             # wrong room ID (room was deleted by someone else)
             data = {
-                "status_code": "4"
+                "status_code": "4",
+                "symetric_key": ""
             }
 
-            data = str(data).encode()
-            data = symetric_key_fernet.encrypt(data).hex()
-
-            return flask.jsonify({"data_rsa": data}), 200
+            encrypted_data = rsa.encrypt(str(data).encode(), user_rsa_publickey)
+        
+            return flask.jsonify({"data_rsa": encrypted_data.hex(), "data_aes": ""}), 200
 
 
         password_user_hash: str = hashlib.sha256(decrypted_data["room_password"].encode()).hexdigest()
@@ -583,24 +583,21 @@ def get_messages():
 
         else:
             # password file missing (should never happen)
-
-            with open(password_file_path, "w") as f:
-                f.write(password_user_hash)
-
-            password_file_hash = password_user_hash
+            password_file_hash = ""
 
 
         if password_user_hash.strip() != password_file_hash.strip():
 
             # wrong password (should never happen)
             data = {
-                "status_code": "3"
+                "status_code": "3",
+                "symetric_key": ""
             }
 
-            data = str(data).encode()
-            data = symetric_key_fernet.encrypt(data).hex()
+            encrypted_data = rsa.encrypt(str(data).encode(), user_rsa_publickey)
+        
+            return flask.jsonify({"data_rsa": encrypted_data.hex(), "data_aes": ""}), 200
 
-            return flask.jsonify({"data_rsa": data}), 200
 
         messages_count_user: int = decrypted_data["user_messages_count"]
         messages_count_path = working_dir + "/rooms/" + room_id + "/messages_count"
@@ -651,17 +648,24 @@ def get_messages():
                 messages_to_send = messages_to_send[::-1]
 
 
+        temp_symetric_key = Fernet.generate_key()
+
+
         data = {
             "status_code": "1",
+            "symetric_key": temp_symetric_key.hex()
+        }
+        encrypted_data_rsa = rsa.encrypt(str(data).encode(), user_rsa_publickey)
+
+
+        data_aes = {
             "server_messages_count": messages_count_server,
             "skipped_messages": skipped_messages,
             "messages": messages_to_send
         }
-
-        data = str(data).encode()
-        data = symetric_key_fernet.encrypt(data).hex()
-
-        return flask.jsonify({"data_rsa": data}), 200
+        encrypted_data_aes = Fernet(temp_symetric_key).encrypt(str(data_aes).encode())
+        
+        return flask.jsonify({"data_rsa": encrypted_data_rsa.hex(), "data_aes": encrypted_data_aes.hex()}), 200
 
 
     except Exception as e:
