@@ -18,12 +18,12 @@ working_dir = os.path.dirname(__file__).replace("\\", "/") + "/"
 
 
 # generate AES key for server
-server_aes_key = Fernet.generate_key()
+#server_aes_key = Fernet.generate_key()
 # load bytes as server's AES key
-symetric_key_fernet: Fernet = Fernet(server_aes_key)
+#symetric_key_fernet: Fernet = Fernet(server_aes_key)
 
 # generate RSA keys for server
-public_k, private_k = rsa.newkeys(2048)
+rsa_public_k, rsa_private_k = rsa.newkeys(2048)
 
 
 version = "crypto-chat v1.1.0"
@@ -45,6 +45,7 @@ message length: 100_000
 number of stored messages (server): 100
 """
 
+# create rooms folder in server directory
 if not os.path.exists(working_dir + "rooms"):
     os.mkdir(f"{working_dir}rooms")
 
@@ -74,19 +75,18 @@ def get_public():
         return "Forbidden", 403
     
     # return server's Public key in hex
-    return public_k.save_pkcs1().hex(), 200
+    return rsa_public_k.save_pkcs1().hex(), 200
 
-
+"""
 @app.route('/get-symetric', methods=["POST"])
 def get_symetric():
     # get server's symetric key
 
-    """
     params: {'rsa_pem': "<user's RSA public key> in PEM hex"}
 
     response: {'data': <RSA-encrypted-data> in hex}
     <RSA-encrypted-data> = {'status_code': '<error code>', 'server_aes_key': '<plaintext server AES> in hex'}
-    """
+
 
     try:
         # specific user-agent is required
@@ -102,7 +102,7 @@ def get_symetric():
 
         # load RSA public key from PEM
         try:
-            rsa_public_key = rsa.PublicKey.load_pkcs1(bytes.fromhex(unquote(request_json["rsa_pem"])))
+            user_rsa_publickey = rsa.PublicKey.load_pkcs1(bytes.fromhex(unquote(request_json["rsa_pem"])))
         
         except:
             # Invalid RSA public key
@@ -115,13 +115,14 @@ def get_symetric():
         }
 
         # encrypt data json with RSA public key
-        encrypted_data = rsa.encrypt(str(data).encode(), rsa_public_key)
+        encrypted_data = rsa.encrypt(str(data).encode(), user_rsa_publickey)
 
         return flask.jsonify({"data": encrypted_data.hex()}), 200
 
     except Exception as e:
         print(e)
         return str(e), 403
+"""
 
 
 @app.route('/create-room', methods=["POST"])
@@ -150,7 +151,7 @@ def create_room():
 
         # load RSA public key from PEM
         try:
-            rsa_public_key = rsa.PublicKey.load_pkcs1(bytes.fromhex(unquote(request_json["rsa_pem"])))
+            user_rsa_publickey = rsa.PublicKey.load_pkcs1(bytes.fromhex(unquote(request_json["rsa_pem"])))
         
         except:
             # Invalid RSA public key
@@ -158,7 +159,7 @@ def create_room():
 
         # decrypt RSA
         try:
-            decrypted_data: dict[str, str] = json.loads(rsa.decrypt(request_json["data"], priv_key=private_k))
+            decrypted_data: dict[str, str] = json.loads(rsa.decrypt(request_json["data"], priv_key=rsa_private_k))
         
         except:
             # Invalid RSA encrypted data
@@ -210,7 +211,7 @@ def create_room():
         }
 
         # encrypt data json with RSA public key
-        encrypted_data = rsa.encrypt(str(data).encode(), rsa_public_key)
+        encrypted_data = rsa.encrypt(str(data).encode(), user_rsa_publickey)
 
         return flask.jsonify({"data": encrypted_data.hex()}), 200
 
@@ -224,7 +225,7 @@ def change_password():
     # set new password for room
 
     """
-    params: {'rsa_pem': "<user's RSA public key> in PEM", 'data': <RSA-encrypted-data> in hex}
+    params: {'rsa_pem': '<user's RSA public key> in PEM', 'data': <RSA-encrypted-data> in hex}
     <RSA-encrypted-data> = {'room_id': '<hex string (32)>', 'encrypted_new_room_password': '<encrypted-with-room-key> in hex'}
 
     response: {'data': <RSA-encrypted-data> in hex}
@@ -245,7 +246,7 @@ def change_password():
 
         # load RSA public key from PEM
         try:
-            rsa_public_key = rsa.PublicKey.load_pkcs1(bytes.fromhex(unquote(request_json["rsa_pem"])))
+            user_rsa_publickey = rsa.PublicKey.load_pkcs1(bytes.fromhex(unquote(request_json["rsa_pem"])))
         
         except:
             # Invalid RSA public key
@@ -253,7 +254,7 @@ def change_password():
 
         # decrypt RSA
         try:
-            decrypted_data: dict[str, str] = json.loads(rsa.decrypt(request_json["data"], priv_key=private_k))
+            decrypted_data: dict[str, str] = json.loads(rsa.decrypt(request_json["data"], priv_key=rsa_private_k))
         
         except:
             # Invalid RSA encrypted data
@@ -274,7 +275,7 @@ def change_password():
                 "status_code": "4"
             }
 
-            encrypted_data = rsa.encrypt(str(data).encode(), rsa_public_key)
+            encrypted_data = rsa.encrypt(str(data).encode(), user_rsa_publickey)
 
             return flask.jsonify({"data": encrypted_data.hex()}), 200
 
@@ -302,7 +303,7 @@ def change_password():
                 "status_code": "5"
             }
 
-            encrypted_data = rsa.encrypt(str(data).encode(), rsa_public_key)
+            encrypted_data = rsa.encrypt(str(data).encode(), user_rsa_publickey)
 
             return flask.jsonify({"data": encrypted_data.hex()}), 200
 
@@ -311,7 +312,7 @@ def change_password():
             "status_code": "1"
         }
 
-        encrypted_data = rsa.encrypt(str(data).encode(), rsa_public_key)
+        encrypted_data = rsa.encrypt(str(data).encode(), user_rsa_publickey)
 
         return flask.jsonify({"data": encrypted_data.hex()}), 200
 
@@ -345,7 +346,7 @@ def join_room():
 
         # load RSA public key from PEM
         try:
-            rsa_public_key = rsa.PublicKey.load_pkcs1(bytes.fromhex(unquote(request_json["rsa_pem"])))
+            user_rsa_publickey = rsa.PublicKey.load_pkcs1(bytes.fromhex(unquote(request_json["rsa_pem"])))
         
         except:
             # Invalid RSA public key
@@ -353,7 +354,7 @@ def join_room():
 
         # decrypt RSA
         try:
-            decrypted_data: dict[str, str] = json.loads(rsa.decrypt(request_json["data"], priv_key=private_k))
+            decrypted_data: dict[str, str] = json.loads(rsa.decrypt(request_json["data"], priv_key=rsa_private_k))
         
         except:
             # Invalid RSA encrypted data
@@ -420,7 +421,7 @@ def join_room():
                     }
 
 
-        encrypted_data = rsa.encrypt(str(data).encode(), rsa_public_key)
+        encrypted_data = rsa.encrypt(str(data).encode(), user_rsa_publickey)
             
         return flask.jsonify({"data": encrypted_data.hex()}), 200
 
@@ -433,12 +434,12 @@ def join_room():
 @app.route('/send-message', methods=["POST"])
 def send_message():
     """
-    params: {'data': '<server-AES-encrypted-data> in hex'}
-    <server-AES-encrypted-data> = {'room_id': '<hex string (32)>', 'data': '<room-AES-encrypted-data> in hex'}
-    <room-AES-encrypted-data> = {'room_password': '<plain text password>', 'message': '<encrypted-with-room-key> in hex'}
+    params: {'rsa_pem': '<user RSA public key> in PEM', 'data': '<RSA-encrypted-data> in hex', 'message': '<AES-encrypted-message> in hex'}
+    <RSA-encrypted-data> = {'room_id': '<hex string (32)>', 'room_password': '<plain text password>', 'symetric_key': <temp-AES-key-used-to-encrypt-message> in hex}
+    <AES-encrypted-message> = '<encrypted-with-temp-AES-key> in hex'
 
-    response: {'data': '<server-AES-encrypted-data> in hex'}
-    <server-AES-encrypted-data> = {'status_code': '<error code>'}
+    response: {'data': <RSA-encrypted-data> in hex}
+    <RSA-encrypted-data> = {'status_code': '<error code>'}
     """
 
     try:
@@ -448,33 +449,32 @@ def send_message():
 
         request_json: dict = flask.request.get_json()
 
-        # key 'data' must be in JSON
-        if not "data" in request_json.keys():
+        # key 'rsa_pem', 'data' and 'message' must be in JSON
+        if not "rsa_pem" in request_json.keys() or not "data" in request_json.keys() or not "message" in request_json.keys():
             return "Forbidden", 403
 
         decrypted_data: dict[str, str] = dict()
 
-        # decrypt data from request
+
+        # load user's RSA public key from PEM
         try:
-            decrypted_data = symetric_key_fernet.decrypt(bytes.fromhex(request_json["data"]))
-
+            user_rsa_publickey = rsa.PublicKey.load_pkcs1(bytes.fromhex(unquote(request_json["rsa_pem"])))
+        
         except:
+            # Invalid RSA public key
+            return "Forbidden", 403
 
-            # wrong symetric key
-            data = {
-                "status_code": "5"
-            }
-
-            data = str(data).encode()
-            data = symetric_key_fernet.encrypt(data).hex()
-
-            return flask.jsonify({"data": data}), 200
+        # decrypt RSA
+        try:
+            decrypted_data = json.loads(rsa.decrypt(request_json["data"], priv_key=rsa_private_k))
+        
+        except:
+            # Invalid RSA encrypted data
+            return "Forbidden", 403
 
 
-        decrypted_data: dict[str, str] = json.loads(decrypted_data)
-
-        # keys 'room_id', 'room_password' and 'message' must be in decrypted JSON
-        if not "room_id" in decrypted_data.keys() or not "data" in decrypted_data.keys():
+        # keys 'room_id' and 'room_password' must be in decrypted JSON
+        if not "room_id" in decrypted_data.keys() or not "data" in decrypted_data.keys() or not "symetric_key" in decrypted_data.keys():
             return "Forbidden", 403
 
         room_id = decrypted_data["room_id"]
@@ -487,32 +487,14 @@ def send_message():
                 "status_code": "4"
             }
 
-            data = str(data).encode()
-            data = symetric_key_fernet.encrypt(data).hex()
-
-            return flask.jsonify({"data": data}), 200
-
-
-        # decrypt data from request
-        try:
-            decrypted_data = symetric_key_fernet.decrypt()
-
-        except:
-
-            # wrong symetric key
-            data = {
-                "status_code": "5"
-            }
-
-            data = str(data).encode()
-            data = symetric_key_fernet.encrypt(data).hex()
-
-            return flask.jsonify({"data": data}), 200
+            encrypted_data = rsa.encrypt(str(data).encode(), user_rsa_publickey)
+            
+            return flask.jsonify({"data": encrypted_data.hex()}), 200
 
 
         password_user_hash: str = hashlib.sha256(decrypted_data["room_password"].encode()).hexdigest()
-        password_file_path = working_dir + "/rooms/" + room_id + "/password"
 
+        password_file_path = working_dir + "/rooms/" + room_id + "/password"
 
         if os.path.exists(password_file_path):
             with open(password_file_path, "r") as f:
@@ -520,26 +502,38 @@ def send_message():
 
         else:
             # password file missing (should never happen)
-
-            with open(password_file_path, "w") as f:
-                f.write(password_user_hash)
-
-            password_file_hash = password_user_hash
+            password_file_hash = ""
 
 
         if password_user_hash.strip() != password_file_hash.strip():
 
-            # wrong password (should never happen)
+            # wrong password
             data = {
                 "status_code": "3"
             }
 
-            data = str(data).encode()
-            data = symetric_key_fernet.encrypt(data).hex()
+            encrypted_data = rsa.encrypt(str(data).encode(), user_rsa_publickey)
+            
+            return flask.jsonify({"data": encrypted_data.hex()}), 200
 
-            return flask.jsonify({"data": data}), 200
+        try:
+            # load symetric key and decrypt message
 
-        message = decrypted_data["message"]
+            temp_symetric_key = Fernet(bytes.fromhex(decrypted_data["symetric_key"]))
+
+            encrypted_message = bytes.fromhex(request_json["message"])
+            message = temp_symetric_key.decrypt(encrypted_message).decode("utf-8")
+
+        except:
+            # wrong symetric key
+            data = {
+                "status_code": "5"
+            }
+
+            encrypted_data = rsa.encrypt(str(data).encode(), user_rsa_publickey)
+            
+            return flask.jsonify({"data": encrypted_data.hex()}), 200
+
 
         # load all messages
         with open(working_dir + "/rooms/" + room_id + "/messages", "r") as f:
@@ -584,10 +578,10 @@ def send_message():
             "status_code": "1"
         }
 
-        data = str(data).encode()
-        data = symetric_key_fernet.encrypt(data).hex()
 
-        return flask.jsonify({"data": data}), 200
+        encrypted_data = rsa.encrypt(str(data).encode(), user_rsa_publickey)
+        
+        return flask.jsonify({"data": encrypted_data.hex()}), 200
 
 
     except Exception as e:
