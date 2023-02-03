@@ -13,19 +13,13 @@ import hashlib
 
 
 app = flask.Flask(__name__)
-working_dir = os.path.dirname(__file__).replace("\\", "/") + "/"
-
-
-# generate AES key for server
-#server_aes_key = Fernet.generate_key()
-# load bytes as server's AES key
-#symetric_key_fernet: Fernet = Fernet(server_aes_key)
+WORKING_DIR = os.path.dirname(__file__).replace("\\", "/") + "/"
 
 # generate 2048 bit RSA keys for server
-rsa_public_k, rsa_private_k = rsa.newkeys(2048)
+RSA_PUBLIC_K, RSA_PRIVATE_K = rsa.newkeys(2048)
 
 
-version = "crypto-chat v1.1.0"
+VERSION = "crypto-chat v1.1.0"
 
 """
 - Status codes:
@@ -45,8 +39,8 @@ number of stored messages (server): 100
 """
 
 # create rooms folder in server directory
-if not os.path.exists(working_dir + "rooms"):
-    os.mkdir(f"{working_dir}rooms")
+if not os.path.exists(WORKING_DIR + "rooms"):
+    os.mkdir(f"{WORKING_DIR}rooms")
 
 
 @app.route('/')
@@ -63,7 +57,7 @@ def check_version():
         return "Forbidden", 403
 
     # desktop client will compare versions
-    return version
+    return VERSION
 
 
 @app.route('/get-public', methods=["GET"])
@@ -74,7 +68,7 @@ def get_public():
         return "Forbidden", 403
     
     # return server's Public key in hex
-    return rsa_public_k.save_pkcs1().hex(), 200
+    return RSA_PUBLIC_K.save_pkcs1().hex(), 200
 
 
 @app.route('/create-room', methods=["POST"])
@@ -105,7 +99,7 @@ def create_room():
         # decrypt data_rsa
         try:
             user_rsa_publickey = rsa.PublicKey.load_pkcs1(bytes.fromhex(unquote(request_json["rsa_pem"])))
-            decrypted_data: dict[str, str] = json.loads(rsa.decrypt(request_json["data_rsa"], priv_key=rsa_private_k))
+            decrypted_data: dict[str, str] = json.loads(rsa.decrypt(request_json["data_rsa"], priv_key=RSA_PRIVATE_K))
 
         except:
             # Invalid RSA public key / encrypted data
@@ -118,10 +112,10 @@ def create_room():
 
 
         # create rooms folder in server's directory if not exists
-        if not os.path.exists(working_dir + "rooms"):
-            os.mkdir(f"{working_dir}rooms")
+        if not os.path.exists(WORKING_DIR + "rooms"):
+            os.mkdir(f"{WORKING_DIR}rooms")
 
-        rooms_path = working_dir + "rooms" + "/"
+        rooms_path = WORKING_DIR + "rooms" + "/"
         room_id: str = decrypted_data["room_id"][:32]
 
         # create folder with random HEX string (room_id)
@@ -192,7 +186,7 @@ def change_password():
         # decrypt data_rsa
         try:
             user_rsa_publickey = rsa.PublicKey.load_pkcs1(bytes.fromhex(unquote(request_json["rsa_pem"])))
-            decrypted_data: dict[str, str] = json.loads(rsa.decrypt(request_json["data_rsa"], priv_key=rsa_private_k))
+            decrypted_data: dict[str, str] = json.loads(rsa.decrypt(request_json["data_rsa"], priv_key=RSA_PRIVATE_K))
 
         except:
             # Invalid RSA public key / encrypted data
@@ -204,7 +198,7 @@ def change_password():
             return "Forbidden", 403
 
         room_id = decrypted_data["room_id"][:32]
-        rooms_path = working_dir + "rooms" + "/"
+        rooms_path = WORKING_DIR + "rooms" + "/"
 
         if not os.path.exists(rooms_path + room_id):
             # ID is wrong
@@ -258,6 +252,8 @@ def change_password():
 
 @app.route('/join-room', methods=["POST"])
 def join_room():
+    # join existing room
+
     """
     params: {'rsa_pem': "<user's RSA public key> in PEM", 'data_rsa': <RSA-encrypted-data> in hex}
     <RSA-encrypted-data> = {'room_id': '<hex string (32)>', 'room_password': '<plaintext password from user>'}
@@ -282,7 +278,7 @@ def join_room():
         # decrypt data_rsa
         try:
             user_rsa_publickey = rsa.PublicKey.load_pkcs1(bytes.fromhex(unquote(request_json["rsa_pem"])))
-            decrypted_data: dict[str, str] = json.loads(rsa.decrypt(request_json["data_rsa"], priv_key=rsa_private_k))
+            decrypted_data: dict[str, str] = json.loads(rsa.decrypt(request_json["data_rsa"], priv_key=RSA_PRIVATE_K))
 
         except:
             # Invalid RSA public key / encrypted data
@@ -296,7 +292,7 @@ def join_room():
         room_id_user: str = decrypted_data["room_id"]
 
         # room folder in server's directory must exist
-        if not os.path.exists(working_dir + "/rooms/" + room_id_user):
+        if not os.path.exists(WORKING_DIR + "/rooms/" + room_id_user):
 
             # wrong room ID
             data = {
@@ -306,7 +302,7 @@ def join_room():
         else:
             password_user_hash: str = hashlib.sha256(decrypted_data["room_password"].encode()).hexdigest()
 
-            with open(working_dir + "/rooms/" + room_id_user + "/password", "r") as f:
+            with open(WORKING_DIR + "/rooms/" + room_id_user + "/password", "r") as f:
                 password_file = f.read()
 
             if password_user_hash.strip() != password_file.strip():
@@ -317,7 +313,7 @@ def join_room():
                 }
 
             else:
-                key_path = working_dir + "/rooms/" + room_id_user + "/symetric_key"
+                key_path = WORKING_DIR + "/rooms/" + room_id_user + "/symetric_key"
 
                 # AES key file must exist
                 if not os.path.exists(key_path):
@@ -333,7 +329,7 @@ def join_room():
                         aes_key = f.read()
 
 
-                    messages_count_path = working_dir + "/rooms/" + room_id_user + "/messages_count"
+                    messages_count_path = WORKING_DIR + "/rooms/" + room_id_user + "/messages_count"
                     if os.path.exists(messages_count_path):
                         with open(messages_count_path, "r") as f:
                             messages_count_server = f.read()
@@ -361,6 +357,8 @@ def join_room():
 
 @app.route('/send-message', methods=["POST"])
 def send_message():
+    # send message to existing room
+
     """
     params: {'rsa_pem': '<user RSA public key> in PEM', 'data_rsa': '<RSA-encrypted-data> in hex', 'data_aes': '<AES-encrypted-message> in hex'}
     <RSA-encrypted-data> = {'room_id': '<hex string (32)>', 'room_password': '<plain text password>', 'symetric_key': <temp-AES-key-used-to-encrypt-data_aes> in hex}
@@ -387,7 +385,7 @@ def send_message():
         # decrypt data_rsa
         try:
             user_rsa_publickey = rsa.PublicKey.load_pkcs1(bytes.fromhex(unquote(request_json["rsa_pem"])))
-            decrypted_data: dict[str, str] = json.loads(rsa.decrypt(request_json["data_rsa"], priv_key=rsa_private_k))
+            decrypted_data: dict[str, str] = json.loads(rsa.decrypt(request_json["data_rsa"], priv_key=RSA_PRIVATE_K))
 
         except:
             # Invalid RSA public key / encrypted data
@@ -401,7 +399,7 @@ def send_message():
         room_id = decrypted_data["room_id"]
 
         # room folder in server's directory must exist
-        if not os.path.exists(working_dir + "/rooms/" + room_id):
+        if not os.path.exists(WORKING_DIR + "/rooms/" + room_id):
 
             # wrong room ID (room was deleted by someone else)
             data = {
@@ -415,7 +413,7 @@ def send_message():
 
         password_user_hash: str = hashlib.sha256(decrypted_data["room_password"].encode()).hexdigest()
 
-        password_file_path = working_dir + "/rooms/" + room_id + "/password"
+        password_file_path = WORKING_DIR + "/rooms/" + room_id + "/password"
 
         if os.path.exists(password_file_path):
             with open(password_file_path, "r") as f:
@@ -457,7 +455,7 @@ def send_message():
 
 
         # load all messages
-        with open(working_dir + "/rooms/" + room_id + "/messages", "r") as f:
+        with open(WORKING_DIR + "/rooms/" + room_id + "/messages", "r") as f:
             rows = f.readlines()
 
         # add new message
@@ -470,11 +468,11 @@ def send_message():
             rows_count -= 1
 
         # write encrypted messages back to file
-        with open(working_dir + "/rooms/" + room_id + "/messages", "w") as f:
+        with open(WORKING_DIR + "/rooms/" + room_id + "/messages", "w") as f:
             f.writelines(rows)
 
 
-        messages_count_path = working_dir + "/rooms/" + room_id + "/messages_count"
+        messages_count_path = WORKING_DIR + "/rooms/" + room_id + "/messages_count"
 
         # read value
         if os.path.exists(messages_count_path):
@@ -512,6 +510,8 @@ def send_message():
 
 @app.route('/get-messages', methods=["POST"])
 def get_messages():
+    # get new messages (max 100)
+
     """
     params: {'rsa_pem': '<user RSA public key> in PEM', 'data_rsa': '<RSA-encrypted-data> in hex'}
     <RSA-encrypted-data> = {'room_id': '<hex string (32)>', 'room_password': '<plain text password>', 'user_messages_count': <int>}
@@ -537,7 +537,7 @@ def get_messages():
         # decrypt data_rsa
         try:
             user_rsa_publickey = rsa.PublicKey.load_pkcs1(bytes.fromhex(unquote(request_json["rsa_pem"])))
-            decrypted_data: dict[str, str] = json.loads(rsa.decrypt(request_json["data_rsa"], priv_key=rsa_private_k))
+            decrypted_data: dict[str, str] = json.loads(rsa.decrypt(request_json["data_rsa"], priv_key=RSA_PRIVATE_K))
 
         except:
             # Invalid RSA public key / encrypted data
@@ -552,7 +552,7 @@ def get_messages():
         room_id = decrypted_data["room_id"]
 
         # room folder in server's directory must exist
-        if not os.path.exists(working_dir + "/rooms/" + room_id):
+        if not os.path.exists(WORKING_DIR + "/rooms/" + room_id):
 
             # wrong room ID (room was deleted by someone else)
             data = {
@@ -566,7 +566,7 @@ def get_messages():
 
 
         password_user_hash: str = hashlib.sha256(decrypted_data["room_password"].encode()).hexdigest()
-        password_file_path = working_dir + "/rooms/" + room_id + "/password"
+        password_file_path = WORKING_DIR + "/rooms/" + room_id + "/password"
 
 
         if os.path.exists(password_file_path):
@@ -592,7 +592,7 @@ def get_messages():
 
 
         messages_count_user: int = decrypted_data["user_messages_count"]
-        messages_count_path = working_dir + "/rooms/" + room_id + "/messages_count"
+        messages_count_path = WORKING_DIR + "/rooms/" + room_id + "/messages_count"
 
         if os.path.exists(messages_count_path):
             with open(messages_count_path, "r") as f:
@@ -622,7 +622,7 @@ def get_messages():
         else:
 
             # load all messages
-            with open(working_dir + "/rooms/" + room_id + "/messages", "r") as f:
+            with open(WORKING_DIR + "/rooms/" + room_id + "/messages", "r") as f:
                 rows = f.readlines()
 
             if messages_to_send_count > 100:
@@ -667,6 +667,8 @@ def get_messages():
 
 @app.route('/delete-room', methods=["POST"])
 def delete_room():
+    # delete existing room (delete room's folder)
+
     """
     params: {'rsa_pem': '<user RSA public key> in PEM', 'data_rsa': <RSA-encrypted-data> in hex}
     <RSA-encrypted-data> = {'room_id': '<hex string (32)>', 'room_password': '<plaintext password>'}
@@ -691,7 +693,7 @@ def delete_room():
         # decrypt data_rsa
         try:
             user_rsa_publickey = rsa.PublicKey.load_pkcs1(bytes.fromhex(unquote(request_json["rsa_pem"])))
-            decrypted_data: dict[str, str] = json.loads(rsa.decrypt(request_json["data_rsa"], priv_key=rsa_private_k))
+            decrypted_data: dict[str, str] = json.loads(rsa.decrypt(request_json["data_rsa"], priv_key=RSA_PRIVATE_K))
 
         except:
             # Invalid RSA public key / encrypted data
@@ -705,7 +707,7 @@ def delete_room():
         room_id = decrypted_data["room_id"]
 
         password_user_hash: str = hashlib.sha256(decrypted_data["room_password"].encode()).hexdigest()
-        password_file_path = working_dir + "/rooms/" + room_id + "/password"
+        password_file_path = WORKING_DIR + "/rooms/" + room_id + "/password"
 
 
         if os.path.exists(password_file_path):
@@ -727,7 +729,7 @@ def delete_room():
         try:
             # delete folder
 
-            shutil.rmtree(working_dir + "/rooms/" + room_id)
+            shutil.rmtree(WORKING_DIR + "/rooms/" + room_id)
 
             data = {
                 "status_code": "4"
