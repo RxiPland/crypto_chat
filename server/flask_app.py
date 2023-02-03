@@ -84,10 +84,10 @@ def create_room():
 
     """
     params: {'rsa_pem': '<user RSA public key> in PEM', 'data_rsa': <RSA-encrypted-data> in hex}
-    <RSA-encrypted-data> = {'room_password_sha256': '<hashed password>'}
+    <RSA-encrypted-data> = {'room_id': '<hex string (32)>', 'room_password_sha256': '<hashed password>'}
 
     response: {'data_rsa': <RSA-encrypted-data> in hex}
-    <RSA-encrypted-data> = {'status_code': '<error code>', 'room_aes_key': '<plaintext room AES> in hex', 'room_id': '<32 chars hex string>'}
+    <RSA-encrypted-data> = {'status_code': '<error code>', 'room_aes_key': '<plaintext room AES> in hex'}
     """
 
     try:
@@ -113,8 +113,8 @@ def create_room():
             return "Forbidden", 403
         
 
-        # key 'room_password_sha256' not in decrypted JSON
-        if not "room_password_sha256" in decrypted_data.keys():
+        # keys 'room_id' and 'room_password_sha256' must be in decrypted JSON
+        if not "room_id" in decrypted_data.keys() or not "room_password_sha256" in decrypted_data.keys():
             return "Forbidden", 403
 
 
@@ -123,9 +123,7 @@ def create_room():
             os.mkdir(f"{working_dir}rooms")
 
         rooms_path = working_dir + "rooms" + "/"
-
-        # create 32 hex characters long ID
-        room_id: str = uuid.uuid4().hex[:32]
+        room_id: str = decrypted_data["room_id"][:32]
 
         # create folder with random HEX string (room_id)
         os.mkdir(rooms_path + room_id)
@@ -155,7 +153,6 @@ def create_room():
         data = {
             "status_code": "1",
             "room_aes_key": key.hex(),
-            "room_id": room_id
         }
 
         # encrypt data json with RSA public key
