@@ -8,7 +8,6 @@ from cryptography.fernet import Fernet
 import os
 import shutil
 import json
-from urllib.parse import unquote
 import hashlib
 
 
@@ -76,7 +75,7 @@ def create_room():
     # create new chat room
 
     """
-    params: {'rsa_pem': '<user RSA public key> in PEM', 'data_rsa': <RSA-encrypted-data> in hex}
+    params: {'rsa_pem': '<user RSA public key> in PEM hex', 'data_rsa': <RSA-encrypted-data> in hex}
     <RSA-encrypted-data> = {'room_id': '<hex string (32)>', 'room_password_sha256': '<hashed password>'}
 
     response: {'data_rsa': <RSA-encrypted-data> in hex}
@@ -98,7 +97,7 @@ def create_room():
         # load user's RSA public key from PEM
         # decrypt data_rsa
         try:
-            user_rsa_publickey = rsa.PublicKey.load_pkcs1(bytes.fromhex(unquote(request_json["rsa_pem"])))
+            user_rsa_publickey = rsa.PublicKey.load_pkcs1(bytes.fromhex(request_json["rsa_pem"]))
             decrypted_data: dict[str, str] = json.loads(rsa.decrypt(request_json["data_rsa"], priv_key=RSA_PRIVATE_K))
 
         except:
@@ -163,7 +162,7 @@ def change_password():
     # set new password for room
 
     """
-    params: {'rsa_pem': '<user's RSA public key> in PEM', 'data_rsa': <RSA-encrypted-data> in hex}
+    params: {'rsa_pem': '<user's RSA public key> in PEM hex', 'data_rsa': <RSA-encrypted-data> in hex}
     <RSA-encrypted-data> = {'room_id': '<hex string (32)>', 'current_password': '<plaintext password>', 'new_password': '<plaintext password>'}
 
     response: {'data_rsa': <RSA-encrypted-data> in hex}
@@ -185,7 +184,7 @@ def change_password():
         # load user's RSA public key from PEM
         # decrypt data_rsa
         try:
-            user_rsa_publickey = rsa.PublicKey.load_pkcs1(bytes.fromhex(unquote(request_json["rsa_pem"])))
+            user_rsa_publickey = rsa.PublicKey.load_pkcs1(bytes.fromhex(request_json["rsa_pem"]))
             decrypted_data: dict[str, str] = json.loads(rsa.decrypt(request_json["data_rsa"], priv_key=RSA_PRIVATE_K))
 
         except:
@@ -255,7 +254,7 @@ def join_room():
     # join existing room
 
     """
-    params: {'rsa_pem': "<user's RSA public key> in PEM", 'data_rsa': <RSA-encrypted-data> in hex}
+    params: {'rsa_pem': "<user's RSA public key> in PEM hex", 'data_rsa': <RSA-encrypted-data> in hex}
     <RSA-encrypted-data> = {'room_id': '<hex string (32)>', 'room_password': '<plaintext password from user>'}
 
     response: {'data_rsa': <RSA-encrypted-data> in hex}
@@ -277,7 +276,7 @@ def join_room():
         # load user's RSA public key from PEM
         # decrypt data_rsa
         try:
-            user_rsa_publickey = rsa.PublicKey.load_pkcs1(bytes.fromhex(unquote(request_json["rsa_pem"])))
+            user_rsa_publickey = rsa.PublicKey.load_pkcs1(bytes.fromhex(request_json["rsa_pem"]))
             decrypted_data: dict[str, str] = json.loads(rsa.decrypt(request_json["data_rsa"], priv_key=RSA_PRIVATE_K))
 
         except:
@@ -384,7 +383,7 @@ def send_message():
         # load user's RSA public key from PEM
         # decrypt data_rsa
         try:
-            user_rsa_publickey = rsa.PublicKey.load_pkcs1(bytes.fromhex(unquote(request_json["rsa_pem"])))
+            user_rsa_publickey = rsa.PublicKey.load_pkcs1(bytes.fromhex(request_json["rsa_pem"]))
             decrypted_data: dict[str, str] = json.loads(rsa.decrypt(request_json["data_rsa"], priv_key=RSA_PRIVATE_K))
 
         except:
@@ -513,7 +512,7 @@ def get_messages():
     # get new messages (max 100)
 
     """
-    params: {'rsa_pem': '<user RSA public key> in PEM', 'data_rsa': '<RSA-encrypted-data> in hex'}
+    params: {'rsa_pem': '<user RSA public key> in PEM hex', 'data_rsa': '<RSA-encrypted-data> in hex'}
     <RSA-encrypted-data> = {'room_id': '<hex string (32)>', 'room_password': '<plain text password>', 'user_messages_count': <int>}
 
     response: {'data_rsa': <RSA-encrypted-data> in hex, 'data_aes': <temp-AES-key-encrypted-data> in hex}
@@ -536,7 +535,7 @@ def get_messages():
         # load user's RSA public key from PEM
         # decrypt data_rsa
         try:
-            user_rsa_publickey = rsa.PublicKey.load_pkcs1(bytes.fromhex(unquote(request_json["rsa_pem"])))
+            user_rsa_publickey = rsa.PublicKey.load_pkcs1(bytes.fromhex(request_json["rsa_pem"]))
             decrypted_data: dict[str, str] = json.loads(rsa.decrypt(request_json["data_rsa"], priv_key=RSA_PRIVATE_K))
 
         except:
@@ -670,7 +669,7 @@ def delete_room():
     # delete existing room (delete room's folder)
 
     """
-    params: {'rsa_pem': '<user RSA public key> in PEM', 'data_rsa': <RSA-encrypted-data> in hex}
+    params: {'rsa_pem': '<user RSA public key> in PEM hex', 'data_rsa': <RSA-encrypted-data> in hex}
     <RSA-encrypted-data> = {'room_id': '<hex string (32)>', 'room_password': '<plaintext password>'}
 
     response: {'data_rsa': <RSA-encrypted-data> in hex}
@@ -692,7 +691,7 @@ def delete_room():
         # load user's RSA public key from PEM
         # decrypt data_rsa
         try:
-            user_rsa_publickey = rsa.PublicKey.load_pkcs1(bytes.fromhex(unquote(request_json["rsa_pem"])))
+            user_rsa_publickey = rsa.PublicKey.load_pkcs1(bytes.fromhex(request_json["rsa_pem"]))
             decrypted_data: dict[str, str] = json.loads(rsa.decrypt(request_json["data_rsa"], priv_key=RSA_PRIVATE_K))
 
         except:
