@@ -40,8 +40,11 @@ public:
     QString authentication_username = "";
     QString authentication_password = "";
 
-    QString serverAesKeyHex;
     QString roomAesKeyHex;
+
+    QString rsaPublicKeyPem;
+    QString rsaPrivateKeyPemHex;
+    QString serverPublicKeyPemHex;
 
     QString server_url;
     QString room_id;

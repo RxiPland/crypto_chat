@@ -30,9 +30,7 @@ public:
     QString rsaPublicKeyPem;
     QString rsaPrivateKeyPemHex;
 
-
     QString serverPublicKeyPemHex;
-    QString serverAesKeyHex;
 
 private slots:
     void on_checkBox_stateChanged();

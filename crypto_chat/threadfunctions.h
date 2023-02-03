@@ -37,7 +37,10 @@ public:
     QString authentication_username = "";
     QString authentication_password = "";
 
-    QString serverAesKeyHex;
+    QString rsaPublicKeyPem;
+    QString rsaPrivateKeyPemHex;
+    QString serverPublicKeyPemHex;
+
     QString roomAesKeyHex;
 
     QByteArray user_agent;
