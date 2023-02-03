@@ -19,7 +19,7 @@ int main(int argc, char *argv[])
     QApplication a(argc, argv);
     a.setQuitOnLastWindowClosed(true);
 
-    // login to crypto-chat server && obtain server symetric key
+    // login to crypto-chat server && obtain asymetric keys
     LoginDialog ld;
     ld.app_version = app_version;
     ld.user_agent = user_agent;
