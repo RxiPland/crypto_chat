@@ -42,7 +42,7 @@ public:
 
     QString roomAesKeyHex;
 
-    QString rsaPublicKeyPem;
+    QString rsaPublicKeyPemHex;
     QString rsaPrivateKeyPemHex;
     QString serverPublicKeyPemHex;
 
