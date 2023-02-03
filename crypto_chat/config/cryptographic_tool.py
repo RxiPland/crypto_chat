@@ -12,7 +12,7 @@ import tempfile
 
 
 app_dir = os.path.dirname(__file__).replace("\\", "/") + "/"
-operations = "[generate_id, generate_rsa, decrypt_rsa, encrypt_aes, decrypt_aes]"
+operations = "[generate_id, generate_rsa, encrypt_rsa, decrypt_rsa, generate_aes, encrypt_aes, decrypt_aes]"
 
 def main():
 
@@ -113,6 +113,15 @@ def main():
 
         else:
             raise Exception("Private Key is missing!")
+        
+        
+    elif operation == "generate_aes":
+        # generate symetric key
+        # then print it in hex
+
+        key = Fernet.generate_key()
+
+        print(key.hex(), end="")
 
 
     elif operation == "encrypt_aes":
