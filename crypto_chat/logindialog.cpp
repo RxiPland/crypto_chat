@@ -1,5 +1,7 @@
 /*
-Window to check user's version with server's version & obtain server's symetric key
+Generate user's RSA key pairs
+Window to check user's version with server's version
+Obtain server's RSA public key
 */
 
 #include "logindialog.h"
@@ -73,6 +75,8 @@ void LoginDialog::closeEvent(QCloseEvent *bar)
 
     this->close();
 
+    // code here
+
     if(bar != nullptr){
         bar->accept();
     }
@@ -124,10 +128,10 @@ void LoginDialog::on_checkBox_stateChanged()
 {
     // authentication checkbox
 
-    if(ui->checkBox->isChecked()){
+    if (ui->checkBox->isChecked()){
         LoginDialog::hide_widgets(false);
 
-    }else{
+    } else{
         LoginDialog::hide_widgets(true);
     }
 }
@@ -307,12 +311,12 @@ void LoginDialog::on_pushButton_clicked()
                 }
 
                 // save server's RSA public key
-                LoginDialog::serverPublicKeyPemHex = reply_get->readAll();
+                LoginDialog::serverPublicKeyPemHex = reply_get->readAll().trimmed();
 
                 msgBox.setText(previousText + "<span style=\"color:green;\"> [Dokončeno]<br></span>");
 
 
-                msgBox.setText(msgBox.text() + "4/4 Generace veřejného a soukromého klíče (RSA)");
+                msgBox.setText(msgBox.text() + "4/4 Generování veřejného a soukromého klíče (RSA)");
                 previousText = msgBox.text();
                 msgBox.setText(msgBox.text() + "<span style=\"color:orange;\"> [Probíhá]<br></span>");
 
@@ -347,7 +351,7 @@ void LoginDialog::on_pushButton_clicked()
                 }
 
                 // get rsa public key PEM from hex
-                LoginDialog::rsaPublicKeyPem = QByteArray::fromHex(cmdOutput[0].trimmed());
+                LoginDialog::rsaPublicKeyPemHex = cmdOutput[0].trimmed();
 
                 //get rsa private key PEM in hex
                 LoginDialog::rsaPrivateKeyPemHex = cmdOutput[1].trimmed();
