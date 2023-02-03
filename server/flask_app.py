@@ -10,7 +10,6 @@ import shutil
 import json
 from urllib.parse import unquote
 import hashlib
-import uuid
 
 
 app = flask.Flask(__name__)
