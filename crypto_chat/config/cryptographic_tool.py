@@ -33,7 +33,7 @@ def main():
         # generate random ID in hex (32)
         # then print it
 
-        print(uuid.uuid4().hex)
+        print(uuid.uuid4().hex, end="")
 
     
     elif operation == "generate_rsa":
@@ -57,13 +57,13 @@ def main():
                 public_k, private_k = rsa.newkeys(int(argv[1]))
 
                 # print public key in PEM hex
-                print(public_k.save_pkcs1().hex())
+                print(public_k.save_pkcs1().hex(), end="")
                 
                 # print ';' for easier splitting
-                print(";")
+                print(";", end="")
 
                 # print private key in PEM hex
-                print(private_k.save_pkcs1().hex())
+                print(private_k.save_pkcs1().hex(), end="")
 
         else:
             raise Exception("Size of RSA key is missing! [2048, 4096]")
@@ -83,7 +83,7 @@ def main():
                 encrypted = rsa.encrypt(message=plaintext, pub_key=public_k)
 
                 # print ciphertext in hex
-                print(encrypted.hex())
+                print(encrypted.hex(), end="")
 
             else:
                 raise Exception("Plaintext is missing!")
@@ -106,7 +106,7 @@ def main():
                 decrypted = rsa.decrypt(crypto=encrypted, priv_key=private_k)
 
                 # print decrypted server AES key in hex
-                print(decrypted.hex())
+                print(decrypted.hex(), end="")
 
             else:
                 raise Exception("Encrypted text is missing!")
@@ -152,7 +152,7 @@ def main():
 
                     else:
                         # print encrypted data
-                        print(message_crypt_hex)
+                        print(message_crypt_hex, end="")
 
                 else:
                     raise Exception("Plain text OR filename is missing!")
@@ -199,7 +199,7 @@ def main():
 
                     else:
                         # print decrypted data
-                        print(message_decrypted_hex)
+                        print(message_decrypted_hex, end="")
 
                 else:
                     raise Exception("Encrypted text OR filename is missing!")
