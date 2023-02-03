@@ -174,7 +174,7 @@ def change_password():
 
     """
     params: {'rsa_pem': '<user's RSA public key> in PEM', 'data_rsa': <RSA-encrypted-data> in hex}
-    <RSA-encrypted-data> = {'room_id': '<hex string (32)>', 'encrypted_new_room_password': '<encrypted-with-room-key> in hex'}
+    <RSA-encrypted-data> = {'room_id': '<hex string (32)>', 'current_password': '<plaintext password>', 'new_password': '<plaintext password>'}
 
     response: {'data_rsa': <RSA-encrypted-data> in hex}
     <RSA-encrypted-data> = {'status_code': '<error code>'}
@@ -204,7 +204,7 @@ def change_password():
 
 
         # keys 'room_id' and 'encrypted_new_room_password' must be in decrypted JSON
-        if not "room_id" in decrypted_data.keys() or not "encrypted_new_room_password" in decrypted_data.keys():
+        if not "room_id" in decrypted_data.keys() or not "current_password" in decrypted_data.keys() or not "new_password" in decrypted_data.keys():
             return "Forbidden", 403
 
         room_id = decrypted_data["room_id"][:32]
@@ -222,32 +222,28 @@ def change_password():
             return flask.jsonify({"data_rsa": encrypted_data.hex()}), 200
 
 
-        # load AES key from room's folder
-        with open(rooms_path + room_id + "/symetric_key", "rb") as f:
-            room_key = f.read()
+        password_user_hash: str = hashlib.sha256(decrypted_data["current_password"].encode()).hexdigest()
 
-        try:
-            # decrypt password with room's key
+        with open(rooms_path + room_id + "/password", "r") as f:
+            password_file = f.read()
 
-            room_key = Fernet(room_key)
-            encrypted_password = bytes.fromhex(decrypted_data["encrypted_new_room_password"])
+        if password_user_hash.strip() != password_file.strip():
 
-            # decrypt password
-            room_password_sha256 = room_key.decrypt(encrypted_password)
-
-            # overwrite password in file with new hashed password
-            with open(rooms_path + room_id + "/password", "wb") as f:
-                f.write(room_password_sha256)
-        
-        except:
-
+            # wrong password
             data = {
-                "status_code": "5"
+                "status_code": "3"
             }
 
             encrypted_data = rsa.encrypt(str(data).encode(), user_rsa_publickey)
-
+            
             return flask.jsonify({"data_rsa": encrypted_data.hex()}), 200
+
+        else:
+            # save hashed new password to file
+            with open(rooms_path + room_id + "/password", "w") as f:
+
+                new_password_sha256 = hashlib.sha256(decrypted_data["new_password"].encode()).hexdigest()
+                f.write(new_password_sha256)
 
 
         data = {
@@ -676,7 +672,7 @@ def get_messages():
 @app.route('/delete-room', methods=["POST"])
 def delete_room():
     """
-    params: {'data_rsa': <RSA-encrypted-data> in hex}
+    params: {'rsa_pem': '<user RSA public key> in PEM', 'data_rsa': <RSA-encrypted-data> in hex}
     <RSA-encrypted-data> = {'room_id': '<hex string (32)>', 'room_password': '<plaintext password>'}
 
     response: {'data_rsa': <RSA-encrypted-data> in hex}
@@ -690,29 +686,21 @@ def delete_room():
 
         request_json: dict = flask.request.get_json()
 
-        # key 'data_rsa' must be in JSON
-        if not "data_rsa" in request_json.keys():
+        # keys 'rsa_pem' and 'data_rsa' must be in JSON
+        if not "rsa_pem" in request_json.keys() or not "data_rsa" in request_json.keys():
             return "Forbidden", 403
 
 
-        # decrypt data from request
+        # load user's RSA public key from PEM
+        # decrypt data_rsa
         try:
-            decrypted_data = symetric_key_fernet.decrypt(bytes.fromhex(request_json["data_rsa"]))
+            user_rsa_publickey = rsa.PublicKey.load_pkcs1(bytes.fromhex(unquote(request_json["rsa_pem"])))
+            decrypted_data: dict[str, str] = json.loads(rsa.decrypt(request_json["data_rsa"], priv_key=rsa_private_k))
 
         except:
+            # Invalid RSA public key / encrypted data
+            return "Forbidden", 403
 
-            # wrong symetric key
-            data = {
-                "status_code": "5"
-            }
-
-            data = str(data).encode()
-            data = symetric_key_fernet.encrypt(data).hex()
-
-            return flask.jsonify({"data_rsa": data}), 200
-
-
-        decrypted_data: dict[str, str] = json.loads(decrypted_data)
 
          # keys 'room_id' and 'room_password' must be in decrypted JSON
         if not "room_id" in decrypted_data.keys() or not "room_password" in decrypted_data.keys():
@@ -735,12 +723,14 @@ def delete_room():
                 "status_code": "3"
             }
 
-            data = str(data).encode()
-            data = symetric_key_fernet.encrypt(data).hex()
+            encrypted_data = rsa.encrypt(str(data).encode(), user_rsa_publickey)
+        
+            return flask.jsonify({"data_rsa": encrypted_data.hex()}), 200
 
-            return flask.jsonify({"data_rsa": data}), 200
 
         try:
+            # delete folder
+
             shutil.rmtree(working_dir + "/rooms/" + room_id)
 
             data = {
@@ -753,10 +743,9 @@ def delete_room():
             }
 
             
-        data = str(data).encode()
-        data = symetric_key_fernet.encrypt(data).hex()
-
-        return flask.jsonify({"data_rsa": data}), 200
+        encrypted_data = rsa.encrypt(str(data).encode(), user_rsa_publickey)
+        
+        return flask.jsonify({"data_rsa": encrypted_data.hex()}), 200
 
 
     except Exception as e:
