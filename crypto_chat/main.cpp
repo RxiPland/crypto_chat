@@ -59,6 +59,8 @@ int main(int argc, char *argv[])
         return 0;
     }
 
+    /*
+
     // open chat window
     ChatWindow chw(nullptr, server_url, rd.username);
     chw.app_version = app_version;
@@ -81,5 +83,6 @@ int main(int argc, char *argv[])
 
     chw.show();
 
+    */
     return a.exec();
 }

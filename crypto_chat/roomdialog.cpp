@@ -24,7 +24,6 @@ RoomDialog::RoomDialog(QWidget *parent, bool createRoom, QString server_url) :
     ui->setupUi(this);
     this->setWindowIcon(QIcon("://images/hacker.ico"));
 
-    RoomDialog::room_id = RoomDialog::generateId();
     RoomDialog::server_url = server_url;
     RoomDialog::createRoom = createRoom;
 
@@ -38,6 +37,7 @@ RoomDialog::RoomDialog(QWidget *parent, bool createRoom, QString server_url) :
 
     ui->pushButton->setFocusPolicy(Qt::FocusPolicy::NoFocus);
     ui->pushButton_2->setFocusPolicy(Qt::FocusPolicy::NoFocus);
+    ui->pushButton_3->setFocusPolicy(Qt::FocusPolicy::NoFocus);
 
     if(createRoom){
 
@@ -45,9 +45,10 @@ RoomDialog::RoomDialog(QWidget *parent, bool createRoom, QString server_url) :
 
         ui->lineEdit_3->setDisabled(true);
         ui->lineEdit_3->setReadOnly(true);
-        ui->lineEdit_3->setText(RoomDialog::room_id);
+        ui->lineEdit_3->setText(RoomDialog::generateId());
 
         ui->pushButton->setText(" Vytvořit místnost ");
+        ui->pushButton_3->setDisabled(false);
 
     } else{
 
@@ -58,6 +59,7 @@ RoomDialog::RoomDialog(QWidget *parent, bool createRoom, QString server_url) :
         ui->lineEdit_3->clear();
 
         ui->pushButton->setText(" Připojit se do místnosti ");
+        ui->pushButton_3->setDisabled(true);
     }
 
     this->show();
@@ -658,6 +660,8 @@ QList<QJsonValue> RoomDialog::decryptRsa(QStringList json_keys, QByteArray respo
 
 void RoomDialog::on_lineEdit_3_textEdited(const QString &arg1)
 {
+    // edited field with ID
+
     int textLength = arg1.length();
 
     if(arg1.length() == 33){
@@ -683,6 +687,8 @@ void RoomDialog::on_lineEdit_3_textEdited(const QString &arg1)
 
 void RoomDialog::on_lineEdit_4_textEdited(const QString &arg1)
 {
+    // edited username
+
     int textLength = arg1.length();
 
     if(textLength == 26){
@@ -733,6 +739,8 @@ void RoomDialog::on_lineEdit_returnPressed()
 
 void RoomDialog::on_pushButton_2_clicked()
 {
+    // switching between creating and joining room
+
     if(RoomDialog::createRoom){
 
         this->setWindowTitle("Připojení do chatovací místnosti");
@@ -744,6 +752,7 @@ void RoomDialog::on_pushButton_2_clicked()
         ui->lineEdit_3->setFocus();
 
         ui->pushButton->setText(" Připojit se do místnosti ");
+        ui->pushButton_3->setDisabled(true);
 
         RoomDialog::createRoom = false;
         QMessageBox::information(this, "Oznámení", "Přepnuto na připojení do existující místnosti");
@@ -759,6 +768,7 @@ void RoomDialog::on_pushButton_2_clicked()
         ui->lineEdit_2->setFocus();
 
         ui->pushButton->setText(" Vytvořit místnost ");
+        ui->pushButton_3->setDisabled(false);
 
         RoomDialog::createRoom = true;
         QMessageBox::information(this, "Oznámení", "Přepnuto na vytváření nové místnosti");
@@ -768,6 +778,8 @@ void RoomDialog::on_pushButton_2_clicked()
 
 void RoomDialog::on_checkBox_clicked()
 {
+    // enable or disable password
+
     if(ui->checkBox->isChecked()){
         ui->lineEdit->setHidden(false);
         ui->lineEdit->setFocus();
@@ -780,6 +792,9 @@ void RoomDialog::on_checkBox_clicked()
 
 void RoomDialog::on_pushButton_3_clicked()
 {
+    // generate new ID
+
     ui->lineEdit_3->setText(RoomDialog::generateId());
+    ui->lineEdit_2->setFocus();
 }
 
