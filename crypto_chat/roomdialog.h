@@ -13,7 +13,7 @@ class RoomDialog : public QDialog
     Q_OBJECT
 
 public:
-    explicit RoomDialog(QWidget *parent = nullptr, bool createRoom = false, QString server_url = "", QString room_id = "");
+    explicit RoomDialog(QWidget *parent = nullptr, bool createRoom = false, QString server_url = "");
     ~RoomDialog();
 
     bool createRoom = false;
@@ -30,7 +30,7 @@ public:
     QString authentication_username;
     QString authentication_password;
 
-    QString rsaPublicKeyPem;
+    QString rsaPublicKeyPemHex;
     QString rsaPrivateKeyPemHex;
     QString serverPublicKeyPemHex;
 

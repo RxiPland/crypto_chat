@@ -37,12 +37,14 @@ int main(int argc, char *argv[])
     QString server_url = ld.server_url;
 
     // create OR login to existing room (obtain room symetric key)
-    RoomDialog rd(nullptr, ld.create_room, server_url, ld.room_id);
+    RoomDialog rd(nullptr, ld.create_room, server_url);
     rd.app_version = app_version;
     rd.user_agent = user_agent;
-    rd.serverAesKeyHex = ld.serverAesKeyHex;
-    rd.rsaPublicKeyPem = ld.rsaPublicKeyPem;
+
+    // keys
+    rd.rsaPublicKeyPemHex = ld.rsaPublicKeyPemHex;
     rd.rsaPrivateKeyPemHex = ld.rsaPrivateKeyPemHex;
+    rd.serverPublicKeyPemHex = ld.serverPublicKeyPemHex;
 
     if(ld.authentication_required){
         rd.authentication_required = true;
@@ -61,8 +63,12 @@ int main(int argc, char *argv[])
     ChatWindow chw(nullptr, server_url, rd.username);
     chw.app_version = app_version;
     chw.user_agent = user_agent;
-    chw.serverAesKeyHex = rd.serverAesKeyHex;
+
+    // keys
     chw.roomAesKeyHex = rd.roomAesKeyHex;
+    chw.serverPublicKeyPemHex = rd.serverPublicKeyPemHex;
+    chw.rsaPublicKeyPemHex = rd.rsaPublicKeyPemHex;
+    chw.rsaPrivateKeyPemHex = rd.rsaPublicKeyPemHex;
 
     chw.room_id = rd.room_id;
     chw.room_password = rd.room_password;
@@ -72,6 +78,7 @@ int main(int argc, char *argv[])
     chw.serverMessagesCount = rd.serverMessagesCount;
     chw.welcomeMessage();
     chw.startRefreshLoop();
+
     chw.show();
 
     return a.exec();

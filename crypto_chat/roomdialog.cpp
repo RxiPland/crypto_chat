@@ -16,7 +16,7 @@ Window for creating new room OR joining existing room
 #include <QProcess>
 
 
-RoomDialog::RoomDialog(QWidget *parent, bool createRoom, QString server_url, QString room_id) :
+RoomDialog::RoomDialog(QWidget *parent, bool createRoom, QString server_url) :
     QDialog(parent),
     ui(new Ui::RoomDialog)
 {
@@ -24,7 +24,7 @@ RoomDialog::RoomDialog(QWidget *parent, bool createRoom, QString server_url, QSt
     ui->setupUi(this);
     this->setWindowIcon(QIcon("://images/hacker.ico"));
 
-    RoomDialog::room_id = room_id;
+    RoomDialog::room_id = RoomDialog::generateId();
     RoomDialog::server_url = server_url;
     RoomDialog::createRoom = createRoom;
 
@@ -45,7 +45,7 @@ RoomDialog::RoomDialog(QWidget *parent, bool createRoom, QString server_url, QSt
 
         ui->lineEdit_3->setDisabled(true);
         ui->lineEdit_3->setReadOnly(true);
-        ui->lineEdit_3->setText(RoomDialog::generateId());
+        ui->lineEdit_3->setText(RoomDialog::room_id);
 
         ui->pushButton->setText(" Vytvořit místnost ");
 
@@ -147,7 +147,7 @@ void RoomDialog::createRoomFunc()
 
 
     QJsonObject objData;
-    objData["rsa_pem"] = RoomDialog::rsaPublicKeyPem;
+    objData["rsa_pem"] = RoomDialog::rsaPublicKeyPemHex;
     QJsonDocument docData(objData);
     QByteArray CreateRoomData = docData.toJson();
 

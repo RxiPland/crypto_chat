@@ -27,7 +27,7 @@ public:
     QString authentication_username;
     QString authentication_password;
 
-    QString rsaPublicKeyPem;
+    QString rsaPublicKeyPemHex;
     QString rsaPrivateKeyPemHex;
 
     QString serverPublicKeyPemHex;
