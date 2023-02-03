@@ -45,7 +45,7 @@ RoomDialog::RoomDialog(QWidget *parent, bool createRoom, QString server_url, QSt
 
         ui->lineEdit_3->setDisabled(true);
         ui->lineEdit_3->setReadOnly(true);
-        ui->lineEdit_3->setText("//dodělat generaci");
+        ui->lineEdit_3->setText(RoomDialog::generateId());
 
         ui->pushButton->setText(" Vytvořit místnost ");
 
@@ -97,12 +97,44 @@ void RoomDialog::disable_widgets(bool disable){
     ui->checkBox->setDisabled(disable);
 }
 
+QString RoomDialog::generateId(){
+
+    //QString command = QString("/C python config/cryptographic_tool.exe generate_id");
+    QString command = QString("/C python config/cryptographic_tool.py generate_id");
+
+    // decrypt RSA encrypted data
+    QProcess process;
+    process.start("cmd", QStringList(command));
+
+    while(process.state() == QProcess::Running){
+        qApp->processEvents();
+    }
+
+    if (process.readAllStandardError().isEmpty()){
+
+        return process.readAllStandardOutput().trimmed();
+    }
+
+    return "";
+}
+
 
 void RoomDialog::createRoomFunc()
 {
     // create new room
 
     RoomDialog::disable_widgets(true);
+    RoomDialog::room_id = ui->lineEdit_3->text().trimmed();
+
+    if(RoomDialog::room_id.isEmpty()){
+        QMessageBox::critical(this, "Chyba", "Pole pro ID místnosti nemůže být prázdné!");
+
+        RoomDialog::disable_widgets(false);
+        ui->lineEdit_3->setFocus();
+        return;
+    }
+
+
     RoomDialog::username = ui->lineEdit_4->text().trimmed();
 
     if(RoomDialog::username.isEmpty()){
@@ -211,7 +243,7 @@ void RoomDialog::createRoomFunc()
         return;
     }
 
-    RoomDialog::room_id = jsonObject["room_id"].toString();
+    //RoomDialog::room_id = jsonObject["room_id"].toString();
 
     if(RoomDialog::room_id.isEmpty()){
         QMessageBox::critical(this, "Chyba", "Server nevytvořil ID místnosti!");
@@ -690,7 +722,7 @@ void RoomDialog::on_pushButton_2_clicked()
 
         ui->lineEdit_3->setDisabled(true);
         ui->lineEdit_3->setReadOnly(true);
-        ui->lineEdit_3->setText("//dodělat generaci");
+        ui->lineEdit_3->setText(RoomDialog::generateId());
 
         ui->lineEdit_2->setFocus();
 
@@ -716,6 +748,6 @@ void RoomDialog::on_checkBox_clicked()
 
 void RoomDialog::on_pushButton_3_clicked()
 {
-    // generate new room ID
+    ui->lineEdit_3->setText(RoomDialog::generateId());
 }
 

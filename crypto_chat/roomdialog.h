@@ -62,6 +62,8 @@ private:
     void joinRoomFunc();
     void setPassword(QString password);
 
+    QString generateId();
+
     QStringList getJson(QStringList names, QByteArray data);
 };
 
