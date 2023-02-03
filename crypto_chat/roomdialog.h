@@ -60,7 +60,7 @@ private:
 
     void createRoomFunc();
     void joinRoomFunc();
-    void setPassword(QString password);
+    void changePassword(QString password);
 
     QString generateId();
 

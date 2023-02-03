@@ -97,7 +97,11 @@ void RoomDialog::disable_widgets(bool disable){
     ui->checkBox->setDisabled(disable);
 }
 
-QString RoomDialog::generateId(){
+QString RoomDialog::generateId()
+{
+    // generate random ID (32)
+
+    ui->pushButton_3->setDisabled(true);
 
     //QString command = QString("/C python config/cryptographic_tool.exe generate_id");
     QString command = QString("/C python config/cryptographic_tool.py generate_id");
@@ -109,6 +113,9 @@ QString RoomDialog::generateId(){
     while(process.state() == QProcess::Running){
         qApp->processEvents();
     }
+
+    ui->pushButton_3->setDisabled(false);
+
 
     if (process.readAllStandardError().isEmpty()){
 
@@ -253,16 +260,18 @@ void RoomDialog::createRoomFunc()
 
     if (statusCode != "1"){
 
-        QMessageBox::critical(this, "Chyba", "Serveru se nepodařilo zašifrovat data veřejným klíčem!");
+        QMessageBox::critical(this, "Chyba", QString("Hodnota status_code není 1!\nPřijatá hodnota: %1").arg(statusCode));
 
         RoomDialog::disable_widgets(false);
         return;
     }
 
+
+    // room symetric key in hex
     RoomDialog::roomAesKeyHex = decryptedData[1].toString();
 
     if(RoomDialog::roomAesKeyHex.isEmpty()){
-        QMessageBox::critical(this, "Chyba", "Server nevytvořil symetrický klíč místnosti!");
+        QMessageBox::critical(this, "Chyba", "Server neposlal symetrický klíč místnosti!");
 
         RoomDialog::disable_widgets(false);
         return;
@@ -286,6 +295,7 @@ void RoomDialog::joinRoomFunc()
     QString roomId = ui->lineEdit_3->text().trimmed();
 
 
+    // check for mistakes
     if (roomId.isEmpty()){
         QMessageBox::critical(this, "Chyba", "Pole pro ID místnosti nemůže být prázdné!");
 
@@ -308,47 +318,50 @@ void RoomDialog::joinRoomFunc()
         return;
     }
 
-    QJsonObject objMessage;
-    objMessage["room_id"] = roomId;
+
+    QJsonObject objData;
+    objData["room_id"] = roomId;
 
     if (ui->checkBox->isChecked()){
         RoomDialog::room_password = ui->lineEdit->text();
-        objMessage["room_password"] = RoomDialog::room_password;
+        objData["room_password"] = RoomDialog::room_password;
 
     } else{
         RoomDialog::room_password = "";
-        objMessage["room_password"] = "";
+        objData["room_password"] = "";
     }
 
-    QJsonDocument docMessage(objMessage);
-    QString message_data = docMessage.toJson().toHex();
+    QJsonDocument docData(objData);
+    QString dataHex = docData.toJson().toHex();
 
-    //QString command = QString("/C python config/cryptographic_tool.exe encrypt_aes %1 %2 %3").arg(RoomDialog::serverAesKeyHex, "False", message_data);
-    QString command = QString("/C python config/cryptographic_tool.py encrypt_aes %1 %2 %3").arg(RoomDialog::serverAesKeyHex, "False", message_data);
-
-
-    // encrypt
     QProcess process;
+    //QString command = QString("/C python config/cryptographic_tool.exe encrypt_rsa %1 %2").arg(serverPublicKeyPemHex, dataHex);
+    QString command = QString("/C python config/cryptographic_tool.py encrypt_rsa %1 %2").arg(serverPublicKeyPemHex, dataHex);
+
+    // encrypt data
     process.start("cmd", QStringList(command));
 
-    while (process.state() == QProcess::Running){
+    while(process.state() == QProcess::Running){
         qApp->processEvents();
     }
 
-    QString encryptedData = process.readAllStandardOutput().trimmed();
+    // get encrypted data
+    QString encryptedDataHex = process.readAllStandardOutput().trimmed();
 
-
-    if (encryptedData.isEmpty()){
-        QMessageBox::critical(this, "Chyba", QString("Nastala chyba při šifrování!\n\nChyba: %1").arg(process.readAllStandardError()));
+    if (encryptedDataHex.isEmpty()){
+        QMessageBox::critical(this, "Chyba", "Nepodařilo se zašifrovat data veřejným klíčem serveru! (RSA)");
 
         RoomDialog::disable_widgets(false);
         return;
     }
 
-    QJsonObject objData;
-    objData["data"] = encryptedData;
-    QJsonDocument docData(objData);
-    QByteArray JoinRoomData = docData.toJson();
+
+    // data to send
+    objData = QJsonObject();
+    objData["rsa_pem"] = RoomDialog::rsaPublicKeyPemHex;
+    objData["data_rsa"] = encryptedDataHex;
+    docData = QJsonDocument(objData);
+    QByteArray joinRoomData = docData.toJson();
 
     QNetworkRequest request;
     QUrl qurl_address = QUrl(server_url + "/join-room");
@@ -365,7 +378,7 @@ void RoomDialog::joinRoomFunc()
 
     request.setUrl(qurl_address);
 
-    QNetworkReply *reply_post = manager.post(request, JoinRoomData);
+    QNetworkReply *reply_post = manager.post(request, joinRoomData);
 
     while (!reply_post->isFinished())
     {
@@ -390,34 +403,32 @@ void RoomDialog::joinRoomFunc()
     }
 
 
-    QStringList names;
-    names.append("status_code");
-    names.append("room_aes_key");
-    names.append("messages_count");
+    QStringList jsonKeys;
+    jsonKeys.append("status_code");
+    jsonKeys.append("room_aes_key");
+    jsonKeys.append("messages_count");
 
-    QStringList responseData = decryptRsa(names, response);
+    QList<QJsonValue> decryptedData = RoomDialog::decryptRsa(jsonKeys, response);
 
-    if(responseData.isEmpty()){
-        QMessageBox::critical(this, "Chyba", "Server byl pravděpodobně restartován a kvůli tomu máte starý symetrický klíč. Restartuje program pro získání nového.");
+    if (decryptedData.isEmpty()){
+
+        QMessageBox::critical(this, "Chyba", "Nepodařilo se dešifrovat data! (RSA)");
 
         RoomDialog::disable_widgets(false);
         return;
     }
 
 
-    if (responseData[0] == "5"){
-        QMessageBox::critical(this, "Chyba", "Server byl pravděpodobně restartován a kvůli tomu máte starý symetrický klíč. Restartuje program pro získání nového.");
+    QString statusCode = decryptedData[0].toString();
 
-        RoomDialog::disable_widgets(false);
-        return;
 
-    } else if (responseData[0] == "2"){
+    if (statusCode == "2"){
         QMessageBox::critical(this, "Chyba", "Na serveru neexistuje soubor se symetrickým klíčem místnosti!");
 
         RoomDialog::disable_widgets(false);
         return;
 
-    } else if (responseData[0] == "3"){
+    } else if (statusCode == "3"){
 
         if (ui->checkBox->isChecked()){
             QMessageBox::critical(this, "Chyba", "Špatné heslo!");
@@ -434,7 +445,7 @@ void RoomDialog::joinRoomFunc()
 
         return;
 
-    } else if (responseData[0] == "4"){
+    } else if (statusCode == "4"){
         QMessageBox::critical(this, "Chyba", "Místnost s tímto ID neexistuje!");
 
         RoomDialog::disable_widgets(false);
@@ -442,36 +453,43 @@ void RoomDialog::joinRoomFunc()
 
         return;
 
-    } else if (responseData[0] != "1"){
-        QMessageBox::critical(this, "Chyba", "Nastala neznámá chyba při pokusu o připojení do místnosti!");
+    } else if (statusCode != "1"){
+        QMessageBox::critical(this, "Chyba", QString("Nastala neznámá chyba při pokusu o připojení do místnosti!\n\nstatus_code %1").arg(statusCode));
 
         RoomDialog::disable_widgets(false);
         return;
     }
 
-    // get room symetric key in hex
-    RoomDialog::roomAesKeyHex = responseData[1];
 
+    // room symetric key in hex
+    RoomDialog::roomAesKeyHex = decryptedData[1].toString();
 
-    QMessageBox::information(this, "Oznámení", "Připojení do místnosti proběhlo úspěšně");
+    if(RoomDialog::roomAesKeyHex.isEmpty()){
+        QMessageBox::critical(this, "Chyba", "Server neposlal symetrický klíč místnosti!");
 
-    RoomDialog::successful = true;
+        RoomDialog::disable_widgets(false);
+        return;
+    }
+
     RoomDialog::username = nickname;
     RoomDialog::room_id = roomId;
 
 
-    QString number = responseData[2];
+    // messages count on server
+    QString messagesCount = decryptedData[2].toString();
 
-    if(!number.isEmpty()){
-        RoomDialog::serverMessagesCount = number.toInt();
+    if(!messagesCount.isEmpty()){
+        RoomDialog::serverMessagesCount = messagesCount.toInt();
     }
 
+    RoomDialog::successful = true;
+    QMessageBox::information(this, "Oznámení", "Připojení do místnosti proběhlo úspěšně");
 
     this->close();
 }
 
-
-void RoomDialog::setPassword(QString password)
+/*
+void RoomDialog::changePassword(QString password)
 {
 
     //hash password
@@ -586,7 +604,7 @@ void RoomDialog::setPassword(QString password)
         return;
     }
 }
-
+*/
 
 QList<QJsonValue> RoomDialog::decryptRsa(QStringList json_keys, QByteArray response)
 {
