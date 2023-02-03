@@ -35,9 +35,9 @@ LoginDialog::LoginDialog(QWidget *parent) :
     this->show();
 
 
-    QDir config_file(QDir::currentPath() + "/config");
+    QDir config_folder(QDir::currentPath() + "/config");
 
-    if(!config_file.exists()){
+    if(!config_folder.exists()){
         QMessageBox::critical(this, "Chyba", "Složka config neexistuje! Reinstalujte <a href=\"https://github.com/RxiPland/crypto_chat\">program</a>!");
         QApplication::exit();
         return;
