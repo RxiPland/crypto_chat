@@ -64,7 +64,7 @@ private:
 
     QString generateId();
 
-    QStringList getJson(QStringList names, QByteArray data);
+    QList<QJsonValue> decryptRsa(QStringList json_keys, QByteArray response);
 };
 
 #endif // ROOMDIALOG_H

@@ -115,6 +115,8 @@ QString RoomDialog::generateId(){
         return process.readAllStandardOutput().trimmed();
     }
 
+    QMessageBox::critical(this, "Chyba", "Nepodařilo se vytvořit ID! Zkuste to znovu.");
+
     return "";
 }
 
@@ -126,8 +128,8 @@ void RoomDialog::createRoomFunc()
     RoomDialog::disable_widgets(true);
     RoomDialog::room_id = ui->lineEdit_3->text().trimmed();
 
-    if(RoomDialog::room_id.isEmpty()){
-        QMessageBox::critical(this, "Chyba", "Pole pro ID místnosti nemůže být prázdné!");
+    if(RoomDialog::room_id.length() != 32){
+        QMessageBox::critical(this, "Chyba", "ID místnosti není validní!");
 
         RoomDialog::disable_widgets(false);
         ui->lineEdit_3->setFocus();
@@ -145,11 +147,55 @@ void RoomDialog::createRoomFunc()
         return;
     }
 
+    if (ui->checkBox->isChecked()){
+        RoomDialog::room_password = ui->lineEdit->text();
 
+    } else{
+        RoomDialog::room_password = "";
+    }
+
+    // encrypt json with server public key
     QJsonObject objData;
-    objData["rsa_pem"] = RoomDialog::rsaPublicKeyPemHex;
+    objData["room_id"] = RoomDialog::room_id;
+
+    //hash password
+    QCryptographicHash hash(QCryptographicHash::Sha256);
+    hash.addData(RoomDialog::room_password.toStdString());
+
+    objData["room_password_sha256"] = (QString)hash.result().toHex();
+
+
     QJsonDocument docData(objData);
-    QByteArray CreateRoomData = docData.toJson();
+    QString dataHex = docData.toJson().toHex();
+
+    QProcess process;
+    //QString command = QString("/C python config/cryptographic_tool.exe encrypt_rsa %1 %2").arg(serverPublicKeyPemHex, dataHex);
+    QString command = QString("/C python config/cryptographic_tool.py encrypt_rsa %1 %2").arg(serverPublicKeyPemHex, dataHex);
+
+    // encrypt data
+    process.start("cmd", QStringList(command));
+
+    while(process.state() == QProcess::Running){
+        qApp->processEvents();
+    }
+
+    // get encrypted data
+    QString encryptedDataHex = process.readAllStandardOutput().trimmed();
+
+    if (encryptedDataHex.isEmpty()){
+        QMessageBox::critical(this, "Chyba", "Nepodařilo se zašifrovat data veřejným klíčem serveru! (RSA)");
+
+        RoomDialog::disable_widgets(false);
+        return;
+    }
+
+
+    // data to send
+    objData = QJsonObject();
+    objData["rsa_pem"] = RoomDialog::rsaPublicKeyPemHex;
+    objData["data_rsa"] = encryptedDataHex;
+    docData = QJsonDocument(objData);
+    QByteArray createRoomData = docData.toJson();
 
     QNetworkRequest request;
     QUrl qurl_address = QUrl(server_url + "/create-room");
@@ -166,7 +212,8 @@ void RoomDialog::createRoomFunc()
 
     request.setUrl(qurl_address);
 
-    QNetworkReply *reply_post = manager.post(request, CreateRoomData);
+    // post
+    QNetworkReply *reply_post = manager.post(request, createRoomData);
 
     while (!reply_post->isFinished())
     {
@@ -191,40 +238,18 @@ void RoomDialog::createRoomFunc()
         return;
     }
 
-
-    QJsonDocument jsonResponse = QJsonDocument::fromJson(response);
-    QJsonObject jsonObject = jsonResponse.object();
-    QString dataHex = jsonObject["data"].toString();
+    QList<QJsonValue> decryptedData = RoomDialog::decryptRsa(QStringList("status_code", "room_aes_key"), response);
 
 
-    //QString command = QString("/C python config/cryptographic_tool.exe decrypt_rsa %1 %2").arg(rsaPrivateKeyPem, dataHex);
-    QString command = QString("/C python config/cryptographic_tool.py decrypt_rsa %1 %2").arg(rsaPrivateKeyPemHex, dataHex);
+    if (decryptedData.isEmpty()){
 
-    // decrypt RSA encrypted data
-    QProcess process;
-    process.start("cmd", QStringList(command));
-
-    while(process.state() == QProcess::Running){
-        qApp->processEvents();
-    }
-
-    // get decrypted data
-    QByteArray decryptedDataHex = process.readAllStandardOutput().trimmed();
-
-
-    if (decryptedDataHex.isEmpty()){
-
-        QMessageBox::critical(this, "Chyba", "Nepodařilo se dešifrovat data!");
+        QMessageBox::critical(this, "Chyba", "Nepodařilo se dešifrovat data! (RSA)");
 
         RoomDialog::disable_widgets(false);
         return;
     }
 
-    jsonResponse = QJsonDocument::fromJson(decryptedDataHex);
-    jsonObject = jsonResponse.object();
-
-
-    QString statusCode = jsonObject["status_code"].toString();
+    QString statusCode = decryptedData[0].toString();
 
     if (statusCode != "1"){
 
@@ -234,7 +259,7 @@ void RoomDialog::createRoomFunc()
         return;
     }
 
-    RoomDialog::roomAesKeyHex = jsonObject["room_aes_key"].toString();
+    RoomDialog::roomAesKeyHex = decryptedData[1].toString();
 
     if(RoomDialog::roomAesKeyHex.isEmpty()){
         QMessageBox::critical(this, "Chyba", "Server nevytvořil symetrický klíč místnosti!");
@@ -243,19 +268,6 @@ void RoomDialog::createRoomFunc()
         return;
     }
 
-    //RoomDialog::room_id = jsonObject["room_id"].toString();
-
-    if(RoomDialog::room_id.isEmpty()){
-        QMessageBox::critical(this, "Chyba", "Server nevytvořil ID místnosti!");
-
-        RoomDialog::disable_widgets(false);
-        return;
-    }
-
-    // set password for room
-    if(ui->checkBox->isChecked()){
-        RoomDialog::setPassword(ui->lineEdit->text());
-    }
 
     RoomDialog::successful = true;
     QMessageBox::information(this, "Oznámení", "Místnost byla úspěšně vytvořena");
@@ -266,6 +278,8 @@ void RoomDialog::createRoomFunc()
 
 void RoomDialog::joinRoomFunc()
 {
+    // join existing room
+
     RoomDialog::disable_widgets(true);
 
     QString nickname = ui->lineEdit_4->text().trimmed();
@@ -381,7 +395,7 @@ void RoomDialog::joinRoomFunc()
     names.append("room_aes_key");
     names.append("messages_count");
 
-    QStringList responseData = getJson(names, response);
+    QStringList responseData = decryptRsa(names, response);
 
     if(responseData.isEmpty()){
         QMessageBox::critical(this, "Chyba", "Server byl pravděpodobně restartován a kvůli tomu máte starý symetrický klíč. Restartuje program pro získání nového.");
@@ -553,7 +567,7 @@ void RoomDialog::setPassword(QString password)
 
 
     // get decrypted data
-    QStringList decryptedData = getJson(QStringList("status_code"), response);
+    QStringList decryptedData = decryptRsa(QStringList("status_code"), response);
 
     if (decryptedData.isEmpty()){
 
@@ -574,19 +588,23 @@ void RoomDialog::setPassword(QString password)
 }
 
 
-QStringList RoomDialog::getJson(QStringList names, QByteArray data)
+QList<QJsonValue> RoomDialog::decryptRsa(QStringList json_keys, QByteArray response)
 {
+    // decrypt data_rsa json
+
+    QList<QJsonValue> returnData;
+
     QJsonDocument jsonResponse;
     QJsonObject jsonObject;
     QString dataHex;
 
 
-    jsonResponse = QJsonDocument::fromJson(data);
+    jsonResponse = QJsonDocument::fromJson(response);
     jsonObject = jsonResponse.object();
-    dataHex = jsonObject["data"].toString();
+    dataHex = jsonObject["data_rsa"].toString();
 
-    //QString command = QString("/C python config/cryptographic_tool.exe decrypt_aes %1 %2 %3").arg(RoomDialog::serverAesKeyHex, "False", dataHex);
-    QString command = QString("/C python config/cryptographic_tool.py decrypt_aes %1 %2 %3").arg(RoomDialog::serverAesKeyHex, "False", dataHex);
+    //QString command = QString("/C python config/cryptographic_tool.exe decrypt_rsa %1 %2").arg(RoomDialog::rsaPrivateKeyPemHex, dataHex);
+    QString command = QString("/C python config/cryptographic_tool.py decrypt_rsa %1 %2").arg(RoomDialog::rsaPrivateKeyPemHex, dataHex);
 
     // decrypt
     QProcess process;
@@ -599,25 +617,21 @@ QStringList RoomDialog::getJson(QStringList names, QByteArray data)
     QByteArray output = process.readAllStandardOutput().trimmed();
 
     if(output.isEmpty()){
-        return QStringList();
+        return returnData;
     }
-
 
     // get decrypted data
     QByteArray decryptedData = QByteArray::fromHex(output);
-
-
     decryptedData.replace("\'", "\"");
 
     jsonResponse = QJsonDocument::fromJson(decryptedData);
     jsonObject = jsonResponse.object();
 
 
-    QStringList returnData;
     int i;
 
-    for(i=0; i<names.length(); i++){
-        returnData.append(jsonObject[names[i]].toString());
+    for(i=0; i<json_keys.length(); i++){
+        returnData.append(jsonObject[json_keys[i]]);
     }
 
     return returnData;
