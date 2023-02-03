@@ -35,6 +35,7 @@ public:
     QHBoxLayout *horizontalLayout_3;
     QLabel *label_2;
     QLineEdit *lineEdit_3;
+    QPushButton *pushButton_3;
     QHBoxLayout *horizontalLayout_6;
     QLabel *label_3;
     QLineEdit *lineEdit_4;
@@ -98,6 +99,11 @@ public:
         lineEdit_3->setReadOnly(false);
 
         horizontalLayout_3->addWidget(lineEdit_3);
+
+        pushButton_3 = new QPushButton(RoomDialog);
+        pushButton_3->setObjectName("pushButton_3");
+
+        horizontalLayout_3->addWidget(pushButton_3);
 
 
         verticalLayout_2->addLayout(horizontalLayout_3);
@@ -193,6 +199,7 @@ public:
         label->setText(QCoreApplication::translate("RoomDialog", "Server:", nullptr));
         label_2->setText(QCoreApplication::translate("RoomDialog", "ID m\303\255stnosti:", nullptr));
         lineEdit_3->setPlaceholderText(QCoreApplication::translate("RoomDialog", "Povinn\303\251", nullptr));
+        pushButton_3->setText(QCoreApplication::translate("RoomDialog", "generovat", nullptr));
         label_3->setText(QCoreApplication::translate("RoomDialog", "Va\305\241e p\305\231ezd\303\255vka:", nullptr));
         lineEdit_4->setPlaceholderText(QCoreApplication::translate("RoomDialog", "Povinn\303\251", nullptr));
         checkBox->setText(QCoreApplication::translate("RoomDialog", "Heslo m\303\255stnosti", nullptr));
