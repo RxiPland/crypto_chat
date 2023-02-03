@@ -86,10 +86,10 @@ def main():
                 print(encrypted.hex(), end="")
 
             else:
-                raise Exception("Plaintext is missing!")
+                raise Exception("Plaintext in hex is missing!")
 
         else:
-            raise Exception("Public Key is missing!")
+            raise Exception("Public Key in hex is missing!")
 
 
     elif operation == "decrypt_rsa":
@@ -105,16 +105,16 @@ def main():
 
                 decrypted = rsa.decrypt(crypto=encrypted, priv_key=private_k)
 
-                # print decrypted server AES key in hex
+                # print decrypted text in hex
                 print(decrypted.hex(), end="")
 
             else:
-                raise Exception("Encrypted text is missing!")
+                raise Exception("Encrypted text in hex is missing!")
 
         else:
-            raise Exception("Private Key is missing!")
+            raise Exception("Private Key in hex is missing!")
         
-        
+
     elif operation == "generate_aes":
         # generate symetric key
         # then print it in hex
@@ -164,11 +164,11 @@ def main():
                         print(message_crypt_hex, end="")
 
                 else:
-                    raise Exception("Plain text OR filename is missing!")
+                    raise Exception("Plain text in hex OR filename is missing!")
             else:
                 raise Exception("\"Saved to file\" boolean is missing!")
         else:
-            raise Exception("Room symetric key is missing!")
+            raise Exception("Room symetric key in hex is missing!")
 
 
     elif operation == "decrypt_aes":
@@ -211,11 +211,11 @@ def main():
                         print(message_decrypted_hex, end="")
 
                 else:
-                    raise Exception("Encrypted text OR filename is missing!")
+                    raise Exception("Encrypted text in hex OR filename is missing!")
             else:
                 raise Exception("\"Saved to file\" boolean is missing!")
         else:
-            raise Exception("Room symetric key is missing!")
+            raise Exception("Room symetric key in hex is missing!")
 
     else:
         raise Exception(f"Invalid operation! {operations}")
