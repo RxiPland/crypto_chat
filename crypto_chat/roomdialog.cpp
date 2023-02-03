@@ -45,7 +45,7 @@ RoomDialog::RoomDialog(QWidget *parent, bool createRoom, QString server_url, QSt
 
         ui->lineEdit_3->setDisabled(true);
         ui->lineEdit_3->setReadOnly(true);
-        ui->lineEdit_3->setText("Vytvoří server");
+        ui->lineEdit_3->setText("//dodělat generaci");
 
         ui->pushButton->setText(" Vytvořit místnost ");
 
@@ -690,7 +690,7 @@ void RoomDialog::on_pushButton_2_clicked()
 
         ui->lineEdit_3->setDisabled(true);
         ui->lineEdit_3->setReadOnly(true);
-        ui->lineEdit_3->setText("Vytvoří server");
+        ui->lineEdit_3->setText("//dodělat generaci");
 
         ui->lineEdit_2->setFocus();
 
@@ -711,5 +711,11 @@ void RoomDialog::on_checkBox_clicked()
     } else{
         ui->lineEdit->setHidden(true);
     }
+}
+
+
+void RoomDialog::on_pushButton_3_clicked()
+{
+    // generate new room ID
 }
 
