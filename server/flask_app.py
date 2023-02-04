@@ -570,7 +570,7 @@ def get_messages():
 
             encrypted_data = rsa.encrypt(str(data_rsa).encode(), user_rsa_publickey)
         
-            return flask.jsonify({"data_rsa": encrypted_data.hex(), "data_aes": ""}), 200
+            return flask.jsonify({"data_rsa": encrypted_data.hex(), "data_aes": None}), 200
 
 
         password_user_hash: str = hashlib.sha256(decrypted_data["room_password"].encode()).hexdigest()
@@ -598,7 +598,7 @@ def get_messages():
 
             encrypted_data = rsa.encrypt(str(data_rsa).encode(), user_rsa_publickey)
         
-            return flask.jsonify({"data_rsa": encrypted_data.hex(), "data_aes": ""}), 200
+            return flask.jsonify({"data_rsa": encrypted_data.hex(), "data_aes": None}), 200
 
 
         messages_count_user: int = decrypted_data["user_messages_count"]
