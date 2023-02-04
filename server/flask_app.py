@@ -375,10 +375,11 @@ def send_message():
         if not "crypto-chat" in flask.request.user_agent.string:
             return "Forbidden", 403
 
+
         request_json: dict = flask.request.get_json()
 
-        # keys 'rsa_pem', 'data_rsa' and 'message' must be in JSON
-        if not "rsa_pem" in request_json.keys() or not "data_rsa" in request_json.keys() or not "message" in request_json.keys():
+        # keys 'rsa_pem', 'data_rsa' and 'data_aes' must be in JSON
+        if not "rsa_pem" in request_json.keys() or not "data_rsa" in request_json.keys() or not "data_aes" in request_json.keys():
             return "Forbidden", 403
 
         decrypted_data: dict[str, str] = dict()
@@ -391,12 +392,11 @@ def send_message():
 
         except:
             # Invalid RSA public key / encrypted data
-            
             return "Forbidden", 403
 
 
-        # keys 'room_id', 'data_rsa' and 'symetric_key' must be in decrypted JSON
-        if not "room_id" in decrypted_data.keys() or not "data_rsa" in decrypted_data.keys() or not "symetric_key" in decrypted_data.keys():
+        # keys 'room_id', 'room_password' and 'symetric_key' must be in decrypted JSON
+        if not "room_id" in decrypted_data.keys() or not "room_password" in decrypted_data.keys() or not "symetric_key" in decrypted_data.keys():
             return "Forbidden", 403
 
         room_id = decrypted_data["room_id"]
