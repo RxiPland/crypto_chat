@@ -444,7 +444,7 @@ def send_message():
             temp_symetric_key = Fernet(bytes.fromhex(decrypted_data["symetric_key"]))
 
             decrypted_aes_data = temp_symetric_key.decrypt(bytes.fromhex(request_json["data_aes"]))
-            message = bytes.fromhex(json.loads(decrypted_aes_data)["message"]).decode()
+            message = json.loads(decrypted_aes_data)["message"]
 
         except:
             # wrong symetric key
