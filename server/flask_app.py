@@ -296,8 +296,8 @@ def join_room():
             # wrong room ID
             data_rsa = {
                 "status_code": "4",
-                "room_aes_key": None,
-                "messages_count": None
+                "room_aes_key": "",
+                "messages_count": ""
             }
 
         else:
@@ -311,8 +311,8 @@ def join_room():
                 # wrong password
                 data_rsa = {
                     "status_code": "3",
-                    "room_aes_key": None,
-                    "messages_count": None
+                    "room_aes_key": "",
+                    "messages_count": ""
                 }
 
             else:
@@ -324,8 +324,8 @@ def join_room():
                     # symetric key file not found
                     data_rsa = {
                         "status_code": "2",
-                        "room_aes_key": None,
-                        "messages_count": None
+                        "room_aes_key": "",
+                        "messages_count": ""
                     }
 
                 else:
@@ -563,14 +563,14 @@ def get_messages():
             # wrong room ID (room was deleted by someone else)
             data_rsa = {
                 "status_code": "4",
-                "server_messages_count": None,
-                "skipped_messages": None,
-                "symetric_key": None
+                "server_messages_count": "",
+                "skipped_messages": "",
+                "symetric_key": ""
             }
 
             encrypted_data = rsa.encrypt(str(data_rsa).encode(), user_rsa_publickey)
         
-            return flask.jsonify({"data_rsa": encrypted_data.hex(), "data_aes": None}), 200
+            return flask.jsonify({"data_rsa": encrypted_data.hex(), "data_aes": ""}), 200
 
 
         password_user_hash: str = hashlib.sha256(decrypted_data["room_password"].encode()).hexdigest()
@@ -591,14 +591,14 @@ def get_messages():
             # wrong password (should never happen)
             data_rsa = {
                 "status_code": "3",
-                "server_messages_count": None,
-                "skipped_messages": None,
-                "symetric_key": None
+                "server_messages_count": "",
+                "skipped_messages": "",
+                "symetric_key": ""
             }
 
             encrypted_data = rsa.encrypt(str(data_rsa).encode(), user_rsa_publickey)
         
-            return flask.jsonify({"data_rsa": encrypted_data.hex(), "data_aes": None}), 200
+            return flask.jsonify({"data_rsa": encrypted_data.hex(), "data_aes": ""}), 200
 
 
         messages_count_user: int = decrypted_data["user_messages_count"]
