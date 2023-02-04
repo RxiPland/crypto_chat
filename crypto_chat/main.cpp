@@ -68,7 +68,7 @@ int main(int argc, char *argv[])
     chw.roomAesKeyHex = rd.roomAesKeyHex;
     chw.serverPublicKeyPemHex = rd.serverPublicKeyPemHex;
     chw.rsaPublicKeyPemHex = rd.rsaPublicKeyPemHex;
-    chw.rsaPrivateKeyPemHex = rd.rsaPublicKeyPemHex;
+    chw.rsaPrivateKeyPemHex = rd.rsaPrivateKeyPemHex;
 
     chw.room_id = rd.room_id;
     chw.room_password = rd.room_password;
@@ -76,7 +76,7 @@ int main(int argc, char *argv[])
     chw.authentication_username = rd.authentication_username;
     chw.authentication_password = rd.authentication_password;
     chw.serverMessagesCount = rd.serverMessagesCount;
-    //chw.welcomeMessage();
+    chw.welcomeMessage();
     //chw.startRefreshLoop();
 
     chw.show();
