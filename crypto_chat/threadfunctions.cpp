@@ -34,55 +34,98 @@ void ThreadFunctions::reload()
     ThreadFunctions::i = ThreadFunctions::sleep_time;
 }
 
-QList<QJsonValue> ThreadFunctions::getJson(QStringList keys, QByteArray data)
+
+QList<QJsonValue> ThreadFunctions::decryptRsa(QStringList jsonKeys, QByteArray response)
 {
+    // decrypt data_rsa json
+
+    QList<QJsonValue> returnData;
+
     QJsonDocument jsonResponse;
     QJsonObject jsonObject;
-    QString jsonData;
+    QString dataHex;
 
-
-    data.replace("\'", "\"");
-    jsonResponse = QJsonDocument::fromJson(data);
+    jsonResponse = QJsonDocument::fromJson(response);
     jsonObject = jsonResponse.object();
-    jsonData = jsonObject["data"].toString();
+    dataHex = jsonObject["data_rsa"].toString();
 
-    QTemporaryFile tempFile;
-    tempFile.open();
-    tempFile.write(jsonData.toUtf8());
-    tempFile.close();
-
-    QString fileName = tempFile.fileName().split('/').back();
-
-    //QString command = QString("/C python config/cryptographic_tool.exe decrypt_aes_server %1 %2 %3").arg(ThreadFunctions::serverAesKeyHex, "True", fileName);
-    QString command = QString("/C python config/cryptographic_tool.py decrypt_aes_server %1 %2 %3").arg(ThreadFunctions::rsaPrivateKeyPemHex, "True", fileName);
-
+    //QString command = QString("/C python config/cryptographic_tool.exe decrypt_rsa %1 %2").arg(ThreadFunctions::rsaPrivateKeyPemHex, dataHex);
+    QString command = QString("/C python config/cryptographic_tool.py decrypt_rsa %1 %2").arg(ThreadFunctions::rsaPrivateKeyPemHex, dataHex);
 
     // decrypt
     QProcess process;
     process.start("cmd", QStringList(command));
     process.waitForFinished(-1); // will wait forever until finished
 
+    QByteArray output = process.readAllStandardOutput().trimmed();
+
+    if(output.isEmpty()){
+        return returnData;
+    }
+
+    // get decrypted data
+    QByteArray decryptedData = QByteArray::fromHex(output);
+    decryptedData.replace("\'", "\"");
+
+    jsonResponse = QJsonDocument::fromJson(decryptedData);
+    jsonObject = jsonResponse.object();
+
+
+    int i;
+
+    for(i=0; i<jsonKeys.length(); i++){
+        returnData.append(jsonObject[jsonKeys[i]]);
+    }
+
+    return returnData;
+}
+
+
+QList<QJsonValue> ThreadFunctions::decryptAes(QStringList jsonKeys, QString symetricKeyHex, QByteArray response)
+{
+    // decrypt data_aes json
 
     QList<QJsonValue> returnData;
 
-    // get decrypted data
+    QJsonDocument jsonResponse;
+    QJsonObject jsonObject;
+    QString dataHex;
+
+    jsonResponse = QJsonDocument::fromJson(response);
+    jsonObject = jsonResponse.object();
+    dataHex = jsonObject["data_aes"].toString();
+
+
+    QTemporaryFile tempFile;
     tempFile.open();
-    QByteArray decryptedData = tempFile.readAll().trimmed();
+    tempFile.write(dataHex.toUtf8());
+    tempFile.close();
+
+    QString fileName = tempFile.fileName().split('/').back();
+
+    //QString command = QString("/C python config/cryptographic_tool.exe decrypt_aes %1 %2 %3").arg(symetricKeyHex, "true", fileName);
+    QString command = QString("/C python config/cryptographic_tool.py decrypt_aes %1 %2 %3").arg(symetricKeyHex, "true", fileName);
+
+    // decrypt
+    QProcess process;
+    process.start("cmd", QStringList(command));
+    process.waitForFinished(-1); // will wait forever until finished
+
+    // get encrypted data
+    tempFile.open();
+    QByteArray output = tempFile.readAll().trimmed();
     tempFile.close();
 
     // delete temp file
     tempFile.remove();
 
-    if (decryptedData.isEmpty()){
+
+    if(output.isEmpty()){
         return returnData;
     }
 
-    decryptedData = QByteArray::fromHex(decryptedData);
-
-    if(decryptedData.isEmpty()){
-        return returnData;
-    }
-
+    // get decrypted data
+    QByteArray decryptedData = QByteArray::fromHex(output);
     decryptedData.replace("\'", "\"");
 
     jsonResponse = QJsonDocument::fromJson(decryptedData);
@@ -90,12 +133,13 @@ QList<QJsonValue> ThreadFunctions::getJson(QStringList keys, QByteArray data)
 
     int i;
 
-    for(i=0; i<keys.length(); i++){
-        returnData.append(jsonObject[keys[i]]);
+    for(i=0; i<jsonKeys.length(); i++){
+        returnData.append(jsonObject[jsonKeys[i]]);
     }
 
     return returnData;
 }
+
 
 void ThreadFunctions::appendMessage(QString messageHtml)
 {
@@ -140,25 +184,26 @@ void ThreadFunctions::appendMessage(QString messageHtml)
 }
 
 
-QString ThreadFunctions::decryptMessage(QString encryptedMessage)
+QString ThreadFunctions::decryptMessage(QString encryptedMessageHex)
 {
     QByteArray decryptedMessage;
 
 
     QTemporaryFile tempFile;
     tempFile.open();
-    tempFile.write(encryptedMessage.trimmed().toUtf8());
+    tempFile.write(encryptedMessageHex.trimmed().toUtf8());
     tempFile.close();
 
     QString fileName = tempFile.fileName().split('/').back();
 
-    //QString command = QString("/C python config/cryptographic_tool.exe decrypt_aes_room %1 %2 %3").arg(ThreadFunctions::roomAesKeyHex, "True", fileName);
-    QString command = QString("/C python config/cryptographic_tool.py decrypt_aes_room %1 %2 %3").arg(ThreadFunctions::roomAesKeyHex, "True", fileName);
+    //QString command = QString("/C python config/cryptographic_tool.exe decrypt_aes %1 %2 %3").arg(ThreadFunctions::roomAesKeyHex, "True", fileName);
+    QString command = QString("/C python config/cryptographic_tool.py decrypt_aes %1 %2 %3").arg(ThreadFunctions::roomAesKeyHex, "True", fileName);
 
 
     QProcess process;
     process.start("cmd", QStringList(command));
     process.waitForFinished(-1); // will wait forever until finished
+
 
     // get decrypted data
     tempFile.open();
@@ -178,32 +223,35 @@ QString ThreadFunctions::decryptMessage(QString encryptedMessage)
     return decryptedMessage;
 }
 
+
 void ThreadFunctions::getMessages()
 {
     // checking new messages
 
-    QJsonObject objMessage;
-    objMessage["room_id"] = ThreadFunctions::room_id;
-    objMessage["room_password"] = ThreadFunctions::room_password;
-    objMessage["user_messages_count"] = ThreadFunctions::recievedMessagesCount;
-    QJsonDocument docMessage(objMessage);
-    QString postDataHex = docMessage.toJson().toHex();  // in hex
+    QJsonObject objData;
+    objData["room_id"] = ThreadFunctions::room_id;
+    objData["room_password"] = ThreadFunctions::room_password;
+    objData["user_messages_count"] = ThreadFunctions::recievedMessagesCount;
+    QJsonDocument docData(objData);
+    QString dataRsaHex = docData.toJson().toHex();  // in hex
 
 
-    //QString command = QString("/C python config/cryptographic_tool.exe encrypt_aes_server %1 %2 %3").arg(ThreadFunctions::serverPublicKeyPemHex, "False", postDataHex);
-    QString command = QString("/C python config/cryptographic_tool.py encrypt_aes_server %1 %2 %3").arg(ThreadFunctions::serverPublicKeyPemHex, "False", postDataHex);
+    //QString command = QString("/C python config/cryptographic_tool.exe encrypt_rsa %1 %2").arg(ThreadFunctions::serverPublicKeyPemHex, postDataHex);
+    QString command = QString("/C python config/cryptographic_tool.py encrypt_rsa %1 %2").arg(ThreadFunctions::serverPublicKeyPemHex, dataRsaHex);
 
-    // encrypt postData (json) with server symetric key
+    // encrypt data_rsa json
     QProcess process;
     process.start("cmd", QStringList(command));
     process.waitForFinished(-1); // will wait forever until finished
 
-    QByteArray encryptedData = process.readAllStandardOutput().trimmed();
+    // get encrypted data
+    QByteArray encryptedDataRsaHex = process.readAllStandardOutput().trimmed();
 
 
-    QJsonObject objData;
-    objData["data"] = (QString)encryptedData;
-    QJsonDocument docData(objData);
+    objData = QJsonObject();
+    objData["rsa_pem"] = ThreadFunctions::rsaPublicKeyPemHex;
+    objData["data_rsa"] = (QString)encryptedDataRsaHex;
+    docData = QJsonDocument(objData);
     QByteArray getMessageData = docData.toJson();
 
     // create url;
@@ -245,14 +293,14 @@ void ThreadFunctions::getMessages()
         return;
     }
 
-    QStringList keys;
-    keys.append("status_code");
-    keys.append("server_messages_count");
-    keys.append("skipped_messages");
-    keys.append("messages");
+    QStringList jsonKeys;
+    jsonKeys.append("status_code");
+    jsonKeys.append("server_messages_count");
+    jsonKeys.append("skipped_messages");
+    jsonKeys.append("symetric_key");
 
 
-    QList<QJsonValue> responseData = getJson(keys, response);
+    QList<QJsonValue> responseData = decryptRsa(jsonKeys, response);
 
     if (responseData.isEmpty()){
 
@@ -288,18 +336,24 @@ void ThreadFunctions::getMessages()
         ThreadFunctions::appendMessage(QString("(%1 zpráv bylo přeskočeno) ...").arg(skipped_messages).toHtmlEscaped());
     }
 
-    //ThreadFunctions::recievedMessagesCount = messagesCountServer;
+    // list of encrypted messages
+    //QStringList encryptedMessages = responseData[3].toVariant().toStringList();
+    QString tempSymetricKeyHex = responseData[3].toString();
 
-    QStringList encryptedMessages = responseData[3].toVariant().toStringList();
+    jsonKeys = QStringList();
+    jsonKeys.append("messages");
+
+    QList<QJsonValue> decryptedData = ThreadFunctions::decryptAes(jsonKeys, tempSymetricKeyHex, response);
+
+    QStringList encryptedHexMessages = decryptedData[0].toVariant().toStringList();
 
 
     QString decryptedMessage;
     int j;
 
+    for(j=0; j<encryptedHexMessages.size() && continueLoop; j++){
 
-    for(j=0; j<encryptedMessages.size() && continueLoop; j++){
-
-        decryptedMessage = ThreadFunctions::decryptMessage(encryptedMessages[j]);
+        decryptedMessage = ThreadFunctions::decryptMessage(encryptedHexMessages[j]);
 
         if (decryptedMessage.isEmpty()){
             int messagesNumber = ui->action_zpravy_1->text().split(" ").back().toInt();

@@ -37,7 +37,7 @@ public:
     QString authentication_username = "";
     QString authentication_password = "";
 
-    QString rsaPublicKeyPem;
+    QString rsaPublicKeyPemHex;
     QString rsaPrivateKeyPemHex;
     QString serverPublicKeyPemHex;
 
@@ -54,7 +54,8 @@ private:
 
     void appendMessage(QString messageHtml);
     void writeTempFile(QString filename, QByteArray content);
-    QList<QJsonValue> getJson(QStringList names, QByteArray data);
+    QList<QJsonValue> decryptRsa(QStringList jsonKeys, QByteArray response);
+    QList<QJsonValue> decryptAes(QStringList jsonKeys, QString symetricKeyHex, QByteArray response);
     QByteArray readTempFile(QString filename);
 
     QString decryptMessage(QString encryptedMessage);
