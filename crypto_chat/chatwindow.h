@@ -72,7 +72,7 @@ private:
     void closeEvent(QCloseEvent *bar = nullptr);
     Ui::ChatWindow *ui;
 
-    QStringList getJson(QStringList names, QByteArray data);
+    QList<QJsonValue> decryptRsa(QStringList json_keys, QByteArray response);
 
     void sendMessage(QString message="", bool silent=false);
     void disable_widgets(bool disable=true);

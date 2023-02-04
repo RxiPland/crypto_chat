@@ -120,23 +120,24 @@ void ChatWindow::startRefreshLoop()
     refreshChatLoop.start();
 }
 
-QStringList ChatWindow::getJson(QStringList names, QByteArray data)
+
+QList<QJsonValue> ChatWindow::decryptRsa(QStringList jsonKeys, QByteArray response)
 {
-    // decrypt encrypted json
+    // decrypt data_rsa json
+
+    QList<QJsonValue> returnData;
 
     QJsonDocument jsonResponse;
     QJsonObject jsonObject;
-    QString jsonData;
+    QString dataHex;
 
 
-    jsonResponse = QJsonDocument::fromJson(data);
+    jsonResponse = QJsonDocument::fromJson(response);
     jsonObject = jsonResponse.object();
-    jsonData = jsonObject["data"].toString();
+    dataHex = jsonObject["data_rsa"].toString();
 
-
-    //QString command = QString("/C python config/cryptographic_tool.exe decrypt_aes_server %1 %2 %3").arg(ChatWindow::rsaPrivateKeyPemHex, "False", jsonData);
-    QString command = QString("/C python config/cryptographic_tool.py decrypt_aes_server %1 %2 %3").arg(ChatWindow::rsaPrivateKeyPemHex, "False", jsonData);
-
+    //QString command = QString("/C python config/cryptographic_tool.exe decrypt_rsa %1 %2").arg(ChatWindow::rsaPrivateKeyPemHex, dataHex);
+    QString command = QString("/C python config/cryptographic_tool.py decrypt_rsa %1 %2").arg(ChatWindow::rsaPrivateKeyPemHex, dataHex);
 
     // decrypt
     QProcess process;
@@ -146,31 +147,32 @@ QStringList ChatWindow::getJson(QStringList names, QByteArray data)
         qApp->processEvents();
     }
 
-    QByteArray decryptedData = QByteArray::fromHex(process.readAllStandardOutput().trimmed());
+    QByteArray output = process.readAllStandardOutput().trimmed();
 
-
-    if(decryptedData.isEmpty() || decryptedData.contains("error")){
-        return QStringList();
+    if(output.isEmpty()){
+        return returnData;
     }
 
+    // get decrypted data
+    QByteArray decryptedData = QByteArray::fromHex(output);
     decryptedData.replace("\'", "\"");
 
     jsonResponse = QJsonDocument::fromJson(decryptedData);
     jsonObject = jsonResponse.object();
 
-    QStringList returnData;
+
     int i;
 
-    for(i=0; i<names.length(); i++){
-        returnData.append(jsonObject[names[i]].toString());
+    for(i=0; i<jsonKeys.length(); i++){
+        returnData.append(jsonObject[jsonKeys[i]]);
     }
 
     return returnData;
 }
 
-
 void ChatWindow::sendMessage(QString message, bool exit)
-{
+{}
+    /*
     // send message to server
 
     ChatWindow::disable_widgets(true);
@@ -311,7 +313,7 @@ void ChatWindow::sendMessage(QString message, bool exit)
     QStringList names;
     names.append("status_code");
 
-    QStringList responseData = getJson(names, response);
+    QStringList responseData = ChatWindow::decryptRsa(names, response);
 
     if (responseData.isEmpty() || responseData[0] == "5"){
 
@@ -361,7 +363,7 @@ void ChatWindow::sendMessage(QString message, bool exit)
         refreshChatLoop.stopLoop();
     }
 }
-
+*/
 void ChatWindow::disable_widgets(bool disable)
 {
     ui->pushButton->setDisabled(disable);
@@ -625,9 +627,9 @@ void ChatWindow::on_lineEdit_returnPressed()
 {
     ChatWindow::on_pushButton_clicked();
 }
-
 void ChatWindow::on_action_room_1_triggered()
-{
+{}
+    /*
     // delete room button
 
     ChatWindow::disable_widgets(true);
@@ -711,7 +713,7 @@ void ChatWindow::on_action_room_1_triggered()
     QStringList names;
     names.append("status_code");
 
-    QStringList responseData = getJson(names, response);
+    QStringList responseData = ChatWindow::decryptRsa(names, response);
 
     if(responseData[0] != "4"){
         QMessageBox::critical(this, "Odpověd serveru (chyba)", QString("Nastala neznámá chyba!\n\n%1").arg(reply_post->readAll()));
@@ -725,4 +727,4 @@ void ChatWindow::on_action_room_1_triggered()
         QMessageBox::information(this, "Smazání místnosti", "Místnost byla úspěšně smazána, ostatním uživatelům se zobrazí tato informace, jakmile se pokusí získat nové zprávy.");
     }
 }
-
+*/
