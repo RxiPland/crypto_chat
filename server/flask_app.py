@@ -102,7 +102,6 @@ def create_room():
 
         except:
             # Invalid RSA public key / encrypted data
-
             return "Forbidden", 403
         
 
@@ -190,7 +189,6 @@ def change_password():
 
         except:
             # Invalid RSA public key / encrypted data
-            
             return "Forbidden", 403
 
 
@@ -283,7 +281,6 @@ def join_room():
 
         except:
             # Invalid RSA public key / encrypted data
-            
             return "Forbidden", 403
 
 
@@ -544,7 +541,6 @@ def get_messages():
 
         except:
             # Invalid RSA public key / encrypted data
-            
             return "Forbidden", 403
 
 
@@ -701,7 +697,6 @@ def delete_room():
 
         except:
             # Invalid RSA public key / encrypted data
-            
             return "Forbidden", 403
 
 
