@@ -103,7 +103,7 @@ void ChatWindow::startRefreshLoop()
     refreshChatLoop.authentication_password = ChatWindow::authentication_password;
 
     refreshChatLoop.roomAesKeyHex = ChatWindow::roomAesKeyHex;
-    refreshChatLoop.rsaPublicKeyPem = ChatWindow::rsaPublicKeyPemHex;
+    refreshChatLoop.rsaPublicKeyPemHex = ChatWindow::rsaPublicKeyPemHex;
     refreshChatLoop.rsaPrivateKeyPemHex = ChatWindow::rsaPrivateKeyPemHex;
     refreshChatLoop.serverPublicKeyPemHex = ChatWindow::serverPublicKeyPemHex;
 
@@ -168,6 +168,7 @@ QList<QJsonValue> ChatWindow::decryptRsa(QStringList jsonKeys, QByteArray respon
 
     return returnData;
 }
+
 
 void ChatWindow::sendMessage(QString message, bool exit)
 {
@@ -285,7 +286,7 @@ void ChatWindow::sendMessage(QString message, bool exit)
     //command = QString("/C python config/cryptographic_tool.exe encrypt_aes %1 %2 %3").arg(tempSymetricKeyHex, "true", fileName2);
     command = QString("/C python config/cryptographic_tool.py encrypt_aes %1 %2 %3").arg(tempSymetricKeyHex, "true", fileName2);
 
-    // encrypt postData (json) with server symetric key
+    // encrypt json with temp symetric key
     process.start("cmd", QStringList(command));
 
     while(process.state() == QProcess::Running){
@@ -693,24 +694,22 @@ void ChatWindow::on_lineEdit_returnPressed()
     ChatWindow::on_pushButton_clicked();
 }
 void ChatWindow::on_action_room_1_triggered()
-{}
-    /*
+{
     // delete room button
 
     ChatWindow::disable_widgets(true);
 
-    QJsonObject objMessage;
-    objMessage["room_id"] = ChatWindow::room_id;
-    objMessage["room_password"] = ChatWindow::room_password;
+    QJsonObject objData;
+    objData["room_id"] = ChatWindow::room_id;
+    objData["room_password"] = ChatWindow::room_password;
 
-    QJsonDocument docMessage(objMessage);
-    QString postDataHex = docMessage.toJson().toHex();  // in hex
+    QJsonDocument docData(objData);
+    QString dataRsaHex = docData.toJson().toHex();  // in hex
 
-    //QString command = QString("/C python config/cryptographic_tool.exe encrypt_aes_server %1 %2 %3").arg(ChatWindow::serverPublicKeyPemHex, "False", postDataHex);
-    QString command = QString("/C python config/cryptographic_tool.py encrypt_aes_server %1 %2 %3").arg(ChatWindow::serverPublicKeyPemHex, "False", postDataHex);
+    //QString command = QString("/C python config/cryptographic_tool.exe encrypt_rsa %1 %2").arg(ChatWindow::serverPublicKeyPemHex, dataRsaHex);
+    QString command = QString("/C python config/cryptographic_tool.py encrypt_rsa %1 %2").arg(ChatWindow::serverPublicKeyPemHex, dataRsaHex);
 
-
-    // encrypt postData (json) with server symetric key
+    // encrypt data_rsa json
     QProcess process;
     process.start("cmd", QStringList(command));
 
@@ -718,19 +717,19 @@ void ChatWindow::on_action_room_1_triggered()
         qApp->processEvents();
     }
 
-    QString encryptedData = process.readAllStandardOutput().trimmed();
+    // get encrypted data
+    QString encryptedDataRsaHex = process.readAllStandardOutput().trimmed();
 
-
-    if (encryptedData.isEmpty()){
+    if (encryptedDataRsaHex.isEmpty()){
         QMessageBox::critical(this, "Upozornění", "Nepodařilo se zašifrovat data! (odesílání požadavku zrušeno)\n\nChyba: " + process.readAllStandardError().trimmed());
         ChatWindow::disable_widgets(false);
 
         return;
     }
 
-    QJsonObject objData;
-    objData["data"] = encryptedData;
-    QJsonDocument docData(objData);
+    objData = QJsonObject();
+    objData["data_rsa"] = encryptedDataRsaHex;
+    docData = QJsonDocument(objData);
     QByteArray deleteRoomData = docData.toJson();
 
     QNetworkRequest request;
@@ -775,13 +774,15 @@ void ChatWindow::on_action_room_1_triggered()
     }
 
 
-    QStringList names;
-    names.append("status_code");
+    QStringList jsonKeys;
+    jsonKeys.append("status_code");
 
-    QStringList responseData = ChatWindow::decryptRsa(names, response);
+    QList<QJsonValue> responseData = ChatWindow::decryptRsa(jsonKeys, response);
 
-    if(responseData[0] != "4"){
-        QMessageBox::critical(this, "Odpověd serveru (chyba)", QString("Nastala neznámá chyba!\n\n%1").arg(reply_post->readAll()));
+    QString statusCode = responseData[0].toString();
+
+    if(statusCode != "4"){
+        QMessageBox::critical(this, "Odpověd serveru (chyba)", QString("Nastala neznámá chyba!\n\n%1").arg(response));
         ChatWindow::disable_widgets(false);
 
         return;
@@ -792,4 +793,3 @@ void ChatWindow::on_action_room_1_triggered()
         QMessageBox::information(this, "Smazání místnosti", "Místnost byla úspěšně smazána, ostatním uživatelům se zobrazí tato informace, jakmile se pokusí získat nové zprávy.");
     }
 }
-*/
