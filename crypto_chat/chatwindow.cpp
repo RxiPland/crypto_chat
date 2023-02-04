@@ -131,7 +131,6 @@ QList<QJsonValue> ChatWindow::decryptRsa(QStringList jsonKeys, QByteArray respon
     QJsonObject jsonObject;
     QString dataHex;
 
-
     jsonResponse = QJsonDocument::fromJson(response);
     jsonObject = jsonResponse.object();
     dataHex = jsonObject["data_rsa"].toString();
@@ -148,6 +147,7 @@ QList<QJsonValue> ChatWindow::decryptRsa(QStringList jsonKeys, QByteArray respon
     }
 
     QByteArray output = process.readAllStandardOutput().trimmed();
+    qInfo() << process.readAllStandardError();
 
     if(output.isEmpty()){
         return returnData;
@@ -178,6 +178,7 @@ void ChatWindow::sendMessage(QString message, bool exit)
 
 
     QString messageEncrypted;  // encrypted message with room symetric key (in hex)
+
 
     QTemporaryFile tempFile;
     tempFile.open();
@@ -276,11 +277,11 @@ void ChatWindow::sendMessage(QString message, bool exit)
 
 
     QTemporaryFile tempFile2;
-    tempFile.open();
-    tempFile.write(dataAesHex);
-    tempFile.close();
+    tempFile2.open();
+    tempFile2.write(dataAesHex);
+    tempFile2.close();
 
-    QString fileName2 = tempFile.fileName().split('/').back();
+    QString fileName2 = tempFile2.fileName().split('/').back();
 
     //command = QString("/C python config/cryptographic_tool.exe encrypt_aes %1 %2 %3").arg(tempSymetricKeyHex, "true", fileName2);
     command = QString("/C python config/cryptographic_tool.py encrypt_aes %1 %2 %3").arg(tempSymetricKeyHex, "true", fileName2);
@@ -368,10 +369,12 @@ void ChatWindow::sendMessage(QString message, bool exit)
 
     if (decryptedData.isEmpty()){
 
-        QMessageBox::critical(this, "Chyba", "Nepodařilo se dešifrovat data! (RSA)");
+        if(!exit){
+            QMessageBox::critical(this, "Chyba", "Nepodařilo se dešifrovat data! (RSA)");
 
-        ChatWindow::disable_widgets(false);
-        return;
+            ChatWindow::disable_widgets(false);
+            return;
+        }
     }
 
 
