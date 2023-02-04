@@ -147,7 +147,6 @@ QList<QJsonValue> ChatWindow::decryptRsa(QStringList jsonKeys, QByteArray respon
     }
 
     QByteArray output = process.readAllStandardOutput().trimmed();
-    qInfo() << process.readAllStandardError();
 
     if(output.isEmpty()){
         return returnData;
