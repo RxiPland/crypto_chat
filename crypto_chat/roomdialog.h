@@ -50,6 +50,10 @@ private slots:
 
     void on_pushButton_3_clicked();
 
+    void on_pushButton_4_pressed();
+
+    void on_pushButton_4_released();
+
 private:
     Ui::RoomDialog *ui;
     QNetworkAccessManager manager;

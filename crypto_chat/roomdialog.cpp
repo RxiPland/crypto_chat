@@ -34,10 +34,13 @@ RoomDialog::RoomDialog(QWidget *parent, bool createRoom, QString server_url) :
     ui->lineEdit_2->setReadOnly(true);
     ui->lineEdit_2->setText(server_url);
 
+    ui->pushButton_4->setHidden(true);
+
 
     ui->pushButton->setFocusPolicy(Qt::FocusPolicy::NoFocus);
     ui->pushButton_2->setFocusPolicy(Qt::FocusPolicy::NoFocus);
     ui->pushButton_3->setFocusPolicy(Qt::FocusPolicy::NoFocus);
+    ui->pushButton_4->setFocusPolicy(Qt::FocusPolicy::NoFocus);
 
     if(createRoom){
 
@@ -415,7 +418,9 @@ void RoomDialog::joinRoomFunc()
     jsonKeys.append("room_aes_key");
     jsonKeys.append("messages_count");
 
+
     QList<QJsonValue> decryptedData = RoomDialog::decryptRsa(jsonKeys, response);
+
 
     if (decryptedData.isEmpty()){
 
@@ -438,10 +443,10 @@ void RoomDialog::joinRoomFunc()
     } else if (statusCode == "3"){
 
         if (ui->checkBox->isChecked()){
-            QMessageBox::critical(this, "Chyba", "Špatné heslo!");
+            QMessageBox::warning(this, "Chyba", "Špatné heslo!");
 
         } else{
-            QMessageBox::critical(this, "Chyba", "Místnost je chráněna heslem!");
+            QMessageBox::warning(this, "Chyba", "Místnost je chráněna heslem!");
         }
 
         ui->checkBox->setChecked(true);
@@ -453,7 +458,7 @@ void RoomDialog::joinRoomFunc()
         return;
 
     } else if (statusCode == "4"){
-        QMessageBox::critical(this, "Chyba", "Místnost s tímto ID neexistuje!");
+        QMessageBox::warning(this, "Chyba", "Místnost s tímto ID neexistuje!");
 
         RoomDialog::disable_widgets(false);
         ui->lineEdit_3->setFocus();
@@ -522,6 +527,7 @@ QList<QJsonValue> RoomDialog::decryptRsa(QStringList jsonKeys, QByteArray respon
         qApp->processEvents();
     }
 
+
     QByteArray output = process.readAllStandardOutput().trimmed();
 
     if(output.isEmpty()){
@@ -529,11 +535,10 @@ QList<QJsonValue> RoomDialog::decryptRsa(QStringList jsonKeys, QByteArray respon
     }
 
     // get decrypted data
-    QByteArray decryptedData = QByteArray::fromHex(output);
-    decryptedData.replace("\'", "\"");
-
+    QByteArray decryptedData = QByteArray::fromHex(output).replace("\'", "\"");
     jsonResponse = QJsonDocument::fromJson(decryptedData);
     jsonObject = jsonResponse.object();
+
 
     int i;
 
@@ -669,10 +674,12 @@ void RoomDialog::on_checkBox_clicked()
 
     if(ui->checkBox->isChecked()){
         ui->lineEdit->setHidden(false);
+        ui->pushButton_4->setHidden(false);
         ui->lineEdit->setFocus();
 
     } else{
         ui->lineEdit->setHidden(true);
+        ui->pushButton_4->setHidden(true);
     }
 }
 
@@ -683,5 +690,17 @@ void RoomDialog::on_pushButton_3_clicked()
 
     ui->lineEdit_3->setText(RoomDialog::generateId());
     ui->lineEdit_2->setFocus();
+}
+
+
+void RoomDialog::on_pushButton_4_pressed()
+{
+    ui->lineEdit->setEchoMode(QLineEdit::Normal);
+}
+
+
+void RoomDialog::on_pushButton_4_released()
+{
+    ui->lineEdit->setEchoMode(QLineEdit::Password);
 }
 
