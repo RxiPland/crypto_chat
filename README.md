@@ -1,5 +1,5 @@
 # Crypto-chat
-- Komunikace je zabezpečená, i když webová stránka (server) běží na nezabezpečeném HTTP protokolu
+- Komunikace je bezpečná i přes to, že server běží na nešifrovaném HTTP protokolu
 <br>
 </br>
 
