@@ -517,8 +517,8 @@ def get_messages():
     <RSA-encrypted-data> = {'room_id': '<hex string (32)>', 'room_password': '<plain text password>', 'user_messages_count': <int>}
 
     response: {'data_rsa': <RSA-encrypted-data> in hex, 'data_aes': <temp-AES-key-encrypted-data> in hex}
-    <RSA-encrypted-data> = {'status_code': '<error code>', 'symetric_key': <temp-AES-key-for-json-encryption> in hex}
-    <AES-encrypted-data> = {'server_messages_count': <int>, 'skipped_messages': <int>, 'messages': [<encrypted with room key>, ...]}
+    <RSA-encrypted-data> = {'status_code': '<error code>', 'server_messages_count': <int>, 'skipped_messages': <int>, 'symetric_key': <temp-AES-key-for-json-encryption> in hex}
+    <AES-encrypted-data> = {'messages': [<encrypted with room key>, ...]}
     """
 
     try:
@@ -555,12 +555,12 @@ def get_messages():
         if not os.path.exists(WORKING_DIR + "/rooms/" + room_id):
 
             # wrong room ID (room was deleted by someone else)
-            data = {
+            data_rsa = {
                 "status_code": "4",
                 "symetric_key": ""
             }
 
-            encrypted_data = rsa.encrypt(str(data).encode(), user_rsa_publickey)
+            encrypted_data = rsa.encrypt(str(data_rsa).encode(), user_rsa_publickey)
         
             return flask.jsonify({"data_rsa": encrypted_data.hex(), "data_aes": ""}), 200
 
@@ -581,12 +581,12 @@ def get_messages():
         if password_user_hash.strip() != password_file_hash.strip():
 
             # wrong password (should never happen)
-            data = {
+            data_rsa = {
                 "status_code": "3",
                 "symetric_key": ""
             }
 
-            encrypted_data = rsa.encrypt(str(data).encode(), user_rsa_publickey)
+            encrypted_data = rsa.encrypt(str(data_rsa).encode(), user_rsa_publickey)
         
             return flask.jsonify({"data_rsa": encrypted_data.hex(), "data_aes": ""}), 200
 
@@ -643,16 +643,16 @@ def get_messages():
         temp_symetric_key = Fernet.generate_key()
 
 
-        data = {
+        data_rsa = {
             "status_code": "1",
+            "server_messages_count": messages_count_server,
+            "skipped_messages": skipped_messages,
             "symetric_key": temp_symetric_key.hex()
         }
-        encrypted_data_rsa = rsa.encrypt(str(data).encode(), user_rsa_publickey)
+        encrypted_data_rsa = rsa.encrypt(str(data_rsa).encode(), user_rsa_publickey)
 
 
         data_aes = {
-            "server_messages_count": messages_count_server,
-            "skipped_messages": skipped_messages,
             "messages": messages_to_send
         }
         encrypted_data_aes = Fernet(temp_symetric_key).encrypt(str(data_aes).encode())
