@@ -294,8 +294,10 @@ def join_room():
         if not os.path.exists(WORKING_DIR + "/rooms/" + room_id_user):
 
             # wrong room ID
-            data = {
-                "status_code": "4"
+            data_rsa = {
+                "status_code": "4",
+                "room_aes_key": None,
+                "messages_count": None
             }
 
         else:
@@ -307,8 +309,10 @@ def join_room():
             if password_user_hash.strip() != password_file.strip():
 
                 # wrong password
-                data = {
-                    "status_code": "3"
+                data_rsa = {
+                    "status_code": "3",
+                    "room_aes_key": None,
+                    "messages_count": None
                 }
 
             else:
@@ -318,8 +322,10 @@ def join_room():
                 if not os.path.exists(key_path):
 
                     # symetric key file not found
-                    data = {
-                        "status_code": "2"
+                    data_rsa = {
+                        "status_code": "2",
+                        "room_aes_key": None,
+                        "messages_count": None
                     }
 
                 else:
@@ -337,14 +343,14 @@ def join_room():
                         messages_count_server = "0"
 
                     # success
-                    data = {
+                    data_rsa = {
                         "status_code": "1",
                         "room_aes_key": aes_key.hex(),
                         "messages_count": messages_count_server
                     }
 
 
-        encrypted_data = rsa.encrypt(str(data).encode(), user_rsa_publickey)
+        encrypted_data = rsa.encrypt(str(data_rsa).encode(), user_rsa_publickey)
             
         return flask.jsonify({"data_rsa": encrypted_data.hex()}), 200
 
@@ -402,11 +408,11 @@ def send_message():
         if not os.path.exists(WORKING_DIR + "/rooms/" + room_id):
 
             # wrong room ID (room was deleted by someone else)
-            data = {
+            data_rsa = {
                 "status_code": "4"
             }
 
-            encrypted_data = rsa.encrypt(str(data).encode(), user_rsa_publickey)
+            encrypted_data = rsa.encrypt(str(data_rsa).encode(), user_rsa_publickey)
             
             return flask.jsonify({"data_rsa": encrypted_data.hex()}), 200
 
@@ -427,11 +433,11 @@ def send_message():
         if password_user_hash.strip() != password_file_hash.strip():
 
             # wrong password
-            data = {
+            data_rsa = {
                 "status_code": "3"
             }
 
-            encrypted_data = rsa.encrypt(str(data).encode(), user_rsa_publickey)
+            encrypted_data = rsa.encrypt(str(data_rsa).encode(), user_rsa_publickey)
             
             return flask.jsonify({"data_rsa": encrypted_data.hex()}), 200
 
@@ -445,11 +451,11 @@ def send_message():
 
         except:
             # wrong symetric key
-            data = {
+            data_rsa = {
                 "status_code": "5"
             }
 
-            encrypted_data = rsa.encrypt(str(data).encode(), user_rsa_publickey)
+            encrypted_data = rsa.encrypt(str(data_rsa).encode(), user_rsa_publickey)
             
             return flask.jsonify({"data_rsa": encrypted_data.hex()}), 200
 
@@ -493,12 +499,12 @@ def send_message():
             f.write(str(messages_count + 1))
 
 
-        data = {
+        data_rsa = {
             "status_code": "1"
         }
 
 
-        encrypted_data = rsa.encrypt(str(data).encode(), user_rsa_publickey)
+        encrypted_data = rsa.encrypt(str(data_rsa).encode(), user_rsa_publickey)
         
         return flask.jsonify({"data_rsa": encrypted_data.hex()}), 200
 
@@ -557,7 +563,9 @@ def get_messages():
             # wrong room ID (room was deleted by someone else)
             data_rsa = {
                 "status_code": "4",
-                "symetric_key": ""
+                "server_messages_count": None,
+                "skipped_messages": None,
+                "symetric_key": None
             }
 
             encrypted_data = rsa.encrypt(str(data_rsa).encode(), user_rsa_publickey)
@@ -583,7 +591,9 @@ def get_messages():
             # wrong password (should never happen)
             data_rsa = {
                 "status_code": "3",
-                "symetric_key": ""
+                "server_messages_count": None,
+                "skipped_messages": None,
+                "symetric_key": None
             }
 
             encrypted_data = rsa.encrypt(str(data_rsa).encode(), user_rsa_publickey)
