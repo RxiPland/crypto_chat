@@ -75,8 +75,6 @@ void LoginDialog::closeEvent(QCloseEvent *bar)
 
     this->close();
 
-    // code here
-
     if(bar != nullptr){
         bar->accept();
     }
@@ -302,7 +300,9 @@ void LoginDialog::on_pushButton_clicked()
                     qApp->processEvents();
                 }
 
-                if (reply_get->readAll().isEmpty()){
+                QString response = reply_get->readAll().trimmed();
+
+                if (response.isEmpty()){
                     msgBox.close();
 
                     QMessageBox::critical(this, "Nastala chyba", "Server nevrátil svůj veřejný klíč!");
@@ -311,7 +311,7 @@ void LoginDialog::on_pushButton_clicked()
                 }
 
                 // save server's RSA public key
-                LoginDialog::serverPublicKeyPemHex = reply_get->readAll().trimmed();
+                LoginDialog::serverPublicKeyPemHex = response;
 
                 msgBox.setText(previousText + "<span style=\"color:green;\"> [Dokončeno]<br></span>");
 

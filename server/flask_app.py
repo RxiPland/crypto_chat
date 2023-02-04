@@ -98,10 +98,11 @@ def create_room():
         # decrypt data_rsa
         try:
             user_rsa_publickey = rsa.PublicKey.load_pkcs1(bytes.fromhex(request_json["rsa_pem"]))
-            decrypted_data: dict[str, str] = json.loads(rsa.decrypt(request_json["data_rsa"], priv_key=RSA_PRIVATE_K))
+            decrypted_data: dict[str, str] = json.loads(rsa.decrypt(bytes.fromhex(request_json["data_rsa"]), priv_key=RSA_PRIVATE_K))
 
         except:
             # Invalid RSA public key / encrypted data
+
             return "Forbidden", 403
         
 
@@ -185,10 +186,11 @@ def change_password():
         # decrypt data_rsa
         try:
             user_rsa_publickey = rsa.PublicKey.load_pkcs1(bytes.fromhex(request_json["rsa_pem"]))
-            decrypted_data: dict[str, str] = json.loads(rsa.decrypt(request_json["data_rsa"], priv_key=RSA_PRIVATE_K))
+            decrypted_data: dict[str, str] = json.loads(rsa.decrypt(bytes.fromhex(request_json["data_rsa"]), priv_key=RSA_PRIVATE_K))
 
         except:
             # Invalid RSA public key / encrypted data
+            
             return "Forbidden", 403
 
 
@@ -277,10 +279,11 @@ def join_room():
         # decrypt data_rsa
         try:
             user_rsa_publickey = rsa.PublicKey.load_pkcs1(bytes.fromhex(request_json["rsa_pem"]))
-            decrypted_data: dict[str, str] = json.loads(rsa.decrypt(request_json["data_rsa"], priv_key=RSA_PRIVATE_K))
+            decrypted_data: dict[str, str] = json.loads(rsa.decrypt(bytes.fromhex(request_json["data_rsa"]), priv_key=RSA_PRIVATE_K))
 
         except:
             # Invalid RSA public key / encrypted data
+            
             return "Forbidden", 403
 
 
@@ -384,10 +387,11 @@ def send_message():
         # decrypt data_rsa
         try:
             user_rsa_publickey = rsa.PublicKey.load_pkcs1(bytes.fromhex(request_json["rsa_pem"]))
-            decrypted_data: dict[str, str] = json.loads(rsa.decrypt(request_json["data_rsa"], priv_key=RSA_PRIVATE_K))
+            decrypted_data: dict[str, str] = json.loads(rsa.decrypt(bytes.fromhex(request_json["data_rsa"]), priv_key=RSA_PRIVATE_K))
 
         except:
             # Invalid RSA public key / encrypted data
+            
             return "Forbidden", 403
 
 
@@ -536,10 +540,11 @@ def get_messages():
         # decrypt data_rsa
         try:
             user_rsa_publickey = rsa.PublicKey.load_pkcs1(bytes.fromhex(request_json["rsa_pem"]))
-            decrypted_data: dict[str, str] = json.loads(rsa.decrypt(request_json["data_rsa"], priv_key=RSA_PRIVATE_K))
+            decrypted_data: dict[str, str] = json.loads(rsa.decrypt(bytes.fromhex(request_json["data_rsa"]), priv_key=RSA_PRIVATE_K))
 
         except:
             # Invalid RSA public key / encrypted data
+            
             return "Forbidden", 403
 
 
@@ -692,10 +697,11 @@ def delete_room():
         # decrypt data_rsa
         try:
             user_rsa_publickey = rsa.PublicKey.load_pkcs1(bytes.fromhex(request_json["rsa_pem"]))
-            decrypted_data: dict[str, str] = json.loads(rsa.decrypt(request_json["data_rsa"], priv_key=RSA_PRIVATE_K))
+            decrypted_data: dict[str, str] = json.loads(rsa.decrypt(bytes.fromhex(request_json["data_rsa"]), priv_key=RSA_PRIVATE_K))
 
         except:
             # Invalid RSA public key / encrypted data
+            
             return "Forbidden", 403
 
 
