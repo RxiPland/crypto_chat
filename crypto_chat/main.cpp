@@ -59,8 +59,6 @@ int main(int argc, char *argv[])
         return 0;
     }
 
-    /*
-
     // open chat window
     ChatWindow chw(nullptr, server_url, rd.username);
     chw.app_version = app_version;
@@ -78,11 +76,10 @@ int main(int argc, char *argv[])
     chw.authentication_username = rd.authentication_username;
     chw.authentication_password = rd.authentication_password;
     chw.serverMessagesCount = rd.serverMessagesCount;
-    chw.welcomeMessage();
-    chw.startRefreshLoop();
+    //chw.welcomeMessage();
+    //chw.startRefreshLoop();
 
     chw.show();
 
-    */
     return a.exec();
 }
