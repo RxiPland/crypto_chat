@@ -171,8 +171,7 @@ QList<QJsonValue> ChatWindow::decryptRsa(QStringList jsonKeys, QByteArray respon
 }
 
 void ChatWindow::sendMessage(QString message, bool exit)
-{}
-    /*
+{
     // send message to server
 
     ChatWindow::disable_widgets(true);
@@ -217,25 +216,38 @@ void ChatWindow::sendMessage(QString message, bool exit)
     }
 
 
+    //command = QString("/C python config/cryptographic_tool.exe generate_aes");
+    command = QString("/C python config/cryptographic_tool.py generate_aes");
+
+    // generate symetric key
+    process.start("cmd", QStringList(command));
+
+    while(process.state() == QProcess::Running){
+        qApp->processEvents();
+    }
+
+    QString tempSymetricKeyHex = process.readAllStandardOutput().trimmed();
+
+    if (tempSymetricKeyHex.isEmpty()){
+        if(!exit){
+            QMessageBox::critical(this, "Upozornění", "Nepodařilo se vygenerovat dočasný symetrický klíč! (odesílání zrušeno)\n\nChyba: " + process.readAllStandardError().trimmed());
+            ChatWindow::disable_widgets(false);
+        }
+        return;
+    }
+
+
     QJsonObject objMessage;
     objMessage["room_id"] = ChatWindow::room_id;
     objMessage["room_password"] = ChatWindow::room_password;
-    objMessage["message"] = messageEncrypted;
+    objMessage["symetric_key"] = tempSymetricKeyHex;
 
     QJsonDocument docMessage(objMessage);
-    QByteArray postDataHex = docMessage.toJson().toHex();  // in hex
+    QString postDataHex = docMessage.toJson().toHex();  // in hex
 
 
-    QTemporaryFile tempFile2;
-    tempFile2.open();
-    tempFile2.write(postDataHex);
-    tempFile2.close();
-
-    QString fileName2 = tempFile2.fileName().split('/').back();
-
-    //command = QString("/C python config/cryptographic_tool.exe encrypt_aes_server %1 %2 %3").arg(ChatWindow::serverPublicKeyPemHex, "True", fileName2);
-    command = QString("/C python config/cryptographic_tool.py encrypt_aes_server %1 %2 %3").arg(ChatWindow::serverPublicKeyPemHex, "True", fileName2);
-
+    //command = QString("/C python config/cryptographic_tool.exe encrypt_rsa %1 %2").arg(tempSymetricKeyHex, postDataHex);
+    command = QString("/C python config/cryptographic_tool.py encrypt_rsa %1 %2").arg(tempSymetricKeyHex, postDataHex);
 
     // encrypt postData (json) with server symetric key
     process.start("cmd", QStringList(command));
@@ -245,15 +257,9 @@ void ChatWindow::sendMessage(QString message, bool exit)
     }
 
     // get encrypted data
-    tempFile2.open();
-    QString encryptedData = tempFile2.readAll();
-    tempFile2.close();
+    QString encryptedDataRsa = process.readAllStandardOutput().trimmed();
 
-    // delete temp file
-    tempFile2.remove();
-
-
-    if (encryptedData.isEmpty()){
+    if (encryptedDataRsa.isEmpty()){
 
         if(!exit){
             QMessageBox::critical(this, "Upozornění", "Nepodařilo se zašifrovat data! (odesílání zrušeno)\n\nChyba: " + process.readAllStandardError().trimmed());
@@ -263,7 +269,8 @@ void ChatWindow::sendMessage(QString message, bool exit)
     }
 
     QJsonObject objData;
-    objData["data"] = encryptedData;
+    objData["data_rsa"] = encryptedDataRsa;
+    objData["data_aes"] = encryptedDataAes;
     QJsonDocument docData(objData);
     QByteArray SendMessageData = docData.toJson();
 
@@ -363,7 +370,8 @@ void ChatWindow::sendMessage(QString message, bool exit)
         refreshChatLoop.stopLoop();
     }
 }
-*/
+
+
 void ChatWindow::disable_widgets(bool disable)
 {
     ui->pushButton->setDisabled(disable);
