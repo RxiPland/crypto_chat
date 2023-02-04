@@ -543,7 +543,7 @@ def get_messages():
         # decrypt data_rsa
         try:
             user_rsa_publickey = rsa.PublicKey.load_pkcs1(bytes.fromhex(request_json["rsa_pem"]))
-            decrypted_data: dict[str, str] = json.loads(rsa.decrypt(bytes.fromhex(request_json["data_rsa"]), priv_key=RSA_PRIVATE_K))
+            decrypted_data: dict[str, str | int] = json.loads(rsa.decrypt(bytes.fromhex(request_json["data_rsa"]), priv_key=RSA_PRIVATE_K))
 
         except:
             # Invalid RSA public key / encrypted data
