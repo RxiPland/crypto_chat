@@ -47,12 +47,12 @@ private slots:
     void on_lineEdit_returnPressed();
     void on_pushButton_2_clicked();
     void on_checkBox_clicked();
-
     void on_pushButton_3_clicked();
 
-    void on_pushButton_4_pressed();
+    void on_lineEdit_textEdited(const QString &arg1);
 
-    void on_pushButton_4_released();
+    void on_toolButton_pressed();
+    void on_toolButton_released();
 
 private:
     Ui::RoomDialog *ui;

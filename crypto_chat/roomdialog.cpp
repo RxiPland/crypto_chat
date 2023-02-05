@@ -34,13 +34,13 @@ RoomDialog::RoomDialog(QWidget *parent, bool createRoom, QString server_url) :
     ui->lineEdit_2->setReadOnly(true);
     ui->lineEdit_2->setText(server_url);
 
-    ui->pushButton_4->setHidden(true);
+    ui->toolButton->setHidden(true);
 
 
     ui->pushButton->setFocusPolicy(Qt::FocusPolicy::NoFocus);
     ui->pushButton_2->setFocusPolicy(Qt::FocusPolicy::NoFocus);
     ui->pushButton_3->setFocusPolicy(Qt::FocusPolicy::NoFocus);
-    ui->pushButton_4->setFocusPolicy(Qt::FocusPolicy::NoFocus);
+    ui->toolButton->setFocusPolicy(Qt::FocusPolicy::NoFocus);
 
     if(createRoom){
 
@@ -674,12 +674,13 @@ void RoomDialog::on_checkBox_clicked()
 
     if(ui->checkBox->isChecked()){
         ui->lineEdit->setHidden(false);
-        ui->pushButton_4->setHidden(false);
         ui->lineEdit->setFocus();
+
+        RoomDialog::on_lineEdit_textEdited(ui->lineEdit->text());
 
     } else{
         ui->lineEdit->setHidden(true);
-        ui->pushButton_4->setHidden(true);
+        ui->toolButton->setHidden(true);
     }
 }
 
@@ -692,14 +693,25 @@ void RoomDialog::on_pushButton_3_clicked()
     ui->lineEdit_2->setFocus();
 }
 
+void RoomDialog::on_lineEdit_textEdited(const QString &arg1)
+{
+    // password edited
 
-void RoomDialog::on_pushButton_4_pressed()
+    if(arg1 != "" && ui->checkBox->isChecked()){
+        ui->toolButton->setHidden(false);
+    } else{
+        ui->toolButton->setHidden(true);
+    }
+}
+
+
+void RoomDialog::on_toolButton_pressed()
 {
     ui->lineEdit->setEchoMode(QLineEdit::Normal);
 }
 
 
-void RoomDialog::on_pushButton_4_released()
+void RoomDialog::on_toolButton_released()
 {
     ui->lineEdit->setEchoMode(QLineEdit::Password);
 }
