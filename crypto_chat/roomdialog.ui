@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>400</width>
+    <width>447</width>
     <height>259</height>
    </rect>
   </property>
@@ -62,6 +62,9 @@
          <property name="readOnly">
           <bool>true</bool>
          </property>
+         <property name="placeholderText">
+          <string>https://google.com</string>
+         </property>
         </widget>
        </item>
       </layout>
@@ -87,7 +90,7 @@
           <bool>false</bool>
          </property>
          <property name="placeholderText">
-          <string>Povinné</string>
+          <string>9d4ac6cf8ac74c5082148f3845e4a45b</string>
          </property>
         </widget>
        </item>
@@ -191,7 +194,7 @@
           </widget>
          </item>
          <item>
-          <widget class="QPushButton" name="pushButton_4">
+          <widget class="QToolButton" name="toolButton">
            <property name="text">
             <string>Ukázat</string>
            </property>

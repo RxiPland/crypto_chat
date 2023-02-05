@@ -18,6 +18,7 @@
 #include <QtWidgets/QLineEdit>
 #include <QtWidgets/QPushButton>
 #include <QtWidgets/QSpacerItem>
+#include <QtWidgets/QToolButton>
 #include <QtWidgets/QVBoxLayout>
 
 QT_BEGIN_NAMESPACE
@@ -46,7 +47,7 @@ public:
     QSpacerItem *horizontalSpacer;
     QHBoxLayout *horizontalLayout_7;
     QLineEdit *lineEdit;
-    QPushButton *pushButton_4;
+    QToolButton *toolButton;
     QSpacerItem *verticalSpacer_3;
     QHBoxLayout *horizontalLayout_5;
     QPushButton *pushButton_2;
@@ -58,7 +59,7 @@ public:
     {
         if (RoomDialog->objectName().isEmpty())
             RoomDialog->setObjectName("RoomDialog");
-        RoomDialog->resize(400, 259);
+        RoomDialog->resize(447, 259);
         horizontalLayout_4 = new QHBoxLayout(RoomDialog);
         horizontalLayout_4->setObjectName("horizontalLayout_4");
         horizontalSpacer_3 = new QSpacerItem(5, 20, QSizePolicy::Fixed, QSizePolicy::Minimum);
@@ -159,10 +160,10 @@ public:
 
         horizontalLayout_7->addWidget(lineEdit);
 
-        pushButton_4 = new QPushButton(RoomDialog);
-        pushButton_4->setObjectName("pushButton_4");
+        toolButton = new QToolButton(RoomDialog);
+        toolButton->setObjectName("toolButton");
 
-        horizontalLayout_7->addWidget(pushButton_4);
+        horizontalLayout_7->addWidget(toolButton);
 
 
         verticalLayout->addLayout(horizontalLayout_7);
@@ -212,13 +213,13 @@ public:
         RoomDialog->setWindowTitle(QCoreApplication::translate("RoomDialog", "Dialog", nullptr));
         label->setText(QCoreApplication::translate("RoomDialog", "Server:", nullptr));
         label_2->setText(QCoreApplication::translate("RoomDialog", "ID m\303\255stnosti:", nullptr));
-        lineEdit_3->setPlaceholderText(QCoreApplication::translate("RoomDialog", "Povinn\303\251", nullptr));
+        lineEdit_3->setPlaceholderText(QCoreApplication::translate("RoomDialog", "P\305\231. 9d4ac6cf8ac74c5082148f3845e4a45b", nullptr));
         pushButton_3->setText(QCoreApplication::translate("RoomDialog", "generovat", nullptr));
         label_3->setText(QCoreApplication::translate("RoomDialog", "Va\305\241e p\305\231ezd\303\255vka:", nullptr));
         lineEdit_4->setPlaceholderText(QCoreApplication::translate("RoomDialog", "Povinn\303\251", nullptr));
         checkBox->setText(QCoreApplication::translate("RoomDialog", "Heslo m\303\255stnosti", nullptr));
         lineEdit->setPlaceholderText(QCoreApplication::translate("RoomDialog", "Bez hesla", nullptr));
-        pushButton_4->setText(QCoreApplication::translate("RoomDialog", "Uk\303\241zat", nullptr));
+        toolButton->setText(QCoreApplication::translate("RoomDialog", "Uk\303\241zat", nullptr));
         pushButton_2->setText(QCoreApplication::translate("RoomDialog", "P\305\231epnout", nullptr));
         pushButton->setText(QCoreApplication::translate("RoomDialog", " Vytvo\305\231it m\303\255stnost ", nullptr));
     } // retranslateUi
