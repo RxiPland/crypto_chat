@@ -215,12 +215,12 @@ public:
         lineEdit_2->setPlaceholderText(QCoreApplication::translate("RoomDialog", "https://google.com", nullptr));
         label_2->setText(QCoreApplication::translate("RoomDialog", "ID m\303\255stnosti:", nullptr));
         lineEdit_3->setPlaceholderText(QCoreApplication::translate("RoomDialog", "9d4ac6cf8ac74c5082148f3845e4a45b", nullptr));
-        pushButton_3->setText(QCoreApplication::translate("RoomDialog", "generovat", nullptr));
+        pushButton_3->setText(QCoreApplication::translate("RoomDialog", "Generovat", nullptr));
         label_3->setText(QCoreApplication::translate("RoomDialog", "Va\305\241e p\305\231ezd\303\255vka:", nullptr));
         lineEdit_4->setPlaceholderText(QCoreApplication::translate("RoomDialog", "Povinn\303\251", nullptr));
         checkBox->setText(QCoreApplication::translate("RoomDialog", "Heslo m\303\255stnosti", nullptr));
         lineEdit->setPlaceholderText(QCoreApplication::translate("RoomDialog", "Bez hesla", nullptr));
-        toolButton->setText(QCoreApplication::translate("RoomDialog", "Uk\303\241zat", nullptr));
+        toolButton->setText(QCoreApplication::translate("RoomDialog", " Uk\303\241zat ", nullptr));
         pushButton_2->setText(QCoreApplication::translate("RoomDialog", "P\305\231epnout", nullptr));
         pushButton->setText(QCoreApplication::translate("RoomDialog", " Vytvo\305\231it m\303\255stnost ", nullptr));
     } // retranslateUi
