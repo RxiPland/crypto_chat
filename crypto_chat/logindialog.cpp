@@ -158,7 +158,7 @@ void LoginDialog::on_pushButton_clicked()
 
     QString url_address = ui->lineEdit->text().replace(" ", "");
 
-    // regex for URL validation (from: https://stackoverflow.com/questions/3711761/how-to-validate-a-complete-and-valid-url-using-regex)
+    // regex for complete URL validation (from: https://stackoverflow.com/questions/3711761/how-to-validate-a-complete-and-valid-url-using-regex)
     QRegExp rx("(https?://)+(([0-9a-z_!~*'().&=+$%-]+: )?[0-9a-z_!~*'().&=+$%-]+@)?(([0-9]{1,3}\\.){3}[0-9]{1,3}|([0-9a-z_!~*'()-]+\\.)*([0-9a-z][0-9a-z-]{0,61})?[0-9a-z]\\.[a-z]{2,6})(:[0-9]{1,5})?((/?)|(/[0-9a-z_!~*'().;?:@&=+$,%#-]+)+/?)$");
 
     if(url_address == ""){
@@ -324,7 +324,7 @@ void LoginDialog::on_pushButton_clicked()
                 previousText = msgBox.text();
                 msgBox.setText(msgBox.text() + "<span style=\"color:orange;\"> [Probíhá]<br></span>");
 
-
+                // get number of bits selected by user
                 QString rsaBits = ui->comboBox->currentText();
                 rsaBits.replace(" (defaultní)", "");
 
@@ -420,12 +420,16 @@ void LoginDialog::on_lineEdit_3_textEdited(const QString &arg1)
 
 void LoginDialog::on_toolButton_3_pressed()
 {
+    // show password
+
     ui->lineEdit_3->setEchoMode(QLineEdit::Normal);
 }
 
 
 void LoginDialog::on_toolButton_3_released()
 {
+    // hide password
+
     ui->lineEdit_3->setEchoMode(QLineEdit::Password);
 }
 
