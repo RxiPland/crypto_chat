@@ -92,7 +92,7 @@ void LoginDialog::hide_widgets(bool hide){
     ui->lineEdit_3->setHidden(hide);
 
 
-    on_lineEdit_3_textEdited();
+    on_lineEdit_3_textEdited(ui->lineEdit_3->text());
 }
 
 void LoginDialog::disable_widgets(bool disable){
@@ -404,9 +404,9 @@ void LoginDialog::on_lineEdit_textEdited()
 }
 
 
-void LoginDialog::on_lineEdit_3_textEdited()
+void LoginDialog::on_lineEdit_3_textEdited(const QString &arg1)
 {
-    if(ui->lineEdit_3->text() != "" && ui->checkBox->isChecked()){
+    if(arg1 != "" && ui->checkBox->isChecked()){
         ui->toolButton_3->setHidden(false);
     } else{
         ui->toolButton_3->setHidden(true);
@@ -461,4 +461,3 @@ void LoginDialog::on_lineEdit_3_returnPressed()
     // "return" pressed when typing password
     LoginDialog::on_pushButton_clicked();
 }
-
