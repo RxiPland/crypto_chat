@@ -16,6 +16,7 @@ Obtain server's RSA public key
 #include <QCloseEvent>
 #include <windows.h>
 #include <QProcess>
+#include <QRegExp>
 
 
 LoginDialog::LoginDialog(QWidget *parent) :
@@ -157,10 +158,13 @@ void LoginDialog::on_pushButton_clicked()
 
     QString url_address = ui->lineEdit->text().replace(" ", "");
 
+    // regex for URL validation (from: https://stackoverflow.com/questions/3711761/how-to-validate-a-complete-and-valid-url-using-regex)
+    QRegExp rx("(https?://)+(([0-9a-z_!~*'().&=+$%-]+: )?[0-9a-z_!~*'().&=+$%-]+@)?(([0-9]{1,3}\\.){3}[0-9]{1,3}|([0-9a-z_!~*'()-]+\\.)*([0-9a-z][0-9a-z-]{0,61})?[0-9a-z]\\.[a-z]{2,6})(:[0-9]{1,5})?((/?)|(/[0-9a-z_!~*'().;?:@&=+$,%#-]+)+/?)$");
+
     if(url_address == ""){
         QMessageBox::critical(this, "Chyba", "Pole pro URL adresu nemůže být prázdné!");
 
-    } else if (!url_address.contains("http") || !url_address.contains("://") || !url_address.contains(".")){
+    } else if (!rx.exactMatch(url_address)){
         QMessageBox::critical(this, "Chyba", "Zadejte kompletní URL adresu!\n\nPř. https://www.google.com");
         LoginDialog::disable_widgets(false);
 
