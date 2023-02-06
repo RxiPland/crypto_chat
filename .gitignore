@@ -3,3 +3,4 @@
 /crypto_chat/CMakeLists.txt.user
 /build-crypto_chat-*/
 /server/rooms/
+/crypto_chat/config/*.exe
