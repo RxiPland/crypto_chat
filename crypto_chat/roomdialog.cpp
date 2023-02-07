@@ -108,8 +108,8 @@ QString RoomDialog::generateId()
 
     ui->pushButton_3->setDisabled(true);
 
-    //QString command = QString("/C python config/cryptographic_tool.exe generate_id");
-    QString command = QString("/C python config/cryptographic_tool.py generate_id");
+    QString command = QString("/C cd ./config & cryptographic_tool.exe generate_id");
+    //QString command = QString("/C python config/cryptographic_tool.py generate_id");
 
     // decrypt RSA encrypted data
     QProcess process;
@@ -181,8 +181,8 @@ void RoomDialog::createRoomFunc()
     QString dataHex = docData.toJson().toHex();
 
     QProcess process;
-    //QString command = QString("/C python config/cryptographic_tool.exe encrypt_rsa %1 %2").arg(serverPublicKeyPemHex, dataHex);
-    QString command = QString("/C python config/cryptographic_tool.py encrypt_rsa %1 %2").arg(serverPublicKeyPemHex, dataHex);
+    QString command = QString("/C cd ./config & cryptographic_tool.exe encrypt_rsa %1 %2").arg(serverPublicKeyPemHex, dataHex);
+    //QString command = QString("/C python config/cryptographic_tool.py encrypt_rsa %1 %2").arg(serverPublicKeyPemHex, dataHex);
 
     // encrypt data
     process.start("cmd", QStringList(command));
@@ -345,8 +345,8 @@ void RoomDialog::joinRoomFunc()
     QString dataHex = docData.toJson().toHex();
 
     QProcess process;
-    //QString command = QString("/C python config/cryptographic_tool.exe encrypt_rsa %1 %2").arg(serverPublicKeyPemHex, dataHex);
-    QString command = QString("/C python config/cryptographic_tool.py encrypt_rsa %1 %2").arg(serverPublicKeyPemHex, dataHex);
+    QString command = QString("/C cd ./config & cryptographic_tool.exe encrypt_rsa %1 %2").arg(serverPublicKeyPemHex, dataHex);
+    //QString command = QString("/C python config/cryptographic_tool.py encrypt_rsa %1 %2").arg(serverPublicKeyPemHex, dataHex);
 
     // encrypt data
     process.start("cmd", QStringList(command));
@@ -516,8 +516,8 @@ QList<QJsonValue> RoomDialog::decryptRsa(QStringList jsonKeys, QByteArray respon
     jsonObject = jsonResponse.object();
     dataHex = jsonObject["data_rsa"].toString();
 
-    //QString command = QString("/C python config/cryptographic_tool.exe decrypt_rsa %1 %2").arg(RoomDialog::rsaPrivateKeyPemHex, dataHex);
-    QString command = QString("/C python config/cryptographic_tool.py decrypt_rsa %1 %2").arg(RoomDialog::rsaPrivateKeyPemHex, dataHex);
+    QString command = QString("/C cd ./config & cryptographic_tool.exe decrypt_rsa %1 %2").arg(RoomDialog::rsaPrivateKeyPemHex, dataHex);
+    //QString command = QString("/C python config/cryptographic_tool.py decrypt_rsa %1 %2").arg(RoomDialog::rsaPrivateKeyPemHex, dataHex);
 
     // decrypt
     QProcess process;

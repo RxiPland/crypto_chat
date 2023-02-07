@@ -329,8 +329,8 @@ void LoginDialog::on_pushButton_clicked()
                 rsaBits.replace(" (defaultní)", "");
 
 
-                //QString command = "/C config/cryptographic_tool.exe generate_rsa " + rsaBits;
-                QString command = "/C python config/cryptographic_tool.py generate_rsa " + rsaBits;
+                QString command = "/C cd ./config & cryptographic_tool.exe generate_rsa " + rsaBits;
+                //QString command = "/C python config/cryptographic_tool.py generate_rsa " + rsaBits;
 
                 // generate
                 QProcess process;
@@ -342,9 +342,9 @@ void LoginDialog::on_pushButton_clicked()
                 }
 
 
-                QList<QByteArray> cmdOutput = process.readAllStandardOutput().split(';');
+                QByteArray output = process.readAllStandardOutput();
 
-                if(cmdOutput.isEmpty()){
+                if(output.isEmpty()){
                     msgBox.close();
 
                     // python did not create the required data
@@ -353,6 +353,8 @@ void LoginDialog::on_pushButton_clicked()
                     LoginDialog::disable_widgets(false);
                     return;
                 }
+
+                QList<QByteArray> cmdOutput = output.split(';');
 
                 // get rsa public key PEM from hex
                 LoginDialog::rsaPublicKeyPemHex = cmdOutput[0].trimmed();

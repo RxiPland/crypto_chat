@@ -49,8 +49,8 @@ QList<QJsonValue> ThreadFunctions::decryptRsa(QStringList jsonKeys, QByteArray r
     jsonObject = jsonResponse.object();
     dataHex = jsonObject["data_rsa"].toString();
 
-    //QString command = QString("/C python config/cryptographic_tool.exe decrypt_rsa %1 %2").arg(ThreadFunctions::rsaPrivateKeyPemHex, dataHex);
-    QString command = QString("/C python config/cryptographic_tool.py decrypt_rsa %1 %2").arg(ThreadFunctions::rsaPrivateKeyPemHex, dataHex);
+    QString command = QString("/C cd ./config & cryptographic_tool.exe decrypt_rsa %1 %2").arg(ThreadFunctions::rsaPrivateKeyPemHex, dataHex);
+    //QString command = QString("/C python config/cryptographic_tool.py decrypt_rsa %1 %2").arg(ThreadFunctions::rsaPrivateKeyPemHex, dataHex);
 
     // decrypt
     QProcess process;
@@ -103,8 +103,8 @@ QList<QJsonValue> ThreadFunctions::decryptAes(QStringList jsonKeys, QString syme
 
     QString fileName = tempFile.fileName().split('/').back();
 
-    //QString command = QString("/C python config/cryptographic_tool.exe decrypt_aes %1 %2 %3").arg(symetricKeyHex, "true", fileName);
-    QString command = QString("/C python config/cryptographic_tool.py decrypt_aes %1 %2 %3").arg(symetricKeyHex, "true", fileName);
+    QString command = QString("/C cd ./config & cryptographic_tool.exe decrypt_aes %1 %2 %3").arg(symetricKeyHex, "true", fileName);
+    //QString command = QString("/C python config/cryptographic_tool.py decrypt_aes %1 %2 %3").arg(symetricKeyHex, "true", fileName);
 
     // decrypt
     QProcess process;
@@ -196,8 +196,8 @@ QString ThreadFunctions::decryptMessage(QString encryptedMessageHex)
 
     QString fileName = tempFile.fileName().split('/').back();
 
-    //QString command = QString("/C python config/cryptographic_tool.exe decrypt_aes %1 %2 %3").arg(ThreadFunctions::roomAesKeyHex, "True", fileName);
-    QString command = QString("/C python config/cryptographic_tool.py decrypt_aes %1 %2 %3").arg(ThreadFunctions::roomAesKeyHex, "True", fileName);
+    QString command = QString("/C cd ./config & cryptographic_tool.exe decrypt_aes %1 %2 %3").arg(ThreadFunctions::roomAesKeyHex, "True", fileName);
+    //QString command = QString("/C python config/cryptographic_tool.py decrypt_aes %1 %2 %3").arg(ThreadFunctions::roomAesKeyHex, "True", fileName);
 
 
     QProcess process;
@@ -236,8 +236,8 @@ void ThreadFunctions::getMessages()
     QString dataRsaHex = docData.toJson().toHex();  // in hex
 
 
-    //QString command = QString("/C python config/cryptographic_tool.exe encrypt_rsa %1 %2").arg(ThreadFunctions::serverPublicKeyPemHex, postDataHex);
-    QString command = QString("/C python config/cryptographic_tool.py encrypt_rsa %1 %2").arg(ThreadFunctions::serverPublicKeyPemHex, dataRsaHex);
+    QString command = QString("/C cd ./config & cryptographic_tool.exe encrypt_rsa %1 %2").arg(ThreadFunctions::serverPublicKeyPemHex, dataRsaHex);
+    //QString command = QString("/C python config/cryptographic_tool.py encrypt_rsa %1 %2").arg(ThreadFunctions::serverPublicKeyPemHex, dataRsaHex);
 
     // encrypt data_rsa json
     QProcess process;

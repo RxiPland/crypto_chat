@@ -135,8 +135,8 @@ QList<QJsonValue> ChatWindow::decryptRsa(QStringList jsonKeys, QByteArray respon
     jsonObject = jsonResponse.object();
     dataHex = jsonObject["data_rsa"].toString();
 
-    //QString command = QString("/C python config/cryptographic_tool.exe decrypt_rsa %1 %2").arg(ChatWindow::rsaPrivateKeyPemHex, dataHex);
-    QString command = QString("/C python config/cryptographic_tool.py decrypt_rsa %1 %2").arg(ChatWindow::rsaPrivateKeyPemHex, dataHex);
+    QString command = QString("/C cd ./config & cryptographic_tool.exe decrypt_rsa %1 %2").arg(ChatWindow::rsaPrivateKeyPemHex, dataHex);
+    //QString command = QString("/C python config/cryptographic_tool.py decrypt_rsa %1 %2").arg(ChatWindow::rsaPrivateKeyPemHex, dataHex);
 
     // decrypt
     QProcess process;
@@ -187,8 +187,8 @@ void ChatWindow::sendMessage(QString message, bool exit)
 
     QString fileName = tempFile.fileName().split('/').back();
 
-    //QString command = QString("/C python config/cryptographic_tool.exe encrypt_aes %1 %2 %3").arg(ChatWindow::roomAesKeyHex, "True", fileName);
-    QString command = QString("/C python config/cryptographic_tool.py encrypt_aes %1 %2 %3").arg(ChatWindow::roomAesKeyHex, "True", fileName);
+    QString command = QString("/C cd ./config & cryptographic_tool.exe encrypt_aes %1 %2 %3").arg(ChatWindow::roomAesKeyHex, "True", fileName);
+    //QString command = QString("/C python config/cryptographic_tool.py encrypt_aes %1 %2 %3").arg(ChatWindow::roomAesKeyHex, "True", fileName);
 
     // encrypt message with room symetric key
     QProcess process;
@@ -217,8 +217,8 @@ void ChatWindow::sendMessage(QString message, bool exit)
     }
 
 
-    //command = QString("/C python config/cryptographic_tool.exe generate_aes");
-    command = QString("/C python config/cryptographic_tool.py generate_aes");
+    command = QString("/C cd ./config & cryptographic_tool.exe generate_aes");
+    //command = QString("/C python config/cryptographic_tool.py generate_aes");
 
     // generate symetric key
     process.start("cmd", QStringList(command));
@@ -246,8 +246,8 @@ void ChatWindow::sendMessage(QString message, bool exit)
     QJsonDocument docData(objData);
     QString dataRsaHex = docData.toJson().toHex();  // in hex
 
-    //command = QString("/C python config/cryptographic_tool.exe encrypt_rsa %1 %2").arg(ChatWindow::serverPublicKeyPemHex, dataRsaHex);
-    command = QString("/C python config/cryptographic_tool.py encrypt_rsa %1 %2").arg(ChatWindow::serverPublicKeyPemHex, dataRsaHex);
+    command = QString("/C cd ./config & cryptographic_tool.exe encrypt_rsa %1 %2").arg(ChatWindow::serverPublicKeyPemHex, dataRsaHex);
+    //command = QString("/C python config/cryptographic_tool.py encrypt_rsa %1 %2").arg(ChatWindow::serverPublicKeyPemHex, dataRsaHex);
 
     // encrypt postData (json) with server symetric key
     process.start("cmd", QStringList(command));
@@ -283,8 +283,8 @@ void ChatWindow::sendMessage(QString message, bool exit)
 
     QString fileName2 = tempFile2.fileName().split('/').back();
 
-    //command = QString("/C python config/cryptographic_tool.exe encrypt_aes %1 %2 %3").arg(tempSymetricKeyHex, "true", fileName2);
-    command = QString("/C python config/cryptographic_tool.py encrypt_aes %1 %2 %3").arg(tempSymetricKeyHex, "true", fileName2);
+    command = QString("/C cd ./config & cryptographic_tool.exe encrypt_aes %1 %2 %3").arg(tempSymetricKeyHex, "true", fileName2);
+    //command = QString("/C python config/cryptographic_tool.py encrypt_aes %1 %2 %3").arg(tempSymetricKeyHex, "true", fileName2);
 
     // encrypt json with temp symetric key
     process.start("cmd", QStringList(command));
@@ -706,8 +706,8 @@ void ChatWindow::on_action_room_1_triggered()
     QJsonDocument docData(objData);
     QString dataRsaHex = docData.toJson().toHex();  // in hex
 
-    //QString command = QString("/C python config/cryptographic_tool.exe encrypt_rsa %1 %2").arg(ChatWindow::serverPublicKeyPemHex, dataRsaHex);
-    QString command = QString("/C python config/cryptographic_tool.py encrypt_rsa %1 %2").arg(ChatWindow::serverPublicKeyPemHex, dataRsaHex);
+    QString command = QString("/C cd ./config & cryptographic_tool.exe encrypt_rsa %1 %2").arg(ChatWindow::serverPublicKeyPemHex, dataRsaHex);
+    //QString command = QString("/C python config/cryptographic_tool.py encrypt_rsa %1 %2").arg(ChatWindow::serverPublicKeyPemHex, dataRsaHex);
 
     // encrypt data_rsa json
     QProcess process;
