@@ -30,9 +30,9 @@ NameChangeDialog::~NameChangeDialog()
 void NameChangeDialog::set_name(QString name)
 {
 
-    NameChangeDialog::original_name = name;
+    NameChangeDialog::originalName = name;
 
-    ui->lineEdit->setPlaceholderText(original_name);
+    ui->lineEdit->setPlaceholderText(originalName);
 }
 
 void NameChangeDialog::on_pushButton_clicked()
@@ -41,17 +41,17 @@ void NameChangeDialog::on_pushButton_clicked()
 
     this->hide();
 
-    NameChangeDialog::new_name = ui->lineEdit->text().trimmed();
-    NameChangeDialog::prefix = ui->lineEdit_2->text().trimmed();
+    NameChangeDialog::newName = ui->lineEdit->text().trimmed();
+    NameChangeDialog::newPrefix = ui->lineEdit_2->text().trimmed();
 
-    if (!new_name.isEmpty() || NameChangeDialog::new_name != NameChangeDialog::original_name){
+    if (!newName.isEmpty() && NameChangeDialog::newName != NameChangeDialog::originalName){
 
-        NameChangeDialog::name_changed = true;
+        NameChangeDialog::nameChanged = true;
     }
 
-    if (ui->checkBox->isChecked()){
+    if (ui->checkBox->isChecked() && !newPrefix.isEmpty() && NameChangeDialog::newPrefix != NameChangeDialog::originalPrefix){
 
-        NameChangeDialog::prefix_changed = true;
+        NameChangeDialog::prefixChanged = true;
     }
 
 

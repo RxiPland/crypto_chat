@@ -15,12 +15,14 @@ public:
     explicit NameChangeDialog(QWidget *parent = nullptr);
     ~NameChangeDialog();
 
-    QString original_name;
-    QString new_name = "";
-    QString prefix;
+    QString originalName;
+    QString originalPrefix;
 
-    bool name_changed = false;
-    bool prefix_changed = false;
+    QString newName;
+    QString newPrefix;
+
+    bool nameChanged = false;
+    bool prefixChanged = false;
 
     void set_name(QString name);
 

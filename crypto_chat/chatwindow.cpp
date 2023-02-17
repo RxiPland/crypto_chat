@@ -497,19 +497,35 @@ void ChatWindow::on_pushButton_3_clicked()
     nchd.exec();
 
 
-    if (nchd.name_changed){
-        ChatWindow::sendMessage(QString("(Server) Uživatel %1 se přejmenoval na %2").arg(ChatWindow::user_name, nchd.new_name).toHtmlEscaped());
+    if (nchd.nameChanged && nchd.prefixChanged){
 
-        ChatWindow::user_name = nchd.new_name;
+        QString message = QString("(Server) Uživatel <%1> se přejmenoval na <%2>").arg(ChatWindow::user_name, nchd.newName).toHtmlEscaped();
+        message += "<br>";
+        message += QString("(Server) Uživatel <%1> si změnil prefix na %2").arg(ChatWindow::user_name, nchd.newPrefix).toHtmlEscaped();
+
+        ChatWindow::sendMessage(message);
+
+        ChatWindow::user_name = nchd.newName;
+        ChatWindow::prefix = nchd.newPrefix;
+
         this->setWindowTitle(tr("crypto-chat  |  %1  |  %2").arg(ChatWindow::server_url, ChatWindow::user_name));
+
+    } else{
+
+        if (nchd.nameChanged){
+
+            ChatWindow::sendMessage(QString("(Server) Uživatel <%1> se přejmenoval na <%2>").arg(ChatWindow::user_name, nchd.newName).toHtmlEscaped());
+
+            ChatWindow::user_name = nchd.newName;
+            this->setWindowTitle(tr("crypto-chat  |  %1  |  %2").arg(ChatWindow::server_url, ChatWindow::user_name));
+        }
+
+        if (nchd.prefixChanged){
+            ChatWindow::sendMessage(QString("(Server) Uživatel <%1> si změnil prefix na %2").arg(ChatWindow::user_name, nchd.newPrefix).toHtmlEscaped());
+
+            ChatWindow::prefix = nchd.newPrefix;
+        }
     }
-
-    if (nchd.prefix_changed){
-        ChatWindow::sendMessage(QString("(Server) Uživatel <%1> si změnil prefix na %2").arg(ChatWindow::user_name, nchd.prefix).toHtmlEscaped());
-
-        ChatWindow::prefix = nchd.prefix;
-    }
-
 
     ui->lineEdit->setFocus();
 }
