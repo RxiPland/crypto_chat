@@ -10,7 +10,7 @@ import tempfile
 
 
 app_dir = os.path.dirname(__file__).replace("\\", "/") + "/"
-operations = "[generate_id, generate_rsa, encrypt_rsa, decrypt_rsa, generate_aes, encrypt_aes, decrypt_aes]"
+operations = "[generate_rsa, encrypt_rsa, decrypt_rsa, generate_aes, encrypt_aes, decrypt_aes]"
 
 def main():
 
