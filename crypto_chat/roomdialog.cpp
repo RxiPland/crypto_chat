@@ -14,6 +14,7 @@ Window for creating new room OR joining existing room
 #include <QNetworkReply>
 #include <QCryptographicHash>
 #include <QProcess>
+#include <QUuid>
 
 
 RoomDialog::RoomDialog(QWidget *parent, bool createRoom, QString server_url) :
@@ -104,32 +105,14 @@ void RoomDialog::disable_widgets(bool disable){
 
 QString RoomDialog::generateId()
 {
-    // generate random ID (32)
+    // generate random 32chars ID
 
-    ui->pushButton_3->setDisabled(true);
+    QByteArray generatedId = QUuid::createUuid().toByteArray(QUuid::WithoutBraces);
 
-    QString command = QString("/C cd ./config & cryptographic_tool.exe generate_id");
-    //QString command = QString("/C python config/cryptographic_tool.py generate_id");
+    QCryptographicHash hash(QCryptographicHash::Md5);
+    hash.addData(generatedId);
 
-    // decrypt RSA encrypted data
-    QProcess process;
-    process.start("cmd", QStringList(command));
-
-    while(process.state() == QProcess::Running){
-        qApp->processEvents();
-    }
-
-    ui->pushButton_3->setDisabled(false);
-
-
-    if (process.readAllStandardError().isEmpty()){
-
-        return process.readAllStandardOutput().trimmed();
-    }
-
-    QMessageBox::critical(this, "Chyba", "Nepodařilo se vytvořit ID! Zkuste to znovu.");
-
-    return "";
+    return hash.result().toHex();
 }
 
 
