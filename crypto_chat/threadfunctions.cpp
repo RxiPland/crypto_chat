@@ -160,7 +160,7 @@ void ThreadFunctions::appendMessage(QString messageHtml)
         if (messagesNumber == 0){
             // add first message without new line at front
 
-            ui->textEdit->insertHtml(QString("Touto místností prošlo od založení celkem %1 zpráv").arg(recievedMessagesCount).toHtmlEscaped() + "<br></br>");
+            ui->textEdit->insertHtml(QString("Touto místností prošlo od založení celkem %1 zpráv").arg(recievedMessagesCount-1).toHtmlEscaped() + "<br></br>");
             messagesNumber++;
         }
 
