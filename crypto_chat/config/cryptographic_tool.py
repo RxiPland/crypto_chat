@@ -3,8 +3,6 @@
 import rsa
 from cryptography.fernet import Fernet
 
-import uuid
-
 import sys
 import os
 import os.path
@@ -29,14 +27,7 @@ def main():
     operation = argv[0].lower()
 
 
-    if operation == "generate_id":
-        # generate random ID in hex (32)
-        # then print it
-
-        print(uuid.uuid4().hex, end="")
-
-    
-    elif operation == "generate_rsa":
+    if operation == "generate_rsa":
         # generate RSA key pairs (public & private)
         # print them separated with ';'
 
