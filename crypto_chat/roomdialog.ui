@@ -90,7 +90,7 @@
           <bool>false</bool>
          </property>
          <property name="placeholderText">
-          <string>Např. 9d4ac6cf8ac74c5082148f3845e4a45b</string>
+          <string>Např.</string>
          </property>
         </widget>
        </item>

@@ -61,6 +61,7 @@ RoomDialog::RoomDialog(QWidget *parent, bool createRoom, QString server_url) :
         ui->lineEdit_3->setDisabled(false);
         ui->lineEdit_3->setReadOnly(false);
         ui->lineEdit_3->clear();
+        ui->lineEdit_3->setPlaceholderText("Např. " + RoomDialog::generateId());
 
         ui->pushButton->setText(" Připojit se do místnosti ");
         ui->pushButton_3->setDisabled(true);
@@ -587,6 +588,8 @@ void RoomDialog::on_lineEdit_4_textEdited(const QString &arg1)
 
 void RoomDialog::on_pushButton_clicked()
 {
+    // clicked create/join final button
+
     if(RoomDialog::createRoom){
         RoomDialog::createRoomFunc();
 
@@ -623,6 +626,7 @@ void RoomDialog::on_pushButton_2_clicked()
         ui->lineEdit_3->setDisabled(false);
         ui->lineEdit_3->setReadOnly(false);
         ui->lineEdit_3->clear();
+        ui->lineEdit_3->setPlaceholderText("Např. " + RoomDialog::generateId());
 
         ui->lineEdit_3->setFocus();
 
