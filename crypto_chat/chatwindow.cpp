@@ -21,6 +21,7 @@ Window for sending messages
 #include <QJsonObject>
 #include <QJsonValue>
 #include <QTemporaryFile>
+#include <QRegExp>
 
 
 ThreadFunctions refreshChatLoop;
@@ -501,7 +502,7 @@ void ChatWindow::on_pushButton_3_clicked()
 
         QString message = QString("(Server) Uživatel <%1> se přejmenoval na <%2>").arg(ChatWindow::user_name, nchd.newName).toHtmlEscaped();
         message += "<br>";
-        message += QString("(Server) Uživatel <%1> si změnil prefix na %2").arg(ChatWindow::user_name, nchd.newPrefix).toHtmlEscaped();
+        message += QString("(Server) Uživatel <%1> si změnil prefix na %2").arg(nchd.newName, nchd.newPrefix).toHtmlEscaped();
 
         ChatWindow::sendMessage(message);
 
@@ -697,6 +698,13 @@ void ChatWindow::on_pushButton_clicked()
             return;
         }
 
+        //QRegExp rx("(https?://)?(([0-9a-z_!~*'().&=+$%-]+: )?[0-9a-z_!~*'().&=+$%-]+@)?(([0-9]{1,3}\\.){3}[0-9]{1,3}|([0-9a-z_!~*'()-]+\\.)*([0-9a-z][0-9a-z-]{0,61})?[0-9a-z]\\.[a-z]{2,6})(:[0-9]{1,5})?((/?)|(/[0-9a-z_!~*'().;?:@&=+$,%#-]+)+/?)$");
+
+        //if (rx.exactMatch(message)){
+
+        //  qInfo() << rx.capturedTexts();
+        //}
+
         QString messageHtml = ChatWindow::makeHtmlMessage(message, ChatWindow::user_color, QTime::currentTime().toString(), ChatWindow::prefix, ChatWindow::user_name);
         ChatWindow::sendMessage(messageHtml);
 
@@ -709,6 +717,7 @@ void ChatWindow::on_lineEdit_returnPressed()
 {
     ChatWindow::on_pushButton_clicked();
 }
+
 void ChatWindow::on_action_room_1_triggered()
 {
     // delete room button
@@ -744,6 +753,7 @@ void ChatWindow::on_action_room_1_triggered()
     }
 
     objData = QJsonObject();
+    objData["rsa_pem"] = ChatWindow::rsaPublicKeyPemHex;
     objData["data_rsa"] = encryptedDataRsaHex;
     docData = QJsonDocument(objData);
     QByteArray deleteRoomData = docData.toJson();
@@ -771,6 +781,7 @@ void ChatWindow::on_action_room_1_triggered()
     }
 
     QByteArray response = reply_post->readAll();
+
 
     if(reply_post->error() == QNetworkReply::ConnectionRefusedError){
 
