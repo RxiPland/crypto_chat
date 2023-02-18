@@ -162,9 +162,13 @@ void LoginDialog::on_pushButton_clicked()
     QRegExp rx("(https?://)+(([0-9a-z_!~*'().&=+$%-]+: )?[0-9a-z_!~*'().&=+$%-]+@)?(([0-9]{1,3}\\.){3}[0-9]{1,3}|([0-9a-z_!~*'()-]+\\.)*([0-9a-z][0-9a-z-]{0,61})?[0-9a-z]\\.[a-z]{2,6})(:[0-9]{1,5})?((/?)|(/[0-9a-z_!~*'().;?:@&=+$,%#-]+)+/?)$");
 
     if(url_address == ""){
+
+        msgBox.close();
         QMessageBox::critical(this, "Chyba", "Pole pro URL adresu nemůže být prázdné!");
 
     } else if (!rx.exactMatch(url_address)){
+
+        msgBox.close();
         QMessageBox::critical(this, "Chyba", "Zadejte kompletní URL adresu!\n\nPř. https://www.google.com");
         LoginDialog::disable_widgets(false);
 
@@ -234,9 +238,13 @@ void LoginDialog::on_pushButton_clicked()
         QString response = QString(reply_get->readAll());
 
         if(reply_get->error() == QNetworkReply::ConnectionRefusedError){
+
+            msgBox.close();
             QMessageBox::critical(this, "Chyba", "Nelze se připojit k internetu nebo server není dostupný!");
 
         } else if (reply_get->error() == QNetworkReply::HostNotFoundError){
+
+            msgBox.close();
             QMessageBox::critical(this, "Chyba", "Doména neexsistuje!");
 
             LoginDialog::disable_widgets(false);
@@ -246,12 +254,13 @@ void LoginDialog::on_pushButton_clicked()
 
         } else if (reply_get->error() == QNetworkReply::AuthenticationRequiredError){
             // Authentication is required or credentials may be wrong
+            msgBox.close();
 
             if(ui->checkBox->isChecked()){
-                QMessageBox::critical(this, "Odpověd serveru (chyba)", "Přihlašovací údaje nejsou správné!");
+                QMessageBox::warning(this, "Odpověd serveru (chyba)", "Přihlašovací údaje nejsou správné!");
 
             } else{
-                QMessageBox::critical(this, "Odpověd serveru (chyba)", "Server vyžaduje ověření pomocí jména a hesla!");
+                QMessageBox::warning(this, "Odpověd serveru (chyba)", "Server vyžaduje ověření pomocí jména a hesla!");
             }
 
             ui->checkBox->setChecked(true);
@@ -264,18 +273,25 @@ void LoginDialog::on_pushButton_clicked()
         } else if(reply_get->error() != QNetworkReply::NoError){
             // Any error
 
+            msgBox.close();
             QMessageBox::critical(this, "Odpověd serveru (chyba)", tr("Nastala neznámá chyba!\n\n%1").arg(reply_get->errorString()));
+            return;
 
         } else{
             // No error
 
             if(!response.contains("crypto-chat")){
+
+                msgBox.close();
                 QMessageBox::critical(this, "Odpověd serveru (chyba)", QString("Nastala nezmámá chyba!\n\nOčekáváná odpověď: crypto-chat %1\nOdpověď stránky: %2").arg(app_version, response));
+                return;
 
             } else if (!response.contains(app_version)){
                 // Version is wrong
 
-                QMessageBox::critical(this, "Odpověd serveru (chyba)", QString("Verze serveru se neshoduje s verzí klienta! Aktualizujte na novou verzi.\n\nOčekáváná odpověď: crypto-chat %1\nOdpověď stránky: %2").arg(app_version, response));
+                msgBox.close();
+                QMessageBox::warning(this, "Odpověd serveru (chyba)", QString("Verze serveru se neshoduje s verzí klienta! Aktualizujte na novou verzi.\n\nOčekáváná odpověď: crypto-chat %1\nOdpověď stránky: %2").arg(app_version, response));
+                return;
 
             } else{
                 // Validation succesful
