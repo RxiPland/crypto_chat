@@ -454,7 +454,7 @@ void LoginDialog::on_toolButton_3_released()
 
 void LoginDialog::on_toolButton_clicked()
 {
-    QMessageBox::information(this, "Nápověda URL", "Zadejte kompletní URL adresu, na které běží <a href=\"https://github.com/RxiPland/crypto_chat\">crypto-chat server</a> (včetně protokolu!)<br><br>Př. https://google.com");
+    QMessageBox::information(this, "Nápověda URL", "Zadejte kompletní URL adresu, na které běží <a href=\"https://github.com/RxiPland/crypto_chat\">crypto-chat</a> server (včetně protokolu!)<br><br>Příklady:<br>https://google.com<br>http://127.0.0.1:5000");
 }
 
 void LoginDialog::on_toolButton_2_clicked()
@@ -464,8 +464,7 @@ void LoginDialog::on_toolButton_2_clicked()
 
 void LoginDialog::on_toolButton_4_clicked()
 {
-    //QMessageBox::information(this, "Nápověda RSA", "Výměna <a href=\"https://cs.wikipedia.org/wiki/Symetrick%C3%A1_%C5%A1ifra\">symetrického klíče</a> pomocí <a href=\"https://cs.wikipedia.org/wiki/Asymetrick%C3%A1_kryptografie\">asymetrické kryptografie</a>.<br><br>Asymetrická kryptografie (RSA) funguje na principu dvou klíčů (veřejný a privátní), které spolu souvisí. Větší velikost klíče snižuje šanci na prolomení při útocích <a href=\"https://cs.wikipedia.org/wiki/%C3%9Atok_hrubou_silou\">hrubou silou</a>, ale zvyšuje tím <a href=\"https://stuvel.eu/python-rsa-doc/usage.html#time-to-generate-a-key\">čas potřebný k vytvoření</a>.<br><br>V tomto případě se vyšle vygenerovaný veřejný klíč (RSA) na server, kde se využije k zašifrování symetrického klíče (AES), který vytvořil server. Zašifrovaný symetrický klíč se pošle zpět uživateli. Uživatel si symetrický klíč (AES) dešifruje svým privátním klíčem (RSA) a tím obě strany (server+uživatel) mají stejný symetrický klíč.");
-    QMessageBox::information(this, "Nápověda RSA", "Dodělat");
+    QMessageBox::information(this, "Nápověda RSA", "<a href=\"https://cs.wikipedia.org/wiki/Asymetrick%C3%A1_kryptografie\">Asymetrická kryptografie</a> funguje na principu veřejného a privátního klíče. Pro výměnu dat šifrovaně mezi serverem je vyžadován veřejný klíč obou stran. Zašifrovaná data si pak může každá strana dešifrovat pouze svým privátním klíčem. Větší velikost RSA klíčů snižuje šanci na prolomení při útocích <a href=\"https://cs.wikipedia.org/wiki/%C3%9Atok_hrubou_silou\">hrubou silou</a>, ale zvyšuje tím <a href=\"https://stuvel.eu/python-rsa-doc/usage.html#time-to-generate-a-key\">čas potřebný k vytvoření</a>.");
 }
 
 
