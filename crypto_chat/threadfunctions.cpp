@@ -152,32 +152,32 @@ void ThreadFunctions::appendMessage(QString messageHtml)
         int messagesNumber = ui->action_zpravy_1->text().split(" ").back().toInt();
 
         // move scrollbar to end
-        QTextCursor c = ui->textEdit->textCursor();
+        QTextCursor c = ui->textBrowser->textCursor();
         c.movePosition(QTextCursor::End);
-        ui->textEdit->setTextCursor(c);
+        ui->textBrowser->setTextCursor(c);
 
 
         if (messagesNumber == 0){
             // add first message without new line at front
 
-            ui->textEdit->insertHtml(QString("Touto místností prošlo od založení celkem %1 zpráv").arg(recievedMessagesCount-1).toHtmlEscaped() + "<br></br>");
+            ui->textBrowser->insertHtml(QString("Touto místností prošlo od založení celkem %1 zpráv").arg(recievedMessagesCount-1).toHtmlEscaped() + "<br></br>");
             messagesNumber++;
         }
 
-        c = ui->textEdit->textCursor();
+        c = ui->textBrowser->textCursor();
         c.movePosition(QTextCursor::End);
-        ui->textEdit->setTextCursor(c);
+        ui->textBrowser->setTextCursor(c);
 
-        ui->textEdit->insertHtml("<br></br>" + messageHtml);
+        ui->textBrowser->insertHtml("<br></br>" + messageHtml);
 
         // increment and set back
         ui->action_zpravy_1->setText(QString("Počet zobrazených: %1").arg(messagesNumber + 1));
 
 
         // move scrollbar to end
-        c = ui->textEdit->textCursor();
+        c = ui->textBrowser->textCursor();
         c.movePosition(QTextCursor::End);
-        ui->textEdit->setTextCursor(c);
+        ui->textBrowser->setTextCursor(c);
     });
 
     ThreadFunctions::recievedMessagesCount += 1;

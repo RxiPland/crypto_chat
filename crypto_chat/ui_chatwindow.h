@@ -21,7 +21,7 @@
 #include <QtWidgets/QPushButton>
 #include <QtWidgets/QSpacerItem>
 #include <QtWidgets/QStatusBar>
-#include <QtWidgets/QTextEdit>
+#include <QtWidgets/QTextBrowser>
 #include <QtWidgets/QVBoxLayout>
 #include <QtWidgets/QWidget>
 
@@ -48,7 +48,7 @@ public:
     QHBoxLayout *horizontalLayout;
     QSpacerItem *horizontalSpacer;
     QVBoxLayout *verticalLayout;
-    QTextEdit *textEdit;
+    QTextBrowser *textBrowser;
     QSpacerItem *verticalSpacer_2;
     QHBoxLayout *horizontalLayout_2;
     QLineEdit *lineEdit;
@@ -150,19 +150,19 @@ public:
 
         verticalLayout = new QVBoxLayout();
         verticalLayout->setObjectName("verticalLayout");
-        textEdit = new QTextEdit(centralwidget);
-        textEdit->setObjectName("textEdit");
+        textBrowser = new QTextBrowser(centralwidget);
+        textBrowser->setObjectName("textBrowser");
         QFont font;
         font.setPointSize(9);
-        textEdit->setFont(font);
-        textEdit->setFocusPolicy(Qt::ClickFocus);
-        textEdit->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
-        textEdit->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
-        textEdit->setUndoRedoEnabled(false);
-        textEdit->setReadOnly(true);
-        textEdit->setTextInteractionFlags(Qt::LinksAccessibleByKeyboard|Qt::LinksAccessibleByMouse|Qt::TextBrowserInteraction|Qt::TextSelectableByKeyboard|Qt::TextSelectableByMouse);
+        textBrowser->setFont(font);
+        textBrowser->setFocusPolicy(Qt::ClickFocus);
+        textBrowser->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
+        textBrowser->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+        textBrowser->setUndoRedoEnabled(false);
+        textBrowser->setReadOnly(true);
+        textBrowser->setTextInteractionFlags(Qt::LinksAccessibleByKeyboard|Qt::LinksAccessibleByMouse|Qt::TextBrowserInteraction|Qt::TextSelectableByKeyboard|Qt::TextSelectableByMouse);
 
-        verticalLayout->addWidget(textEdit);
+        verticalLayout->addWidget(textBrowser);
 
         verticalSpacer_2 = new QSpacerItem(0, 7, QSizePolicy::Minimum, QSizePolicy::Fixed);
 
@@ -343,7 +343,7 @@ public:
         action_zpravy_3_3->setText(QCoreApplication::translate("ChatWindow", "Reset", nullptr));
         action_advanced_1->setText(QCoreApplication::translate("ChatWindow", "Zdrojov\303\275 k\303\263d", nullptr));
         action_advanced_2->setText(QCoreApplication::translate("ChatWindow", "Nastaven\303\255", nullptr));
-        textEdit->setHtml(QCoreApplication::translate("ChatWindow", "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" \"http://www.w3.org/TR/REC-html40/strict.dtd\">\n"
+        textBrowser->setHtml(QCoreApplication::translate("ChatWindow", "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" \"http://www.w3.org/TR/REC-html40/strict.dtd\">\n"
 "<html><head><meta name=\"qrichtext\" content=\"1\" /><meta charset=\"utf-8\" /><style type=\"text/css\">\n"
 "p, li { white-space: pre-wrap; }\n"
 "hr { height: 1px; border-width: 0; }\n"
@@ -351,7 +351,7 @@ public:
 "li.checked::marker { content: \"\\2612\"; }\n"
 "</style></head><body style=\" font-family:'Segoe UI'; font-size:9pt; font-weight:400; font-style:normal;\">\n"
 "<p style=\"-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><br /></p></body></html>", nullptr));
-        textEdit->setPlaceholderText(QCoreApplication::translate("ChatWindow", "Zde budou zpr\303\241vy z konverzace", nullptr));
+        textBrowser->setPlaceholderText(QCoreApplication::translate("ChatWindow", "Zde budou zpr\303\241vy z konverzace", nullptr));
         lineEdit->setPlaceholderText(QCoreApplication::translate("ChatWindow", "Napsat zpr\303\241vu", nullptr));
 #if QT_CONFIG(tooltip)
         pushButton->setToolTip(QString());

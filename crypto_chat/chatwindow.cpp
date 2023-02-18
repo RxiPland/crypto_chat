@@ -41,6 +41,7 @@ ChatWindow::ChatWindow(QWidget *parent, QString server_url, QString user_name)
 
     ui->label->setStyleSheet(tr("QLabel { background-color : %1 }").arg(user_color));
     ui->lineEdit->setFocus();
+    ui->textBrowser->setOpenExternalLinks(true);
 
     QApplication::setQuitOnLastWindowClosed(true);
 
@@ -599,8 +600,8 @@ void ChatWindow::on_action_zpravy_3_triggered()
 {
     // clear chat
 
-    ui->textEdit->clear();
-    ui->textEdit->insertHtml("<span style=\"color:grey;\">Chat byl vyčištěn ...</span><br></br>");
+    ui->textBrowser->clear();
+    ui->textBrowser->insertHtml("<span style=\"color:grey;\">Chat byl vyčištěn ...</span><br></br>");
     ui->action_zpravy_1->setText("Počet zobrazených: 1");
 
     ui->lineEdit->setFocus();
@@ -620,18 +621,18 @@ void ChatWindow::on_action_zpravy_3_1_triggered()
 {
     // change font - increase
 
-    QFont fontInfo = ui->textEdit->font();
+    QFont fontInfo = ui->textBrowser->font();
     int pointSize = fontInfo.pointSize();
 
     if(pointSize < 20){
         fontInfo.setPointSize(pointSize + 1);
-        ui->textEdit->setFont(fontInfo);
+        ui->textBrowser->setFont(fontInfo);
     }
 
     // move scrollbar to end
-    QTextCursor c = ui->textEdit->textCursor();
+    QTextCursor c = ui->textBrowser->textCursor();
     c.movePosition(QTextCursor::End);
-    ui->textEdit->setTextCursor(c);
+    ui->textBrowser->setTextCursor(c);
 }
 
 
@@ -639,18 +640,18 @@ void ChatWindow::on_action_zpravy_3_2_triggered()
 {
     // change font - decrease
 
-    QFont fontInfo = ui->textEdit->font();
+    QFont fontInfo = ui->textBrowser->font();
     int pointSize = fontInfo.pointSize();
 
     if(pointSize > 7){
         fontInfo.setPointSize(pointSize - 1);
-        ui->textEdit->setFont(fontInfo);
+        ui->textBrowser->setFont(fontInfo);
     }
 
     // move scrollbar to end
-    QTextCursor c = ui->textEdit->textCursor();
+    QTextCursor c = ui->textBrowser->textCursor();
     c.movePosition(QTextCursor::End);
-    ui->textEdit->setTextCursor(c);
+    ui->textBrowser->setTextCursor(c);
 }
 
 
@@ -658,14 +659,14 @@ void ChatWindow::on_action_zpravy_3_3_triggered()
 {
     // reset font - default size 9
 
-    QFont fontInfo = ui->textEdit->font();
+    QFont fontInfo = ui->textBrowser->font();
     fontInfo.setPointSize(9);
-    ui->textEdit->setFont(fontInfo);
+    ui->textBrowser->setFont(fontInfo);
 
     // move scrollbar to end
-    QTextCursor c = ui->textEdit->textCursor();
+    QTextCursor c = ui->textBrowser->textCursor();
     c.movePosition(QTextCursor::End);
-    ui->textEdit->setTextCursor(c);
+    ui->textBrowser->setTextCursor(c);
 }
 
 
@@ -837,7 +838,7 @@ void ChatWindow::on_action_room_1_triggered()
 
     } else{
         ChatWindow::roomNotExist();
-        ui->textEdit->insertHtml(QString("<br></br><span style=\"background-color: #ff0000;\"><br></br>%1</span>").arg(QString("(%1) Místnost byla smazána! Nebude možné již odesílat další zprávy.").arg(QTime::currentTime().toString()).toHtmlEscaped()));
+        ui->textBrowser->insertHtml(QString("<br></br><span style=\"background-color: #ff0000;\"><br></br>%1</span>").arg(QString("(%1) Místnost byla smazána! Nebude možné již odesílat další zprávy.").arg(QTime::currentTime().toString()).toHtmlEscaped()));
         QMessageBox::information(this, "Smazání místnosti", "Místnost byla úspěšně smazána, ostatním uživatelům se zobrazí tato informace, jakmile se pokusí získat nové zprávy.");
     }
 }
