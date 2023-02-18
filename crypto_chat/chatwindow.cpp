@@ -462,8 +462,35 @@ QString ChatWindow::makeHtmlMessage(QString message, QString color, QString time
     QString messageBody;  // user's message
     QString messageHtml;  // message in html format with color
 
+    QRegularExpression rx("(https?://)+(([0-9a-zA-Z_!~*'().&=+$%-]+: )?[0-9a-zA-Z_!~*'().&=+$%-]+@)?(([0-9]{1,3}\\.){3}[0-9]{1,3}|([0-9a-zA-Z_!~*'()-]+\\.)*([0-9a-zA-Z][0-9a-zA-Z-]{0,61})?[0-9a-zA-Z]\\.[a-zA-Z]{2,6})(:[0-9]{1,5})?((/?)|(/[0-9a-zA-Z_!~*'().;?:@&=+$,%#-]+)+/?)($| )");
+    QRegularExpressionMatchIterator iterator = rx.globalMatch(message);
+
+    // search for valid url links
+    QStringList foundUrls;
+    while (iterator.hasNext()) {
+        QRegularExpressionMatch match = iterator.next();
+        QString url = match.captured(0).trimmed();
+
+        // do not allow duplicates
+        if (!foundUrls.contains(url)){
+            foundUrls << url;
+        }
+    }
+
+    // replace found urls with %i
+    int i;
+    for(i=0; i<foundUrls.length(); i++){
+
+        message.replace(foundUrls[i], '%' + QString::number(i+1));
+    }
+
     messageBody = QString("(%1) %2 <%3>: %4").arg(time, prefix, nickname, message.trimmed());
     messageHtml = QString("<span style=\"color:%1;\">%2</span>").arg(color, messageBody.toHtmlEscaped());
+
+    // put links into HTML syntax
+    for(i=0; i<foundUrls.length(); i++){
+        messageHtml = QString(messageHtml).arg("<a href=\"%1\" target=\"_blank\">%1</a>").arg(foundUrls[i]);
+    }
 
     return messageHtml;
 }
@@ -698,14 +725,8 @@ void ChatWindow::on_pushButton_clicked()
             return;
         }
 
-        //QRegExp rx("(https?://)?(([0-9a-z_!~*'().&=+$%-]+: )?[0-9a-z_!~*'().&=+$%-]+@)?(([0-9]{1,3}\\.){3}[0-9]{1,3}|([0-9a-z_!~*'()-]+\\.)*([0-9a-z][0-9a-z-]{0,61})?[0-9a-z]\\.[a-z]{2,6})(:[0-9]{1,5})?((/?)|(/[0-9a-z_!~*'().;?:@&=+$,%#-]+)+/?)$");
-
-        //if (rx.exactMatch(message)){
-
-        //  qInfo() << rx.capturedTexts();
-        //}
-
         QString messageHtml = ChatWindow::makeHtmlMessage(message, ChatWindow::user_color, QTime::currentTime().toString(), ChatWindow::prefix, ChatWindow::user_name);
+
         ChatWindow::sendMessage(messageHtml);
 
         ui->lineEdit->setFocus();
