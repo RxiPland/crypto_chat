@@ -33,7 +33,7 @@ VERSION = "crypto-chat v1.1.0"
 username length: 25
 prefix length: 25
 password length: 100
-message length: 100_000
+length of single message (char): 100_000
 number of stored messages (server): 100
 """
 
@@ -72,7 +72,7 @@ def get_public():
 
 @app.route('/create-room', methods=["POST"])
 def create_room():
-    # create new chat room
+    # creates new room for chatting
 
     """
     params: {'rsa_pem': '<user RSA public key> in PEM hex', 'data_rsa': <RSA-encrypted-data> in hex}
