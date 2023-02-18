@@ -42,6 +42,7 @@ public:
     QAction *action_zpravy_3_3;
     QAction *action_advanced_1;
     QAction *action_advanced_2;
+    QAction *action_room_4;
     QWidget *centralwidget;
     QVBoxLayout *verticalLayout_3;
     QSpacerItem *verticalSpacer_4;
@@ -134,6 +135,8 @@ public:
         QIcon icon9;
         icon9.addFile(QString::fromUtf8(":/images/settings.ico"), QSize(), QIcon::Normal, QIcon::Off);
         action_advanced_2->setIcon(icon9);
+        action_room_4 = new QAction(ChatWindow);
+        action_room_4->setObjectName("action_room_4");
         centralwidget = new QWidget(ChatWindow);
         centralwidget->setObjectName("centralwidget");
         verticalLayout_3 = new QVBoxLayout(centralwidget);
@@ -292,6 +295,7 @@ public:
         menubar->addAction(menuZpravy->menuAction());
         menubar->addAction(menuAdvanced->menuAction());
         menuMistnost->addAction(action_room_1);
+        menuMistnost->addAction(action_room_4);
         menuMistnost->addSeparator();
         menuMistnost->addAction(action_room_2);
         menuMistnost->addAction(action_room_3);
@@ -343,6 +347,7 @@ public:
         action_zpravy_3_3->setText(QCoreApplication::translate("ChatWindow", "Reset", nullptr));
         action_advanced_1->setText(QCoreApplication::translate("ChatWindow", "Zdrojov\303\275 k\303\263d", nullptr));
         action_advanced_2->setText(QCoreApplication::translate("ChatWindow", "Nastaven\303\255", nullptr));
+        action_room_4->setText(QCoreApplication::translate("ChatWindow", "Vygenerovat nov\303\275 kl\303\255\304\215", nullptr));
         textBrowser->setHtml(QCoreApplication::translate("ChatWindow", "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" \"http://www.w3.org/TR/REC-html40/strict.dtd\">\n"
 "<html><head><meta name=\"qrichtext\" content=\"1\" /><meta charset=\"utf-8\" /><style type=\"text/css\">\n"
 "p, li { white-space: pre-wrap; }\n"

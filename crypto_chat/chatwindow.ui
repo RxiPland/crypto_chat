@@ -336,6 +336,7 @@ li.checked::marker { content: &quot;\2612&quot;; }
      <string>Místnost</string>
     </property>
     <addaction name="action_room_1"/>
+    <addaction name="action_room_4"/>
     <addaction name="separator"/>
     <addaction name="action_room_2"/>
     <addaction name="action_room_3"/>
@@ -496,6 +497,11 @@ li.checked::marker { content: &quot;\2612&quot;; }
    </property>
    <property name="text">
     <string>Nastavení</string>
+   </property>
+  </action>
+  <action name="action_room_4">
+   <property name="text">
+    <string>Vygenerovat nový klíč</string>
    </property>
   </action>
  </widget>
