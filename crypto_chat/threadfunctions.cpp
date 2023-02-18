@@ -387,9 +387,7 @@ void ThreadFunctions::run()
     } else if (operation == 3){
         // update the count for the next message update
         // every 100ms
-        // get info about new messages
-
-        QObject signalSource;
+        // get info if there are new messages
 
         do{
             ui->menuZpravy_2->menuAction()->setText("Probíhá aktualizace ...");

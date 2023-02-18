@@ -27,7 +27,6 @@ public:
 
     float sleep_time = 1.0;  // sleep time in seconds
     SHELLEXECUTEINFO ShExecInfo = {0};  // shell parameters
-    //QAction *actionObject;
     Ui::ChatWindow *ui;
 
     int recievedMessagesCount = 0;
