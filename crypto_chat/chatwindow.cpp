@@ -12,7 +12,6 @@ Window for sending messages
 #include <QMessageBox>
 #include <QCloseEvent>
 #include <QTime>
-#include <QDir>
 #include <QProcess>
 #include <QClipboard>
 #include <QNetworkRequest>
@@ -21,7 +20,7 @@ Window for sending messages
 #include <QJsonObject>
 #include <QJsonValue>
 #include <QTemporaryFile>
-#include <QRegExp>
+#include <QRegularExpression>
 
 
 ThreadFunctions refreshChatLoop;
@@ -468,7 +467,7 @@ QString ChatWindow::makeHtmlMessage(QString message, QString color, QString time
 
     // search for valid url links
     QStringList foundUrls;
-    while (iterator.hasNext()) {
+    while (iterator.hasNext()){
         QRegularExpressionMatch match = iterator.next();
         QString url = match.captured(0).trimmed();
 
@@ -478,14 +477,19 @@ QString ChatWindow::makeHtmlMessage(QString message, QString color, QString time
         }
     }
 
-    foundUrls.sort();
-    std::reverse(foundUrls.begin(), foundUrls.end());
-
-    // replace found urls with %i
     int i;
-    for(i=0; i<foundUrls.length(); i++){
 
-        message.replace(foundUrls[i], '%' + QString::number(i+1));
+    if(foundUrls.length() > 0){
+
+        // sort by length
+        foundUrls.sort();
+        std::reverse(foundUrls.begin(), foundUrls.end());
+
+        // replace found urls with %i
+        for(i=0; i<foundUrls.length(); i++){
+
+            message.replace(foundUrls[i], '%' + QString::number(i+1));
+        }
     }
 
     messageBody = QString("(%1) %2 <%3>: %4").arg(time, prefix, nickname, message.trimmed());
