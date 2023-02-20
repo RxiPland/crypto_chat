@@ -478,6 +478,9 @@ QString ChatWindow::makeHtmlMessage(QString message, QString color, QString time
         }
     }
 
+    foundUrls.sort();
+    std::reverse(foundUrls.begin(), foundUrls.end());
+
     // replace found urls with %i
     int i;
     for(i=0; i<foundUrls.length(); i++){
