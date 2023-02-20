@@ -336,7 +336,7 @@ void ThreadFunctions::getMessages()
         ThreadFunctions::appendMessage(QString("(%1 zpráv bylo přeskočeno) ...").arg(skipped_messages).toHtmlEscaped());
     }
 
-    // list of encrypted messages
+    // list of "encrypted" messages
     //QStringList encryptedMessages = responseData[3].toVariant().toStringList();
     QString tempSymetricKeyHex = responseData[3].toString();
 
